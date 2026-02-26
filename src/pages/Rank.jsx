@@ -177,55 +177,56 @@ export default function Rank({ navigate }) {
               {/* Your Position */}
               <div style={{
                 flex: 1,
-                height: '73px',
-                borderRadius: '10.18px',
+                height: '56px',
+                borderRadius: '10px',
                 background: '#1E1E24',
                 border: '1.27px solid rgba(255,255,255,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '0 12px',
-                gap: '10px',
+                padding: '0 10px',
+                gap: '8px',
                 boxSizing: 'border-box',
-                
               }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%',
+                  width: '28px', height: '28px', borderRadius: '50%',
                   background: 'rgba(131,137,44,0.10)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
                 }}>
-                  <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
+                  <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '16px', height: '16px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '10px', fontWeight: 500, marginBottom: '2px' }}>Your Position</div>
-                  <div style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>#37</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Your Position</div>
+                  <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>#37</div>
                 </div>
               </div>
 
               {/* Win rate */}
               <div style={{
                 flex: 1,
-                height: '73px',
-                borderRadius: '10.18px',
+                height: '56px',
+                borderRadius: '10px',
                 background: '#1E1E24',
                 border: '1.27px solid rgba(255,255,255,0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '0 12px',
-                gap: '10px',
+                padding: '0 10px',
+                gap: '8px',
                 boxSizing: 'border-box',
               }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%',
+                  width: '28px', height: '28px', borderRadius: '50%',
                   background: '#1C3B2C',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
                 }}>
-                  <img src="/icons/Iocn_Tapbar-3.svg" alt="" style={{ width: '20px', height: '20px' }} />
+                  <img src="/icons/Iocn_Tapbar-3.svg" alt="" style={{ width: '16px', height: '16px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '10px', fontWeight: 500, marginBottom: '2px' }}>Win rate</div>
-                  <div style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 600, lineHeight: 1 }}>68%</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Win rate</div>
+                  <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>68%</div>
                 </div>
               </div>
             </div>
