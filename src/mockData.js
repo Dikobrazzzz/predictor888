@@ -42,19 +42,22 @@ export const mockRewards = [
     id: 1,
     title: 'Free Bet x2',
     description: 'Get 2 free predictions for Champions League',
-    color: 'from-purple-900 to-purple-800',
+    gradientLight: '#622380',
+    gradientDark:  '#14071A',
   },
   {
     id: 2,
-    title: 'Free Bet x3',
-    description: 'Get 3 free predictions for La Liga',
-    color: 'from-indigo-900 to-indigo-800',
+    title: 'Free Bet x2',
+    description: 'Get 2 free predictions for Champions League',
+    gradientLight: '#803F23',
+    gradientDark:  '#1A1107',
   },
   {
     id: 3,
     title: 'Free Spin x5',
     description: 'Exclusive reward for top forecasters',
-    color: 'from-rose-900 to-rose-800',
+    gradientLight: '#622380',
+    gradientDark:  '#14071A',
   },
 ]
 
