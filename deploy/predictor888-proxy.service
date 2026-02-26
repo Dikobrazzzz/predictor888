@@ -1,0 +1,15 @@
+[Unit]
+Description=Predictor888 Live Proxy
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/predictor888/proxy
+ExecStart=/usr/bin/python3 -m uvicorn proxy:app --host 0.0.0.0 --port 8082
+Restart=always
+RestartSec=5
+StandardOutput=append:/tmp/proxy.log
+StandardError=append:/tmp/proxy.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,203 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+import EventCard from '../components/EventCard'
+import BottomNav from '../components/BottomNav'
+
+const PAGE_SIZE = 5
+
+const SPORT_TABS = ['All Sports', 'Football', 'Basketball', 'Tennis', 'Hockey']
+
+const SPORT_MAP = {
+  'Football':   'Football',
+  'Basketball': 'Basketball',
+  'Tennis':     'Tennis',
+  'Hockey':     'Ice Hockey',
+}
+
+function parseEvent(d) {
+  return {
+    id: d.id,
+    status: d.status || 'live',
+    timeLeft: d.timeLeft || 'LIVE',
+    league: d.league || '',
+    home: { name: d.home, icon: d.homeIcon || null },
+    away: { name: d.away, icon: d.awayIcon || null },
+    score: d.score || null,
+    sport: d.sport || '',
+    coef: {
+      home: d.coef?.home ?? 0,
+      draw: d.coef?.draw ?? 0,
+      away: d.coef?.away ?? 0,
+    },
+  }
+}
+
+export default function Events({ navigate, allEvents = [], counts: propCounts = {}, dataReady = false }) {
+  const [activeSport, setActiveSport] = useState('All Sports')
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef(null)
+  const observerRef = useRef(null)
+
+  const loading = !dataReady
+
+  // Reset visible count when switching sport
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [activeSport])
+
+  const filtered = activeSport === 'All Sports'
+    ? allEvents
+    : allEvents.filter((e) => e.sport === SPORT_MAP[activeSport])
+
+  const visible = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
+
+  // IntersectionObserver — load next 5 when sentinel enters view
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) observerRef.current.disconnect()
+    if (!sentinelRef.current || !hasMore) return
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((c) => c + PAGE_SIZE)
+        }
+      },
+      { rootMargin: '80px' }
+    )
+    observerRef.current.observe(sentinelRef.current)
+  }, [hasMore])
+
+  useEffect(() => {
+    setupObserver()
+    return () => observerRef.current?.disconnect()
+  }, [setupObserver])
+
+  // tab badge counts computed from allEvents
+  const tabCounts = {}
+  SPORT_TABS.forEach((tab) => {
+    if (tab === 'All Sports') { tabCounts[tab] = allEvents.length; return }
+    tabCounts[tab] = allEvents.filter((e) => e.sport === SPORT_MAP[tab]).length
+  })
+
+  const liveVisible = visible.filter((e) => e.status === 'live')
+  const upcomingVisible = visible.filter((e) => e.status === 'upcoming')
+
+  return (
+    <div className="min-h-screen" style={{ background: '#131313', paddingBottom: '110px' }}>
+
+      {/* Header */}
+      <div style={{ height: '1px', background: '#72777C33' }} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 14px' }}>
+        <button
+          onClick={() => navigate?.('home')}
+          style={{ width: '36px', height: '36px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <img src="/icons/i_arrowUp.svg" alt="Back" style={{ width: '20px', height: '20px' }} />
+        </button>
+        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>All Events</span>
+        <div style={{ width: '36px' }} />
+      </div>
+      <div style={{ height: '1px', background: '#72777C33', marginBottom: '16px' }} />
+
+      {/* Sport filter tabs */}
+      <div
+        style={{ display: 'flex', gap: '8px', paddingLeft: '20px', paddingRight: '20px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '20px' }}
+        className="scrollbar-hide"
+      >
+        {SPORT_TABS.map((tab) => {
+          const isActive = activeSport === tab
+          const count = tabCounts[tab] || 0
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveSport(tab)}
+              style={{
+                flexShrink: 0,
+                minWidth: tab === 'All Sports' ? '80px' : undefined,
+                height: '37px',
+                borderRadius: '12px',
+                background: isActive ? '#FFFE45' : '#1A1A1A',
+                border: 'none',
+                color: isActive ? '#000000' : count > 0 ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.25)',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer',
+                padding: '0 14px',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'background 0.15s',
+              }}
+            >
+              {tab}
+            </button>
+          )
+        })}
+      </div>
+
+      {loading ? (
+        <div style={{ padding: '40px 20px', color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center' }}>
+          Loading live matches...
+        </div>
+      ) : (
+        <>
+          {liveVisible.length > 0 && (
+            <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Live Now</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                  {filtered.filter(e => e.status === 'live').length} matches
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {liveVisible.map((event) => (
+                  <EventCard key={event.id} event={event} navigate={navigate} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {upcomingVisible.length > 0 && (
+            <div style={{ padding: '0 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Upcoming</span>
+                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                  {filtered.filter(e => e.status === 'upcoming').length} matches
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {upcomingVisible.map((event) => (
+                  <EventCard key={event.id} event={event} navigate={navigate} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filtered.length === 0 && (
+            <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '32px', marginBottom: '12px' }}>⚽</div>
+              <div style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', fontWeight: 500 }}>
+                No live {activeSport === 'All Sports' ? 'matches' : activeSport.toLowerCase() + ' matches'} right now
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px', marginTop: '6px' }}>
+                Check back soon
+              </div>
+            </div>
+          )}
+
+          {/* Sentinel for IntersectionObserver */}
+          {hasMore && (
+            <div ref={sentinelRef} style={{ padding: '16px 20px', textAlign: 'center' }}>
+              <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px' }}>
+                Loading more...
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <BottomNav active="events" onNavigate={navigate} />
+    </div>
+  )
+}
