@@ -34,9 +34,9 @@ function loadFromStorage() {
   }
 }
 
-function saveToStorage(events, counts) {
+function saveToStorage(events, counts, topEvents) {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ events, counts, ts: Date.now() }))
+    localStorage.setItem(LS_KEY, JSON.stringify({ events, counts, topEvents, ts: Date.now() }))
   } catch {}
 }
 
@@ -44,10 +44,10 @@ export default function App() {
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
 
-  // Load cached data immediately from localStorage (no loading spinner on revisit)
   const cached = loadFromStorage()
   const [allEvents, setAllEvents] = useState(cached?.events ?? [])
   const [counts, setCounts] = useState(cached?.counts ?? {})
+  const [topEvents, setTopEvents] = useState(cached?.topEvents ?? [])
   const [dataReady, setDataReady] = useState(cached != null)
   const refreshTimer = useRef(null)
 
@@ -55,13 +55,16 @@ export default function App() {
     Promise.all([
       fetch('/api/live/all').then(r => r.json()),
       fetch('/api/live/counts').then(r => r.json()),
-    ]).then(([eventsData, countsData]) => {
+      fetch('/api/live/home').then(r => r.json()),
+    ]).then(([eventsData, countsData, homeData]) => {
       const parsed = Array.isArray(eventsData) ? eventsData.map(parseEvent) : []
       const cnts = (countsData && typeof countsData === 'object' && !countsData.error) ? countsData : {}
+      const top = Array.isArray(homeData) ? homeData.map(parseEvent) : []
       setAllEvents(parsed)
       setCounts(cnts)
+      setTopEvents(top)
       setDataReady(true)
-      saveToStorage(parsed, cnts)
+      saveToStorage(parsed, cnts, top)
     }).catch(() => setDataReady(true))
   }
 
@@ -79,5 +82,5 @@ export default function App() {
   if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
   if (page === 'rank') return <Rank navigate={navigate} />
-  return <Home navigate={navigate} allEvents={allEvents} dataReady={dataReady} />
+  return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} />
 }

@@ -5,8 +5,7 @@ import DailyRewards from '../components/DailyRewards'
 import TopPlayers from '../components/TopPlayers'
 import BottomNav from '../components/BottomNav'
 
-export default function Home({ navigate, allEvents = [], dataReady = false }) {
-  const topEvents = allEvents.slice(0, 5)
+export default function Home({ navigate, topEvents = [], dataReady = false }) {
   const [activeIdx, setActiveIdx] = useState(0)
 
   useEffect(() => {
