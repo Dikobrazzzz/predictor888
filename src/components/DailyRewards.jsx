@@ -20,7 +20,7 @@ export default function DailyRewards() {
               height: '148px',
               borderRadius: '18px',
               border: '0.68px solid #BDBDBD0F',
-              background: `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), linear-gradient(to top right, ${reward.gradientDark} 0%, ${reward.gradientLight} 100%)`,
+              background: `linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.52)), linear-gradient(to top right, ${reward.gradientDark} 0%, ${reward.gradientLight} 100%)`,
               padding: '16px',
               display: 'flex',
               flexDirection: 'column',
