@@ -21,15 +21,10 @@ HEADERS = {
     "accept-encoding": "gzip, deflate",
 }
 
-# odds_type legend:
-#   "1x2_gs"  GetTopGamesStatZip: GS==1, T=1 home, T=2 draw, T=3 away
-#   "1x2_g"   Get1x2_VZip 1X2:   G==1,  T=1 home, T=2 draw, T=3 away  (hockey)
-#   "12_g"    Get1x2_VZip 2-way: G==1,  T=1 home, T=3 away            (tennis)
-#   "bball"   Get1x2_VZip bball: G==101, T=401 home, T=402 away
 SPORTS_CONFIG = {
     "football":   (
-        "https://888starz.bet/service-api/LiveFeed/GetTopGamesStatZip?lng=en&antisports=66&partner=233&sports=1",
-        "Football", "1x2_gs"
+        "https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=1&count=50&lng=en&gr=789&mode=4&country=197&partner=233&getEmpty=true",
+        "Football", "1x2_g"
     ),
     "basketball": (
         "https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=3&count=40&lng=en&mode=4&country=197&partner=233&getEmpty=true",
@@ -46,10 +41,7 @@ SPORTS_CONFIG = {
 }
 
 TOP_GAMES_URL = "https://888starz.bet/service-api/LiveFeed/GetTopGamesStatZip?lng=en&antisports=66&partner=233"
-TOP_CACHE_TTL = 30
-
 COUNTS_URL = "https://888starz.bet/service-api/LiveFeed/GetSportsShortZip?sports=1,2,3,4&lng=en&gr=789&country=197&partner=233&virtualSports=true&groupChamps=true"
-# Map API sport names → our keys
 COUNTS_MAP = {
     "Football":   "football",
     "Basketball": "basketball",
@@ -57,16 +49,21 @@ COUNTS_MAP = {
     "Ice Hockey": "hockey",
 }
 
-_cache: dict = {}
 CACHE_TTL = 30
 COUNTS_TTL = 60
+TOP_CACHE_TTL = 30
+FETCH_TIMEOUT = 3
+CIRCUIT_OPEN_SECS = 30
 DISK_CACHE_FILE = "/tmp/proxy_disk_cache.json"
 
-# One lock per sport key + one for counts + one for top games — prevents thundering herd
-_locks: dict = {k: threading.Lock() for k in ("football", "basketball", "tennis", "hockey", "_counts", "_top")}
+_cache: dict = {}
+_circuit: dict = {}
+_bg_lock = threading.Lock()
 
+# ---------------------------------------------------------------------------
+# Disk cache: survive proxy restarts
+# ---------------------------------------------------------------------------
 def _load_disk_cache():
-    """Pre-populate in-memory cache from disk on startup — zero cold-start delay."""
     try:
         if not os.path.exists(DISK_CACHE_FILE):
             return
@@ -74,13 +71,12 @@ def _load_disk_cache():
             saved = json.load(f)
         now = time.time()
         for key, entry in saved.items():
-            # Load stale data — background refresh will update it soon
-            _cache[key] = {"data": entry["data"], "ts": now - CACHE_TTL + 5}
+            if entry.get("data"):
+                _cache[key] = {"data": entry["data"], "ts": now - CACHE_TTL + 5}
     except Exception:
         pass
 
 def _save_disk_cache():
-    """Persist current in-memory cache to disk after each refresh cycle."""
     try:
         snapshot = {k: {"data": v["data"]} for k, v in _cache.items() if v.get("data")}
         with open(DISK_CACHE_FILE, "w") as f:
@@ -90,20 +86,36 @@ def _save_disk_cache():
 
 _load_disk_cache()
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def icon_url(img_list):
     if not img_list: return None
     name = img_list[0].rsplit(".", 1)[0]
     return f"{CDN}/{name}.webp"
 
+def _circuit_open(key: str) -> bool:
+    t = _circuit.get(key, 0)
+    return (time.time() - t) < CIRCUIT_OPEN_SECS
+
+def _circuit_trip(key: str):
+    _circuit[key] = time.time()
+
+def _circuit_reset(key: str):
+    _circuit.pop(key, None)
+
 def fetch_raw(url: str) -> list:
     ctx = ssl._create_unverified_context()
     req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+    with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT, context=ctx) as r:
         raw = r.read()
         if r.headers.get("Content-Encoding") == "gzip":
             raw = gzip.decompress(raw)
         return json.loads(raw).get("Value", [])
 
+# ---------------------------------------------------------------------------
+# Parsers
+# ---------------------------------------------------------------------------
 def parse(m: dict, odds_type: str) -> dict:
     sc = m.get("SC") or {}
     score = None
@@ -125,7 +137,7 @@ def parse(m: dict, odds_type: str) -> dict:
     elif odds_type == "bball":
         odds = {o["T"]: o["C"] for o in e if o.get("G") == 101 and o.get("T") in (401, 402)}
         coef = {"home": odds.get(401), "draw": None, "away": odds.get(402)}
-    else:  # "12_g" tennis
+    else:
         odds = {o["T"]: o["C"] for o in e if o.get("G") == 1 and o.get("T") in (1, 3)}
         coef = {"home": odds.get(1), "draw": None, "away": odds.get(3)}
 
@@ -144,8 +156,6 @@ def parse(m: dict, odds_type: str) -> dict:
     }
 
 def parse_top(m: dict) -> dict:
-    """Parse a match from GetTopGamesStatZip (all sports, no sport filter).
-    Tries GS==1 (1x2) first, then falls back to the first available GS group."""
     sc = m.get("SC") or {}
     score = None
     if sc:
@@ -157,17 +167,10 @@ def parse_top(m: dict) -> dict:
             score = f"{ss.get('S1',0)}-{ss.get('S2',0)}"
 
     e = m.get("E", [])
-
-    # Try standard 1x2 (GS==1)
     odds_gs1 = {o["T"]: o["C"] for o in e if o.get("GS") == 1 and o.get("T") in (1, 2, 3)}
     if odds_gs1:
-        coef = {
-            "home": odds_gs1.get(1),
-            "draw": odds_gs1.get(2),
-            "away": odds_gs1.get(3),
-        }
+        coef = {"home": odds_gs1.get(1), "draw": odds_gs1.get(2), "away": odds_gs1.get(3)}
     else:
-        # Fallback: find lowest GS group and map first 2-3 outcomes
         gs_groups = sorted(set(o.get("GS") for o in e if o.get("GS") is not None))
         coef = {"home": None, "draw": None, "away": None}
         if gs_groups:
@@ -196,148 +199,118 @@ def parse_top(m: dict) -> dict:
         "coef":     coef,
     }
 
-def get_top_cached() -> list:
-    """Fetch and cache the 5 top games from GetTopGamesStatZip (no sport filter)."""
-    entry = _cache.get("_top")
-    if entry and (time.time() - entry["ts"]) < TOP_CACHE_TTL:
-        return entry["data"]
-    with _locks["_top"]:
-        entry = _cache.get("_top")
-        if entry and (time.time() - entry["ts"]) < TOP_CACHE_TTL:
-            return entry["data"]
-        try:
-            raw = fetch_raw(TOP_GAMES_URL)
-            fresh = [parse_top(m) for m in raw]
-            if fresh:
-                _cache["_top"] = {"data": fresh, "ts": time.time()}
-                return fresh
-        except Exception:
-            pass
-        return entry["data"] if entry else []
-
-def get_cached(key: str) -> list:
+# ---------------------------------------------------------------------------
+# Background-only refresh (API endpoints NEVER call fetch_raw)
+# ---------------------------------------------------------------------------
+def _refresh_sport(key: str):
+    if _circuit_open(key):
+        return
     url, sport_name, odds_type = SPORTS_CONFIG[key]
-    # Fast path: cache is fresh, no lock needed
+    try:
+        raw = fetch_raw(url)
+        fresh = [parse(m, odds_type) for m in raw if m.get("SE") == sport_name][:50]
+        if fresh:
+            _cache[key] = {"data": fresh, "ts": time.time()}
+            _circuit_reset(key)
+            _save_disk_cache()
+    except Exception:
+        _circuit_trip(key)
+
+def _refresh_top():
+    if _circuit_open("_top"):
+        return
+    try:
+        raw = fetch_raw(TOP_GAMES_URL)
+        fresh = [parse_top(m) for m in raw]
+        if fresh:
+            _cache["_top"] = {"data": fresh, "ts": time.time()}
+            _circuit_reset("_top")
+            _save_disk_cache()
+    except Exception:
+        _circuit_trip("_top")
+
+def _refresh_counts():
+    if _circuit_open("_counts"):
+        return
+    try:
+        raw = fetch_raw(COUNTS_URL)
+        totals: dict = defaultdict(int)
+        for s in raw:
+            name = s.get("N", "")
+            if name in COUNTS_MAP:
+                totals[COUNTS_MAP[name]] += s.get("C", 0) or 0
+        result = dict(totals)
+        _cache["_counts"] = {"data": result, "ts": time.time()}
+        _circuit_reset("_counts")
+        _save_disk_cache()
+    except Exception:
+        _circuit_trip("_counts")
+
+def _do_refresh():
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+        futs = [ex.submit(_refresh_sport, k) for k in SPORTS_CONFIG]
+        futs.append(ex.submit(_refresh_counts))
+        futs.append(ex.submit(_refresh_top))
+        concurrent.futures.wait(futs, timeout=FETCH_TIMEOUT + 2)
+
+async def _bg_refresh():
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _do_refresh)
+    while True:
+        await asyncio.sleep(25)
+        await loop.run_in_executor(None, _do_refresh)
+
+# ---------------------------------------------------------------------------
+# Cache readers (instant, never block on network)
+# ---------------------------------------------------------------------------
+def _read_cache(key: str) -> list:
     entry = _cache.get(key)
-    if entry and (time.time() - entry["ts"]) < CACHE_TTL:
-        return entry["data"]
-    # Slow path: only one thread fetches, others wait then reuse result
-    with _locks[key]:
-        entry = _cache.get(key)  # double-check after acquiring lock
-        if entry and (time.time() - entry["ts"]) < CACHE_TTL:
-            return entry["data"]
-        try:
-            raw = fetch_raw(url)
-            fresh = [parse(m, odds_type) for m in raw if m.get("SE") == sport_name][:40]
-            if fresh:
-                _cache[key] = {"data": fresh, "ts": time.time()}
-                return fresh
-        except Exception:
-            pass
-        return entry["data"] if entry else []
+    return entry["data"] if entry and entry.get("data") else []
 
-def get_counts_cached() -> dict:
-    """Returns {football: N, basketball: N, tennis: N, hockey: N} from GetSportsShortZip."""
-    entry = _cache.get("_counts")
-    if entry and (time.time() - entry["ts"]) < COUNTS_TTL:
-        return entry["data"]
-    with _locks["_counts"]:
-        entry = _cache.get("_counts")
-        if entry and (time.time() - entry["ts"]) < COUNTS_TTL:
-            return entry["data"]
-        try:
-            raw = fetch_raw(COUNTS_URL)
-            totals: dict = defaultdict(int)
-            for s in raw:
-                name = s.get("N", "")
-                if name in COUNTS_MAP:
-                    totals[COUNTS_MAP[name]] += s.get("C", 0) or 0
-            result = dict(totals)
-            _cache["_counts"] = {"data": result, "ts": time.time()}
-            return result
-        except Exception:
-            return entry["data"] if entry else {}
-
-def fetch_all() -> list:
-    """Up to 40 matches per sport for Events page."""
+def _read_all() -> list:
     results, seen = [], set()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
-        futures = {ex.submit(get_cached, k): k for k in SPORTS_CONFIG}
-        for fut in concurrent.futures.as_completed(futures):
-            for m in fut.result():
-                if m["id"] not in seen:
-                    seen.add(m["id"])
-                    results.append(m)
+    for key in SPORTS_CONFIG:
+        for m in _read_cache(key):
+            if m["id"] not in seen:
+                seen.add(m["id"])
+                results.append(m)
     order = list(SPORTS_CONFIG.keys())
     sport_of = {v[1]: k for k, v in SPORTS_CONFIG.items()}
     results.sort(key=lambda m: order.index(sport_of.get(m["sport"], "football")))
     return results
 
-def fetch_home() -> list:
-    """Top 5 events from GetTopGamesStatZip (dedicated endpoint, always 5)."""
-    return get_top_cached()
-
-async def _bg_refresh():
-    """Warm up cache on startup, then refresh every 25 s in background."""
-    # Initial warm-up: fetch all sports + top games in parallel
-    loop = asyncio.get_event_loop()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
-        futs = [loop.run_in_executor(ex, get_cached, k) for k in SPORTS_CONFIG]
-        futs.append(loop.run_in_executor(ex, get_counts_cached))
-        futs.append(loop.run_in_executor(ex, get_top_cached))
-        await asyncio.gather(*futs, return_exceptions=True)
-
-    while True:
-        await asyncio.sleep(25)
-        loop = asyncio.get_event_loop()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
-            futs = [loop.run_in_executor(ex, get_cached, k) for k in SPORTS_CONFIG]
-            futs.append(loop.run_in_executor(ex, get_counts_cached))
-            futs.append(loop.run_in_executor(ex, get_top_cached))
-            await asyncio.gather(*futs, return_exceptions=True)
-        _save_disk_cache()
-
+# ---------------------------------------------------------------------------
+# Startup
+# ---------------------------------------------------------------------------
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(_bg_refresh())
 
+# ---------------------------------------------------------------------------
+# API endpoints — pure cache reads, zero network blocking
+# ---------------------------------------------------------------------------
 @app.get("/api/live/counts")
 def live_counts():
-    """Real live match counts per sport from GetSportsShortZip."""
-    try:
-        return get_counts_cached()
-    except Exception as e:
-        return {"error": str(e)}
+    entry = _cache.get("_counts")
+    return entry["data"] if entry and entry.get("data") else {}
 
 @app.get("/api/live/match")
 def live_match():
-    try:
-        items = get_cached("football") or fetch_home()
-        return items[0] if items else {"error": "No matches"}
-    except Exception as e:
-        return {"error": str(e)}
+    items = _read_cache("football") or _read_cache("_top")
+    return items[0] if items else {"error": "No matches"}
 
 @app.get("/api/live/football")
 def live_football():
-    try:
-        return get_cached("football")
-    except Exception as e:
-        return {"error": str(e)}
+    return _read_cache("football")
 
 @app.get("/api/live/all")
 def live_all():
-    try:
-        return fetch_all()
-    except Exception as e:
-        return {"error": str(e)}
+    return _read_all()
 
 @app.get("/api/live/home")
 def live_home():
-    try:
-        return fetch_home()
-    except Exception as e:
-        return {"error": str(e)}
+    return _read_cache("_top")
 
 @app.get("/api/live/matches")
 def live_matches():
-    return live_football()
+    return _read_cache("football")
