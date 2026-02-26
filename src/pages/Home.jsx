@@ -10,7 +10,7 @@ export default function Home({ navigate, topEvents = [], dataReady = false }) {
 
   useEffect(() => {
     setActiveIdx(0)
-  }, [allEvents])
+  }, [topEvents.length])
 
   useEffect(() => {
     if (topEvents.length <= 1) return
