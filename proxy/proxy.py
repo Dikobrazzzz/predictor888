@@ -12,8 +12,15 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 CDN = "https://v3.traincdn.com/resized/size32/sfiles/logo_teams"
 
-# Cloudflare Worker URL — set after deploy
-CF_WORKER_URL = os.environ.get("CF_WORKER_URL", "")
+# Cloudflare Worker URLs — primary + backups (comma-separated in env or hardcoded fallback)
+_CF_WORKER_ENV = os.environ.get("CF_WORKER_URL", "")
+CF_WORKER_URLS: list[str] = [u.strip() for u in _CF_WORKER_ENV.split(",") if u.strip()] if _CF_WORKER_ENV else []
+# Backwards-compat alias used in /api/status
+CF_WORKER_URL = CF_WORKER_URLS[0] if CF_WORKER_URLS else ""
+
+# Per-worker failure tracking: url -> last_failure_time
+_worker_failures: dict[str, float] = {}
+WORKER_COOLDOWN_SECS = 60  # skip a worker for 60s after it fails
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
@@ -114,11 +121,9 @@ def _circuit_reset(key: str):
 # ---------------------------------------------------------------------------
 # fetch_raw: Worker → Direct → fail
 # ---------------------------------------------------------------------------
-def _fetch_via_worker(url: str) -> list:
-    """Fetch through Cloudflare Worker relay."""
-    if not CF_WORKER_URL:
-        raise RuntimeError("CF_WORKER_URL not set")
-    relay = f"{CF_WORKER_URL}?url={urllib.parse.quote(url, safe='')}"
+def _fetch_one_worker(worker_url: str, target_url: str) -> list:
+    """Fetch through a single Cloudflare Worker relay."""
+    relay = f"{worker_url}?url={urllib.parse.quote(target_url, safe='')}"
     ctx = ssl._create_unverified_context()
     req = urllib.request.Request(relay, headers={"user-agent": random.choice(USER_AGENTS)})
     with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT, context=ctx) as r:
@@ -139,15 +144,28 @@ def _fetch_direct(url: str) -> list:
         return json.loads(raw).get("Value", [])
 
 def fetch_raw(url: str) -> list:
-    """Try Worker first, then direct fallback."""
-    # 1. Cloudflare Worker
-    if CF_WORKER_URL:
-        try:
-            return _fetch_via_worker(url)
-        except Exception as e:
-            pass  # fall through to direct
+    """Try each Worker in round-robin order, skip recently-failed ones, then direct fallback."""
+    now = time.time()
 
-    # 2. Direct
+    # Shuffle workers so load is spread across them randomly
+    workers = list(CF_WORKER_URLS)
+    random.shuffle(workers)
+
+    for w in workers:
+        # Skip worker if it failed recently
+        if now - _worker_failures.get(w, 0) < WORKER_COOLDOWN_SECS:
+            continue
+        try:
+            result = _fetch_one_worker(w, url)
+            # Success — clear failure record for this worker
+            _worker_failures.pop(w, None)
+            return result
+        except Exception as e:
+            print(f"[WARN] worker {w}: {e}", flush=True)
+            _worker_failures[w] = now
+            # Try next worker
+
+    # All workers failed or in cooldown — go direct
     return _fetch_direct(url)
 
 # ---------------------------------------------------------------------------
@@ -378,8 +396,14 @@ def status():
     for k, v in _cache.items():
         age = int(now - v.get("ts", 0))
         info[k] = {"items": len(v.get("data", [])), "age_sec": age}
+    worker_health = {}
+    for w in CF_WORKER_URLS:
+        last_fail = _worker_failures.get(w, 0)
+        cooldown_left = max(0, int(WORKER_COOLDOWN_SECS - (now - last_fail)))
+        worker_health[w] = "ok" if cooldown_left == 0 else f"cooldown {cooldown_left}s"
+
     return {
         "cache": info,
         "circuits_open": {k: int(now - t) for k, t in _circuit.items() if (now - t) < CIRCUIT_OPEN_SECS},
-        "worker_url": CF_WORKER_URL or "NOT SET",
+        "workers": worker_health or {"status": "NOT SET"},
     }
