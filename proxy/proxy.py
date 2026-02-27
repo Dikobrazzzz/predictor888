@@ -4,6 +4,7 @@ import gzip, json, os, random, ssl, time, urllib.request, urllib.parse
 import concurrent.futures
 import threading
 from collections import defaultdict
+from datetime import datetime, timedelta
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -75,6 +76,31 @@ COUNTS_TTL = 60
 FETCH_TIMEOUT = 12
 CIRCUIT_OPEN_SECS = 90
 DISK_CACHE_FILE = "/tmp/proxy_disk_cache.json"
+
+# ---------------------------------------------------------------------------
+# Recommendation system — eventsstat.com upcoming top events
+# ---------------------------------------------------------------------------
+EVENTSSTAT_BASE = "https://eventsstat.com/en/services-api/core-api/v1/daygames"
+EVENTSSTAT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15",
+    "Accept": "application/json, text/plain, */*",
+    "Referer": "https://eventsstat.com/en/statistic/",
+}
+EVENTSSTAT_CDN = "https://eventsstat.com"
+
+# (sportId, sport_display_name, top_league_keywords)
+EVENTSSTAT_SPORTS = {
+    "football":   (1, "Football",   ["champions league", "premier league", "la liga", "bundesliga",
+                                      "serie a", "ligue 1", "eredivisie", "primeira liga",
+                                      "europa league", "conference league", "serie b"]),
+    "hockey":     (2, "Ice Hockey", ["khl", "nhl", "kontinental", "liiga", "shl", "nl "]),
+    "basketball": (3, "Basketball", ["nba", "euroleague", "acb", "bbl", "nbl", "lnb"]),
+    "tennis":     (4, "Tennis",     ["atp", "wta", "grand slam", "masters"]),
+}
+
+RECOMMEND_DAYS    = 4    # aggregate upcoming events over N days
+RECOMMEND_TOP_N   = 5    # top N events per sport
+RECOMMEND_TTL     = 1800 # cache TTL seconds (30 min)
 
 _cache: dict = {}
 _circuit: dict = {}
@@ -315,6 +341,102 @@ def _refresh_counts():
         print(f"[WARN] _counts: {e}", flush=True)
         _circuit_trip("_counts")
 
+# ---------------------------------------------------------------------------
+# Recommendations — fetch + parse + rank upcoming top events
+# ---------------------------------------------------------------------------
+def _fetch_eventsstat(url: str) -> dict:
+    ctx = ssl._create_unverified_context()
+    req = urllib.request.Request(url, headers=EVENTSSTAT_HEADERS)
+    with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
+        return json.load(r)
+
+def _score_league(league_title: str, keywords: list) -> int:
+    lt = league_title.lower()
+    for kw in keywords:
+        if kw in lt:
+            return 100
+    return 0
+
+def _format_kickoff(ts: int, day_offset: int) -> str:
+    """Convert unix timestamp to readable time label for upcoming events."""
+    dt = datetime.fromtimestamp(ts)
+    hm = dt.strftime("%H:%M")
+    if day_offset == 0:
+        return f"Today {hm}"
+    if day_offset == 1:
+        return f"Tomorrow {hm}"
+    return dt.strftime(f"%a {hm}")   # e.g. "Sun 17:30"
+
+def _refresh_recommendations_sport(sport_key: str):
+    sport_id, sport_name, kw = EVENTSSTAT_SPORTS[sport_key]
+    today = datetime.now()
+    all_matches = []
+
+    for day_offset in range(RECOMMEND_DAYS):
+        date_str = (today + timedelta(days=day_offset)).strftime("%d.%m.%Y")
+        url = (f"{EVENTSSTAT_BASE}?sportId={sport_id}&timeZone=3&lng=en"
+               f"&ref=233&gr=789&fcountry=197&page=1&date={date_str}")
+        try:
+            data = _fetch_eventsstat(url)
+        except Exception as e:
+            print(f"[REC WARN] {sport_key} day+{day_offset}: {e}", flush=True)
+            continue
+
+        teams_by_id = {t["id"]: t for t in data.get("teams", [])}
+        entity = data.get("entity", {})
+
+        for stage in entity.get("stages", []):
+            si    = stage.get("stage", {})
+            league = si.get("title", "")
+            league_score = _score_league(league, kw)
+
+            for g in stage.get("games", []):
+                t1_obj = teams_by_id.get(g.get("team1", ""), {})
+                t2_obj = teams_by_id.get(g.get("team2", ""), {})
+                t1_img = t1_obj.get("image")
+                t2_img = t2_obj.get("image")
+
+                score = league_score + (RECOMMEND_DAYS - day_offset) * 20
+                all_matches.append({
+                    "id":        f"rec_{g.get('id', '')}",
+                    "league":    league,
+                    "sport":     sport_name,
+                    "status":    "upcoming",
+                    "timeLeft":  _format_kickoff(g.get("dateStart", 0), day_offset),
+                    "home":      t1_obj.get("title", "?"),
+                    "away":      t2_obj.get("title", "?"),
+                    "homeIcon":  (EVENTSSTAT_CDN + t1_img) if t1_img else None,
+                    "awayIcon":  (EVENTSSTAT_CDN + t2_img) if t2_img else None,
+                    "score":     None,
+                    "coef":      {"home": None, "draw": None, "away": None},
+                    "_score":    score,
+                })
+
+    if not all_matches:
+        return
+
+    all_matches.sort(key=lambda m: -m["_score"])
+    top = all_matches[:RECOMMEND_TOP_N]
+    for m in top:
+        m.pop("_score", None)
+
+    _cache[f"_rec_{sport_key}"] = {"data": top, "ts": time.time()}
+    print(f"[REC] {sport_key}: cached top {len(top)} upcoming", flush=True)
+
+def _do_refresh_recommendations():
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
+        futs = [ex.submit(_refresh_recommendations_sport, k) for k in EVENTSSTAT_SPORTS]
+        concurrent.futures.wait(futs, timeout=60)
+
+async def _bg_refresh_recommendations():
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _do_refresh_recommendations)
+    while True:
+        await asyncio.sleep(RECOMMEND_TTL // 2)   # refresh every 15 min
+        await loop.run_in_executor(None, _do_refresh_recommendations)
+
+# ---------------------------------------------------------------------------
+
 def _do_refresh():
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
         futs = [ex.submit(_refresh_sport, k) for k in SPORTS_CONFIG]
@@ -358,6 +480,7 @@ def _read_all() -> list:
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(_bg_refresh())
+    asyncio.create_task(_bg_refresh_recommendations())
 
 # ---------------------------------------------------------------------------
 # API endpoints — pure cache reads
@@ -388,6 +511,15 @@ def live_home():
 def live_matches():
     return _read_cache("football")
 
+@app.get("/api/recommended")
+def recommended():
+    """Top upcoming events per sport from eventsstat.com."""
+    result = {}
+    for sport_key in EVENTSSTAT_SPORTS:
+        entry = _cache.get(f"_rec_{sport_key}")
+        result[sport_key] = entry["data"] if entry and entry.get("data") else []
+    return result
+
 @app.get("/api/status")
 def status():
     """Show cache status and circuit breaker state."""
@@ -402,8 +534,17 @@ def status():
         cooldown_left = max(0, int(WORKER_COOLDOWN_SECS - (now - last_fail)))
         worker_health[w] = "ok" if cooldown_left == 0 else f"cooldown {cooldown_left}s"
 
+    rec_info = {}
+    for sport_key in EVENTSSTAT_SPORTS:
+        entry = _cache.get(f"_rec_{sport_key}")
+        if entry:
+            rec_info[sport_key] = {"items": len(entry.get("data", [])), "age_sec": int(now - entry.get("ts", 0))}
+        else:
+            rec_info[sport_key] = {"items": 0, "age_sec": -1}
+
     return {
         "cache": info,
         "circuits_open": {k: int(now - t) for k, t in _circuit.items() if (now - t) < CIRCUIT_OPEN_SECS},
         "workers": worker_health or {"status": "NOT SET"},
+        "recommendations": rec_info,
     }

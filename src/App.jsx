@@ -34,9 +34,9 @@ function loadFromStorage() {
   }
 }
 
-function saveToStorage(events, counts, topEvents) {
+function saveToStorage(events, counts, topEvents, recommended) {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ events, counts, topEvents, ts: Date.now() }))
+    localStorage.setItem(LS_KEY, JSON.stringify({ events, counts, topEvents, recommended, ts: Date.now() }))
   } catch {}
 }
 
@@ -48,6 +48,7 @@ export default function App() {
   const [allEvents, setAllEvents] = useState(cached?.events ?? [])
   const [counts, setCounts] = useState(cached?.counts ?? {})
   const [topEvents, setTopEvents] = useState(cached?.topEvents ?? [])
+  const [recommended, setRecommended] = useState(cached?.recommended ?? {})
   const [dataReady, setDataReady] = useState(cached != null)
   const refreshTimer = useRef(null)
 
@@ -56,15 +57,18 @@ export default function App() {
       fetch('/api/live/all').then(r => r.json()),
       fetch('/api/live/counts').then(r => r.json()),
       fetch('/api/live/home').then(r => r.json()),
-    ]).then(([eventsData, countsData, homeData]) => {
+      fetch('/api/recommended').then(r => r.json()),
+    ]).then(([eventsData, countsData, homeData, recData]) => {
       const parsed = Array.isArray(eventsData) ? eventsData.map(parseEvent) : []
       const cnts = (countsData && typeof countsData === 'object' && !countsData.error) ? countsData : {}
       const top = Array.isArray(homeData) ? homeData.map(parseEvent) : []
+      const rec = (recData && typeof recData === 'object' && !recData.error) ? recData : {}
       setAllEvents(parsed)
       setCounts(cnts)
       setTopEvents(top)
+      setRecommended(rec)
       setDataReady(true)
-      saveToStorage(parsed, cnts, top)
+      saveToStorage(parsed, cnts, top, rec)
     }).catch(() => setDataReady(true))
   }
 
@@ -79,7 +83,7 @@ export default function App() {
     setPage(to)
   }
 
-  if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} dataReady={dataReady} />
+  if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} recommended={recommended} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
   if (page === 'rank') return <Rank navigate={navigate} />
   return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} />

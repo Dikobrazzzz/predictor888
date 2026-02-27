@@ -3,6 +3,8 @@ import EventCard from '../components/EventCard'
 import BottomNav from '../components/BottomNav'
 
 const PAGE_SIZE = 5
+const RECOMMEND_TOP_N = 5
+const RECOMMEND_DAYS = 4
 
 const SPORT_TABS = ['All Sports', 'Football', 'Basketball', 'Tennis', 'Hockey']
 
@@ -31,7 +33,7 @@ function parseEvent(d) {
   }
 }
 
-export default function Events({ navigate, allEvents = [], counts: propCounts = {}, dataReady = false }) {
+export default function Events({ navigate, allEvents = [], counts: propCounts = {}, recommended = {}, dataReady = false }) {
   const [activeSport, setActiveSport] = useState('All Sports')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
@@ -78,6 +80,28 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
     if (tab === 'All Sports') { tabCounts[tab] = allEvents.length; return }
     tabCounts[tab] = allEvents.filter((e) => e.sport === SPORT_MAP[tab]).length
   })
+
+  // Compute top upcoming recommendations for the active sport filter
+  const REC_SPORT_MAP = {
+    'Football':   'football',
+    'Basketball': 'basketball',
+    'Tennis':     'tennis',
+    'Hockey':     'hockey',
+  }
+  const topUpcoming = (() => {
+    if (activeSport === 'All Sports') {
+      return Object.values(recommended)
+        .flat()
+        .sort((a, b) => {
+          // sort by day label: Today < Tomorrow < rest
+          const rank = (t) => t?.startsWith('Today') ? 0 : t?.startsWith('Tomorrow') ? 1 : 2
+          return rank(a.timeLeft) - rank(b.timeLeft)
+        })
+        .slice(0, RECOMMEND_TOP_N)
+    }
+    const key = REC_SPORT_MAP[activeSport]
+    return key ? (recommended[key] || []) : []
+  })()
 
   const liveVisible = visible.filter((e) => e.status === 'live')
   const upcomingVisible = visible.filter((e) => e.status === 'upcoming')
@@ -152,6 +176,26 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {liveVisible.map((event) => (
+                  <EventCard key={event.id} event={event} navigate={navigate} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top Picks — recommended upcoming events from eventsstat.com */}
+          {topUpcoming.length > 0 && (
+            <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>⭐</span>
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Top Picks</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                  next {RECOMMEND_DAYS} days
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {topUpcoming.map((event) => (
                   <EventCard key={event.id} event={event} navigate={navigate} />
                 ))}
               </div>

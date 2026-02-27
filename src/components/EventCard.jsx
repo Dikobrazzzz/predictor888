@@ -39,11 +39,12 @@ export default function EventCard({ event, onPredict, navigate }) {
 
   const { status, timeLeft, league, home, away, coef } = event
 
-  const outcomes = [
+  const hasCoef = coef.home != null && coef.home !== 0
+  const outcomes = hasCoef ? [
     { key: '1', label: '1', value: coef.home },
     ...(coef.draw != null && coef.draw !== 0 ? [{ key: 'X', label: 'x', value: coef.draw }] : []),
     { key: '2', label: '2', value: coef.away },
-  ]
+  ] : []
   const isTwoWay = outcomes.length === 2
 
   const handleMakePredict = () => {
@@ -94,39 +95,41 @@ export default function EventCard({ event, onPredict, navigate }) {
         <TeamCircle name={away.name} icon={away.icon} />
       </div>
 
-      {/* Coefficient buttons */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginTop: '4px',
-        ...(isTwoWay && { width: '66.67%', alignSelf: 'center' }),
-      }}>
-        {outcomes.map((o) => (
-          <button
-            key={o.key}
-            onClick={() => setSelected(o.key)}
-            style={{
-              flex: 1,
-              height: '32px',
-              borderRadius: '40px',
-              background: selected === o.key ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.28)',
-              border: selected === o.key ? '1px solid rgba(255,255,255,0.20)' : '1px solid rgba(255,255,255,0.06)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px',
-              padding: '0 14px',
-              cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'background 0.15s',
-            }}
-          >
-            <span style={{ color: '#9CA3AF', fontSize: '12px' }}>{o.label}</span>
-            <span style={{ color: '#FFFE45', fontWeight: 700, fontSize: '14px' }}>{o.value}</span>
-          </button>
-        ))}
-      </div>
+      {/* Coefficient buttons — only shown when odds are available */}
+      {outcomes.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginTop: '4px',
+          ...(isTwoWay && { width: '66.67%', alignSelf: 'center' }),
+        }}>
+          {outcomes.map((o) => (
+            <button
+              key={o.key}
+              onClick={() => setSelected(o.key)}
+              style={{
+                flex: 1,
+                height: '32px',
+                borderRadius: '40px',
+                background: selected === o.key ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.28)',
+                border: selected === o.key ? '1px solid rgba(255,255,255,0.20)' : '1px solid rgba(255,255,255,0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                padding: '0 14px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'background 0.15s',
+              }}
+            >
+              <span style={{ color: '#9CA3AF', fontSize: '12px' }}>{o.label}</span>
+              <span style={{ color: '#FFFE45', fontWeight: 700, fontSize: '14px' }}>{o.value}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Make Prediction */}
       <button
