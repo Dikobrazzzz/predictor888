@@ -6,6 +6,52 @@ const PAGE_SIZE = 5
 const RECOMMEND_TOP_N = 5
 const RECOMMEND_DAYS = 4
 
+// Cyber/virtual leagues — always excluded regardless of sport
+const CYBER_EXCLUDE = ['cyber', 'virtual', '2k', 'blast hockey', 'dream league',
+                       'frostball', 'table basketball', 'ipbl', 'subhockey', '3hl', 'rhl', 'mnhl']
+
+// Football top leagues — exact match only (prevents "Ethiopia. Premier League" etc.)
+const TOP_FOOTBALL_EXACT = new Set([
+  'england. premier league', 'germany. bundesliga', 'spain. la liga',
+  'italy. serie a', 'france. ligue 1', 'netherlands. eredivisie',
+  'portugal. primeira liga', 'england. championship',
+  'germany. 2. bundesliga', 'spain. la liga 2', 'italy. serie b', 'france. ligue 2',
+  'russia. premier league', 'turkey. super lig', 'scotland. premiership',
+])
+// UEFA competitions matched by substring (appear in different formats)
+const TOP_FOOTBALL_CONTAINS = ['champions league', 'europa league', 'conference league']
+
+function isTopLiveEvent(event) {
+  const league = (event.league || '').toLowerCase()
+
+  // Step 1: exclude all cyber/virtual/simulated
+  if (CYBER_EXCLUDE.some((kw) => league.includes(kw))) return false
+
+  switch (event.sport) {
+    case 'Football':
+      return TOP_FOOTBALL_EXACT.has(league) ||
+             TOP_FOOTBALL_CONTAINS.some((kw) => league.includes(kw))
+
+    case 'Ice Hockey':
+      // khl / kontinental / nhl (real) / vhl / liiga / shl
+      // "NHL 26. Blast..." already excluded by CYBER_EXCLUDE above
+      return ['khl', 'kontinental', 'nhl', 'vhl', 'liiga', 'shl'].some((kw) => league.includes(kw))
+
+    case 'Basketball':
+      // Exclude ITF-style lower-tier
+      if (league.includes('itf')) return false
+      return ['nba', 'euroleague', 'fiba world', 'acb', 'bbl', 'lnb'].some((kw) => league.includes(kw))
+
+    case 'Tennis':
+      // Only main ATP/WTA tours — exclude Challenger, ITF, UTR
+      if (['challenger', 'itf.', 'utr '].some((kw) => league.includes(kw))) return false
+      return ['atp.', 'wta.', 'grand slam', 'masters'].some((kw) => league.includes(kw))
+
+    default:
+      return true
+  }
+}
+
 const SPORT_TABS = ['All Sports', 'Football', 'Basketball', 'Tennis', 'Hockey']
 
 const SPORT_MAP = {
@@ -103,7 +149,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
     return key ? (recommended[key] || []) : []
   })()
 
-  const liveVisible = visible.filter((e) => e.status === 'live')
+  const liveVisible = visible.filter((e) => e.status === 'live' && isTopLiveEvent(e))
   const upcomingVisible = visible.filter((e) => e.status === 'upcoming')
 
   return (
@@ -171,7 +217,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
                   <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Live Now</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  {filtered.filter(e => e.status === 'live').length} matches
+                  {filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length} matches
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
