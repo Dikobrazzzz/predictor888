@@ -48,7 +48,11 @@ export default function App() {
   const [allEvents, setAllEvents] = useState(cached?.events ?? [])
   const [counts, setCounts] = useState(cached?.counts ?? {})
   const [topEvents, setTopEvents] = useState(cached?.topEvents ?? [])
-  const [recommended, setRecommended] = useState(cached?.recommended ?? {})
+  const [recommended, setRecommended] = useState(() => {
+    const raw = cached?.recommended
+    if (!raw || typeof raw !== 'object') return {}
+    return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v.map(parseEvent) : []]))
+  })
   const [dataReady, setDataReady] = useState(cached != null)
   const refreshTimer = useRef(null)
 
@@ -62,7 +66,9 @@ export default function App() {
       const parsed = Array.isArray(eventsData) ? eventsData.map(parseEvent) : []
       const cnts = (countsData && typeof countsData === 'object' && !countsData.error) ? countsData : {}
       const top = Array.isArray(homeData) ? homeData.map(parseEvent) : []
-      const rec = (recData && typeof recData === 'object' && !recData.error) ? recData : {}
+      const rec = (recData && typeof recData === 'object' && !recData.error)
+        ? Object.fromEntries(Object.entries(recData).map(([k, v]) => [k, Array.isArray(v) ? v.map(parseEvent) : []]))
+        : {}
       setAllEvents(parsed)
       setCounts(cnts)
       setTopEvents(top)
