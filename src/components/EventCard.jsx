@@ -59,7 +59,8 @@ export default function EventCard({ event, onPredict, navigate }) {
     <div
       style={{
         width: '100%',
-        background: '#1A1A1A',
+        background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)',
+        backdropFilter: 'blur(61px)',
         borderRadius: '27.35px',
         border: '0.68px solid rgba(255,255,255,0.08)',
         padding: '16px',
@@ -75,7 +76,7 @@ export default function EventCard({ event, onPredict, navigate }) {
           <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>Live bet
           </span>
         ) : (
-          <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: 'rgba(100,100,100,0.4)', color: '#ccc' }}>Upcoming</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: '#B40E0E', color: '#FFFFFF' }}>Top Event</span>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: '#FFFE45' }}>
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">

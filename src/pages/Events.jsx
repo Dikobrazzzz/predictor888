@@ -228,13 +228,13 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             </div>
           )}
 
-          {/* Top Picks — recommended upcoming events from eventsstat.com */}
+          {/* Top upcoming events from eventsstat.com */}
           {topUpcoming.length > 0 && (
             <div style={{ padding: '0 20px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>⭐</span>
-                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Top Picks</span>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Live Now</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
                   next {RECOMMEND_DAYS} days
