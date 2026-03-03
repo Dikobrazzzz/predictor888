@@ -1,8 +1,45 @@
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
-import { mockUser } from '../mockData'
 
 const CARD_GRADIENT = 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)'
+
+function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot }) {
+  return (
+    <div style={{
+      height: '68px',
+      background: '#131313',
+      borderRadius: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 12px',
+      gap: '12px',
+      boxSizing: 'border-box',
+    }}>
+      {/* Left icon square */}
+      <div style={{
+        width: '44px',
+        height: '44px',
+        background: '#1B1B1D',
+        borderRadius: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <img src={icon} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+      </div>
+
+      {/* Text */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <span style={{ color: '#686868', fontSize: '11px', fontWeight: 400, marginBottom: '3px' }}>{label}</span>
+        <span style={{ color: valueColor, fontSize: '14px', fontWeight: 400 }}>{value}</span>
+      </div>
+
+      {/* Optional right button */}
+      {rightSlot}
+    </div>
+  )
+}
 
 export default function Profile({ navigate }) {
   return (
@@ -10,7 +47,6 @@ export default function Profile({ navigate }) {
       <Header />
 
       <div style={{ padding: '0 20px' }}>
-        {/* Main card — same radius as Profile Statistick (18px) */}
         <div style={{
           width: '100%',
           borderRadius: '18px',
@@ -22,34 +58,21 @@ export default function Profile({ navigate }) {
           boxSizing: 'border-box',
         }}>
 
-          {/* Title row with icon */}
+          {/* Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src="/icons/Icon_Tapbar.svg" alt="" style={{ width: '20px', height: '20px' }} />
             <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Information</span>
           </div>
 
-          {/* Top row: Your Position + Win Rate — same as Rank.jsx */}
+          {/* Your Position + Win rate */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '10px' }}>
-            {/* Your Position */}
             <div style={{
-              flex: 1,
-              height: '56px',
-              borderRadius: '10px',
-              background: '#1E1E24',
-              border: '1.27px solid rgba(255,255,255,0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 10px',
-              gap: '8px',
-              boxSizing: 'border-box',
+              flex: 1, height: '56px', borderRadius: '10px',
+              background: '#1E1E24', border: '1.27px solid rgba(255,255,255,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 10px', gap: '8px', boxSizing: 'border-box',
             }}>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%',
-                background: 'rgba(131,137,44,0.10)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(131,137,44,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '16px', height: '16px' }} />
               </div>
               <div>
@@ -58,26 +81,13 @@ export default function Profile({ navigate }) {
               </div>
             </div>
 
-            {/* Win rate */}
             <div style={{
-              flex: 1,
-              height: '56px',
-              borderRadius: '10px',
-              background: '#1E1E24',
-              border: '1.27px solid rgba(255,255,255,0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 10px',
-              gap: '8px',
-              boxSizing: 'border-box',
+              flex: 1, height: '56px', borderRadius: '10px',
+              background: '#1E1E24', border: '1.27px solid rgba(255,255,255,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 10px', gap: '8px', boxSizing: 'border-box',
             }}>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%',
-                background: '#1C3B2C',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1C3B2C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <img src="/icons/Iocn_Tapbar-3.svg" alt="" style={{ width: '16px', height: '16px' }} />
               </div>
               <div>
@@ -87,68 +97,67 @@ export default function Profile({ navigate }) {
             </div>
           </div>
 
-          {/* Info rows — same border-radius as Win rate boxes (10px) */}
+          {/* Info rows */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
-            {/* Email */}
-            <div style={{
-              height: '68px',
-              background: '#131313',
-              borderRadius: '10px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              padding: '0 16px',
-              boxSizing: 'border-box',
-            }}>
-              <span style={{ color: '#686868', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Email</span>
-              <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}>alex.rank@gmail.com</span>
-            </div>
+            <InfoRow
+              icon="/icons/Vector.svg"
+              label="Email"
+              value="alex.rank@gmail.com"
+            />
 
-            {/* Region */}
-            <div style={{
-              height: '68px',
-              background: '#131313',
-              borderRadius: '10px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              padding: '0 16px',
-              boxSizing: 'border-box',
-            }}>
-              <span style={{ color: '#686868', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Region</span>
-              <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}>Uzbekistan</span>
-            </div>
+            <InfoRow
+              icon="/icons/basil_location-solid.svg"
+              label="Region"
+              value="Uzbekistan"
+            />
 
-            {/* Subscription */}
-            <div style={{
-              height: '68px',
-              background: '#131313',
-              borderRadius: '10px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              padding: '0 16px',
-              boxSizing: 'border-box',
-            }}>
-              <span style={{ color: '#686868', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Subscription</span>
-              <span style={{ color: '#FF4D00', fontSize: '14px', fontWeight: 400 }}>Inactive</span>
-            </div>
+            <InfoRow
+              icon="/icons/Telegram.svg"
+              label="Subscription"
+              value="Inactive"
+              valueColor="#FF4D00"
+              rightSlot={
+                <button style={{
+                  width: '98px',
+                  height: '29px',
+                  background: '#FFFE45',
+                  borderRadius: '8px',
+                  border: 'none',
+                  color: '#0E0D0D',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  Subscribe
+                </button>
+              }
+            />
 
-            {/* Delete Bot */}
-            <div style={{
-              height: '68px',
-              background: '#131313',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              boxSizing: 'border-box',
-              cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-            }}>
-              <span style={{ color: '#686868', fontSize: '14px', fontWeight: 400 }}>Delete Bot</span>
-            </div>
+            <InfoRow
+              icon="/icons/cuida_logout-outline.svg"
+              label="Delete Bot"
+              value=""
+              rightSlot={
+                <button style={{
+                  width: '77px',
+                  height: '29px',
+                  background: '#555555',
+                  borderRadius: '8px',
+                  border: 'none',
+                  color: '#0E0D0D',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  Delete
+                </button>
+              }
+            />
 
           </div>
         </div>
