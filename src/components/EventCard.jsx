@@ -34,7 +34,7 @@ function TeamCircle({ name, icon }) {
   )
 }
 
-export default function EventCard({ event, onPredict, navigate }) {
+export default function EventCard({ event, onPredict, navigate, forceTopBadge = false }) {
   const [selected, setSelected] = useState(null)
 
   const { status, timeLeft, league, home, away, coef } = event
@@ -72,7 +72,7 @@ export default function EventCard({ event, onPredict, navigate }) {
     >
       {/* Status row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {status === 'live' ? (
+        {!forceTopBadge && status === 'live' ? (
           <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>Live bet
           </span>
         ) : (

@@ -40,8 +40,8 @@ export const mockEvents = [
 export const mockRewards = [
   {
     id: 1,
-    title: 'Free Bet x2',
-    description: 'Get 2 free predictions for Champions League',
+    title: 'Promo code',
+    description: 'Get 100 free spins in Gates of Olympus',
     gradientLight: '#622380',
     gradientDark:  '#14071A',
   },

@@ -103,6 +103,75 @@ export default function MakePrediction({ event, navigate }) {
   return (
     <div className="min-h-screen" style={{ background: '#131313', paddingBottom: '110px' }}>
 
+      {/* Congratulations popup */}
+      {confirmed && (
+        <div
+          onClick={() => setConfirmed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '318px',
+              height: '237px',
+              borderRadius: '24px',
+              background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)',
+              border: '0.68px solid rgba(255,255,255,0.10)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              padding: '28px 24px',
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              position: 'relative',
+            }}
+          >
+            <button
+              onClick={() => setConfirmed(false)}
+              style={{
+                position: 'absolute', top: '14px', right: '14px',
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <img src="/icons/Icon-3.svg" alt="Close" style={{ width: '24px', height: '24px' }} />
+            </button>
+            <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '20px' }}>
+              Congratulations!
+            </div>
+            <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '14px', lineHeight: 1.5, marginBottom: '8px' }}>
+              You have successfully registered your forecast.
+            </div>
+            <button
+              onClick={() => navigate?.('home')}
+              style={{
+                width: '238px',
+                height: '48px',
+                background: '#E20000',
+                borderRadius: '14px',
+                border: 'none',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '16px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              My Prediction
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ height: '1px', background: '#72777C33' }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 14px' }}>
@@ -205,35 +274,22 @@ export default function MakePrediction({ event, navigate }) {
         </div>
 
         {/* Make Prediction button */}
-        {confirmed ? (
-          <div style={{
+        <button
+          onClick={handleConfirm}
+          style={{
             width: '100%', height: '56px', borderRadius: '18px',
-            background: 'rgba(16,185,129,0.15)', border: '1px solid #10b981',
+            background: selected ? '#E20000' : '#262626',
+            border: 'none',
+            color: selected ? '#FFFFFF' : '#999999',
+            fontWeight: 700, fontSize: '16px',
+            cursor: selected ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#10b981', fontWeight: 700, fontSize: '16px',
-            
-          }}>
-            ✓ Prediction Confirmed!
-          </div>
-        ) : (
-          <button
-            onClick={handleConfirm}
-            style={{
-              width: '100%', height: '56px', borderRadius: '18px',
-              background: selected ? '#E20000' : '#262626',
-              border: 'none',
-              color: selected ? '#FFFFFF' : '#999999',
-              fontWeight: 700, fontSize: '16px',
-              cursor: selected ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              
-              transition: 'background 0.2s, color 0.2s',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            Make Prediction
-          </button>
-        )}
+            transition: 'background 0.2s, color 0.2s',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          Make Prediction
+        </button>
       </div>
 
       <BottomNav active="events" onNavigate={navigate} />

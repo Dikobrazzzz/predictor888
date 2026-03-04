@@ -53,7 +53,7 @@ export default function BottomNav({ active = 'home', onNavigate }) {
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        zIndex: 300,
+        zIndex: 1100,
         backdropFilter: 'blur(8px)',
       }}
     >

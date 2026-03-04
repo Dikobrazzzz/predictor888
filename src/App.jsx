@@ -4,6 +4,7 @@ import Events from './pages/Events'
 import MakePrediction from './pages/MakePrediction'
 import Rank from './pages/Rank'
 import Profile from './pages/Profile'
+import Promo from './pages/Promo'
 
 const LS_KEY = 'p888_live_cache'
 
@@ -94,5 +95,6 @@ export default function App() {
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
   if (page === 'rank') return <Rank navigate={navigate} />
   if (page === 'profile') return <Profile navigate={navigate} />
+  if (page === 'promo') return <Promo navigate={navigate} />
   return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} />
 }
