@@ -73,11 +73,11 @@ export default function BottomNav({ active = 'home', onNavigate }) {
                   width: '65px',
                   height: '65px',
                   borderRadius: '150px',
-                  background: 'linear-gradient(180deg, #E20000 0%, #501D1D 100%)',
+                  background: 'linear-gradient(360deg, #501D1D -90.18%, #E20000 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: isActive ? '0 0 20px 4px rgba(226,0,0,0.45)' : 'none',
+                  boxShadow: isActive ? '0px 0px 25px 0px #E20000' : '0px 3px 18px 0px #00000075',
                   transition: 'box-shadow 0.2s',
                 }}
               >

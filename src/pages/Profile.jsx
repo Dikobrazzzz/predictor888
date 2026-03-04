@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
+import iconTapbar from '/icons/Icon_Tapbar.svg'
+import iconPosition from '/icons/Iocn_Tapbar-2.svg'
+import iconWinrate from '/icons/Iocn_Tapbar-3.svg'
+import iconEmail from '/icons/Icon.svg'
+import iconLocation from '/icons/basil_location-solid.svg'
+import iconEdit from '/icons/tdesign_edit-filled.svg'
+import iconTelegram from '/icons/Telegram.svg'
+import iconGroup from '/icons/Group-2.svg'
+import iconLogout from '/icons/cuida_logout-outline.svg'
 
 const CARD_GRADIENT = 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)'
 
@@ -66,7 +75,7 @@ export default function Profile({ navigate }) {
 
           {/* Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-            <img src="/icons/Icon_Tapbar.svg" alt="" style={{ width: '20px', height: '20px' }} />
+            <img src={iconTapbar} alt="" style={{ width: '20px', height: '20px' }} />
             <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Information</span>
           </div>
 
@@ -74,12 +83,13 @@ export default function Profile({ navigate }) {
           <div style={{ display: 'flex', gap: '12px', marginBottom: '10px' }}>
             <div style={{
               flex: 1, height: '56px', borderRadius: '10px',
-              background: '#1E1E24', border: '1.27px solid rgba(255,255,255,0.08)',
+              border: '1px solid transparent',
+              background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '0 10px', gap: '8px', boxSizing: 'border-box',
             }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(131,137,44,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
+                <img src={iconPosition} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Your Position</div>
@@ -89,12 +99,13 @@ export default function Profile({ navigate }) {
 
             <div style={{
               flex: 1, height: '56px', borderRadius: '10px',
-              background: '#1E1E24', border: '1.27px solid rgba(255,255,255,0.08)',
+              border: '1px solid transparent',
+              background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '0 10px', gap: '8px', boxSizing: 'border-box',
             }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#1C3B2C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <img src="/icons/Iocn_Tapbar-3.svg" alt="" style={{ width: '20px', height: '20px' }} />
+                <img src={iconWinrate} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Win rate</div>
@@ -107,27 +118,27 @@ export default function Profile({ navigate }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
             <InfoRow
-              icon="/icons/Icon.svg"
+              icon={iconEmail}
               label="Email"
               value="alex.rank@gmail.com"
             />
 
             <InfoRow
-              icon="/icons/basil_location-solid.svg"
+              icon={iconLocation}
               label="Region"
               value="Uzbekistan"
               rightSlot={
-                <img src="/icons/tdesign_edit-filled.svg" alt="" style={{ width: '20px', height: '20px', flexShrink: 0 }} />
+                <img src={iconEdit} alt="" style={{ width: '20px', height: '20px', flexShrink: 0 }} />
               }
             />
 
             <InfoRow
-              icon="/icons/Telegram.svg"
+              icon={iconTelegram}
               label="Subscription"
               value={subscribed ? 'Active' : 'Inactive'}
               valueColor={subscribed ? '#55B685' : '#FF4D00'}
               valuePrefix={subscribed ? (
-                <img src="/icons/Group-2.svg" alt="" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                <img src={iconGroup} alt="" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
               ) : null}
               rightSlot={subscribed ? null : (
                 <button
@@ -151,7 +162,7 @@ export default function Profile({ navigate }) {
             />
 
             <InfoRow
-              icon="/icons/cuida_logout-outline.svg"
+              icon={iconLogout}
               label="Delete Bot"
               value=""
               rightSlot={

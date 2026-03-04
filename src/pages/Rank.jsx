@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
+import DailyRewards from '../components/DailyRewards'
 
 const mockPredictions = [
   {
@@ -49,11 +50,6 @@ const STATUS_CONFIG = {
 
 const TABS = ['All', 'Active', 'Finished']
 
-const OFFERS = [
-  { badge: 'WEEKLY', badgeColor: '#FF4D00', title: 'Champions Bonus', desc: 'Get 2 free predictions for Champions League this week.' },
-  { badge: 'NEW',    badgeColor: '#20AAFF', title: 'Champions Bonus', desc: 'Get 2 free predictions for Champions League this week.' },
-  { badge: 'HOT',    badgeColor: '#FF8C42', title: 'Weekend Special', desc: 'Get 3 free predictions for La Liga this weekend.' },
-]
 
 function PredictionCard({ p }) {
   const cfg = STATUS_CONFIG[p.status]
@@ -78,6 +74,9 @@ function PredictionCard({ p }) {
           background: cfg.bg, borderRadius: '20px', padding: '3px 8px',
           display: 'flex', alignItems: 'center', gap: '4px',
         }}>
+          {p.status === 'waiting' && (
+            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFFE45', flexShrink: 0, display: 'inline-block' }} />
+          )}
           {cfg.label}
         </span>
       </div>
@@ -168,7 +167,7 @@ export default function Rank({ navigate }) {
           }}>
             {/* Title row inside card */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <img src="/icons/Group.svg" alt="" style={{ width: '20px', height: '14px' }} />
+              <img src="/icons/Icon-5.svg" alt="" style={{ width: '20px', height: '20px' }} />
               <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Statistick</span>
             </div>
 
@@ -179,8 +178,8 @@ export default function Rank({ navigate }) {
                 flex: 1,
                 height: '56px',
                 borderRadius: '10px',
-                background: '#1E1E24',
-                border: '1.27px solid rgba(255,255,255,0.08)',
+                border: '1px solid transparent',
+                background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -207,8 +206,8 @@ export default function Rank({ navigate }) {
                 flex: 1,
                 height: '56px',
                 borderRadius: '10px',
-                background: '#1E1E24',
-                border: '1.27px solid rgba(255,255,255,0.08)',
+                border: '1px solid transparent',
+                background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -233,73 +232,9 @@ export default function Rank({ navigate }) {
           </div>
         </div>
 
-        {/* Activate Offers */}
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img src="/icons/Star.svg" alt="" style={{ width: '18px', height: '18px' }} />
-              <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Activate Offers</span>
-            </div>
-            <span style={{
-              background: '#85858530', color: '#FFFE45',
-              fontSize: '11px', fontWeight: 600,
-              padding: '3px 10px', borderRadius: '20px',
-            }}>3 New</span>
-          </div>
-
-          <div
-            style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-20px', paddingLeft: '20px', marginRight: '-20px', paddingRight: '20px' }}
-            className="scrollbar-hide"
-          >
-            {OFFERS.map((offer, i) => (
-              <div key={i} style={{
-                
-                width: '255px', minWidth: '255px', flexShrink: 0,
-                height: '203px',
-                borderRadius: '18px',
-                border: '0.68px solid #BDBDBD0F',
-                background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)',
-                padding: '14px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-              }}>
-
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{
-                      background: '#85858530',
-                      color: offer.badgeColor,
-                      fontSize: '10px', fontWeight: 700,
-                      padding: '3px 10px', borderRadius: '6px',
-                    }}>
-                      {offer.badge}
-                    </span>
-                    <img src="/icons/Vector.svg" alt="" style={{ width: '20px', height: '20px', opacity: 0.7 }} />
-                  </div>
-                  <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '14px', marginBottom: '6px' }}>{offer.title}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.70)', fontWeight: 400, fontSize: '11px', lineHeight: '1.5', marginBottom: '8px' }}>{offer.desc}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <img src="/icons/Mask group.svg" alt="" style={{ width: '14px', height: '14px' }} />
-                    <span style={{ color: 'rgba(255,255,255,0.70)', fontSize: '11px', fontWeight: 400 }}>Min 3 predictions</span>
-                  </div>
-                </div>
-
-                <button style={{
-                  width: '100%', height: '33px', boxSizing: 'border-box', borderRadius: '10px',
-                  background: '#E20000', border: 'none',
-                  color: '#FFFFFF', fontWeight: 600, fontSize: '13px',
-                  cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  Claim Offer
-                </button>
-              </div>
-            ))}
-          </div>
+        {/* Promo — same as Home */}
+        <div style={{ margin: '0 -20px 28px' }}>
+          <DailyRewards />
         </div>
 
         {/* My Prediction */}
@@ -331,8 +266,8 @@ export default function Rank({ navigate }) {
                     flex: 1,
                     height: '100%',
                     borderRadius: '7px',
-                    background: isActive ? '#262626' : 'transparent',
-                    border: isActive ? '0.68px solid rgba(255,255,255,0.10)' : 'none',
+                    background: isActive ? 'linear-gradient(#262626, #262626) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box' : 'transparent',
+                    border: isActive ? '0.7px solid transparent' : '0.7px solid transparent',
                     color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.32)',
                     fontWeight: isActive ? 600 : 500,
                     fontSize: '13px',

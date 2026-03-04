@@ -59,10 +59,10 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
     <div
       style={{
         width: '100%',
-        background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)',
         backdropFilter: 'blur(61px)',
         borderRadius: '27.35px',
-        border: '0.68px solid rgba(255,255,255,0.08)',
+        border: '0.7px solid transparent',
+        background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)) padding-box, linear-gradient(to top right, #323232B2, #6F6F6FA1) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
         padding: '16px',
         display: 'flex',
         flexDirection: 'column',

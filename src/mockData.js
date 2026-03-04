@@ -62,8 +62,11 @@ export const mockRewards = [
 ]
 
 export const mockLeaderboard = [
-  { rank: 1,  name: 'John Doe', pts: 2450, avatar: '🟢', isMe: false },
-  { rank: 2,  name: 'Mike',     pts: 2100, avatar: '🟣', isMe: false },
-  { rank: 3,  name: 'SaraK',   pts: 1980, avatar: '🔵', isMe: false },
-  { rank: 37, name: 'You',      pts: 1240, avatar: null, isMe: true  },
+  { rank: 1, name: 'John Doe', pts: 2450, isMe: false },
+  { rank: 2, name: 'Mike',     pts: 2100, isMe: false },
+  { rank: 3, name: 'SaraK',   pts: 1980, isMe: false },
+  { rank: 4, name: 'You',      pts: 1240, isMe: true  },
+  { rank: 5, name: 'Alex',     pts: 1100, isMe: false },
+  { rank: 6, name: 'Jordan',   pts:  980, isMe: false },
+  { rank: 7, name: 'Chris',    pts:  870, isMe: false },
 ]
