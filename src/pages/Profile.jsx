@@ -3,7 +3,7 @@ import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import iconTapbar from '/icons/Icon_Tapbar.svg'
 import iconPosition from '/icons/Iocn_Tapbar-2.svg'
-import iconWinrate from '/icons/Iocn_Tapbar-3.svg'
+import iconWinrate from '/icons/Icon_Tapbar-3.svg'
 import iconEmail from '/icons/Icon.svg'
 import iconLocation from '/icons/basil_location-solid.svg'
 import iconEdit from '/icons/tdesign_edit-filled.svg'
@@ -82,11 +82,11 @@ export default function Profile({ navigate }) {
           {/* Your Position + Win rate */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '10px' }}>
             <div style={{
-              flex: 1, height: '56px', borderRadius: '10px',
+              width: '147px', height: '64px', borderRadius: '10px',
               border: '1px solid transparent',
-              background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '0 10px', gap: '8px', boxSizing: 'border-box',
+              background: 'linear-gradient(#1B1B1D, #1B1B1D) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+              display: 'flex', alignItems: 'center',
+              padding: '0 10px', gap: '8px', boxSizing: 'border-box', flexShrink: 0,
             }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(131,137,44,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <img src={iconPosition} alt="" style={{ width: '20px', height: '20px' }} />
@@ -98,11 +98,11 @@ export default function Profile({ navigate }) {
             </div>
 
             <div style={{
-              flex: 1, height: '56px', borderRadius: '10px',
+              width: '147px', height: '64px', borderRadius: '10px',
               border: '1px solid transparent',
-              background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '0 10px', gap: '8px', boxSizing: 'border-box',
+              background: 'linear-gradient(#1B1B1D, #1B1B1D) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+              display: 'flex', alignItems: 'center',
+              padding: '0 10px', gap: '8px', boxSizing: 'border-box', flexShrink: 0,
             }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#1C3B2C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <img src={iconWinrate} alt="" style={{ width: '20px', height: '20px' }} />

@@ -17,13 +17,13 @@ export default function TopPlayers() {
       <div style={{ width: '100%', height: '48px', background: '#1A1A1A', borderRadius: '12px', display: 'flex', alignItems: 'center', marginBottom: '16px', overflow: 'hidden', boxSizing: 'border-box' }}>
         <button
           onClick={() => setTab('tournament')}
-          style={{ width: '50%', height: '48px', flexShrink: 0, background: tab === 'tournament' ? '#262626' : 'transparent', border: tab === 'tournament' ? '0.74px solid rgba(255,255,255,0.10)' : '0.74px solid transparent', borderRadius: '12px', color: tab === 'tournament' ? '#FFFE45' : 'rgba(255,255,255,0.32)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s, color 0.2s', WebkitTapHighlightColor: 'transparent' }}
+          style={{ width: '50%', height: '48px', flexShrink: 0, background: tab === 'tournament' ? 'linear-gradient(#262626, #262626) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box' : 'transparent', border: '0.7px solid transparent', borderRadius: '12px', color: tab === 'tournament' ? '#FFFE45' : 'rgba(255,255,255,0.32)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s', WebkitTapHighlightColor: 'transparent' }}
         >
           Tournament
         </button>
         <button
           onClick={() => setTab('my')}
-          style={{ width: '50%', height: '48px', background: tab === 'my' ? '#262626' : 'transparent', border: tab === 'my' ? '0.74px solid rgba(255,255,255,0.10)' : '0.74px solid transparent', borderRadius: '12px', color: tab === 'my' ? '#FFFE45' : 'rgba(255,255,255,0.32)', fontSize: '14px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s, color 0.2s', WebkitTapHighlightColor: 'transparent' }}
+          style={{ width: '50%', height: '48px', background: tab === 'my' ? 'linear-gradient(#262626, #262626) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box' : 'transparent', border: '0.7px solid transparent', borderRadius: '12px', color: tab === 'my' ? '#FFFE45' : 'rgba(255,255,255,0.32)', fontSize: '14px', fontWeight: 500, cursor: 'pointer', transition: 'color 0.2s', WebkitTapHighlightColor: 'transparent' }}
         >
           My Prediction
         </button>

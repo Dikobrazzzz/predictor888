@@ -162,7 +162,7 @@ export default function Rank({ navigate }) {
             background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), linear-gradient(to top right, #323232B2, #6F6F6FA1)',
             backdropFilter: 'blur(61.41px)',
             WebkitBackdropFilter: 'blur(61.41px)',
-            padding: '14px 16px',
+            padding: '20px 16px',
             boxSizing: 'border-box',
           }}>
             {/* Title row inside card */}
@@ -175,25 +175,19 @@ export default function Rank({ navigate }) {
             <div style={{ display: 'flex', gap: '12px' }}>
               {/* Your Position */}
               <div style={{
-                flex: 1,
-                height: '56px',
+                width: '147px', height: '64px', flexShrink: 0,
                 borderRadius: '10px',
                 border: '1px solid transparent',
-                background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0 10px',
-                gap: '8px',
-                boxSizing: 'border-box',
+                background: 'linear-gradient(#1B1B1D, #1B1B1D) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+                display: 'flex', alignItems: 'center',
+                padding: '0 10px', gap: '8px', boxSizing: 'border-box',
               }}>
                 <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
+                  width: '40px', height: '40px', borderRadius: '50%',
                   background: 'rgba(131,137,44,0.10)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '16px', height: '16px' }} />
+                  <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
                   <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Your Position</div>
@@ -203,25 +197,19 @@ export default function Rank({ navigate }) {
 
               {/* Win rate */}
               <div style={{
-                flex: 1,
-                height: '56px',
+                width: '147px', height: '64px', flexShrink: 0,
                 borderRadius: '10px',
                 border: '1px solid transparent',
-                background: 'linear-gradient(#1E1E24, #1E1E24) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0 10px',
-                gap: '8px',
-                boxSizing: 'border-box',
+                background: 'linear-gradient(#1B1B1D, #1B1B1D) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+                display: 'flex', alignItems: 'center',
+                padding: '0 10px', gap: '8px', boxSizing: 'border-box',
               }}>
                 <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
+                  width: '40px', height: '40px', borderRadius: '50%',
                   background: '#1C3B2C',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <img src="/icons/Iocn_Tapbar-3.svg" alt="" style={{ width: '16px', height: '16px' }} />
+                  <img src="/icons/Icon_Tapbar-3.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
                   <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Win rate</div>

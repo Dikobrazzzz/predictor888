@@ -5,6 +5,7 @@ import MakePrediction from './pages/MakePrediction'
 import Rank from './pages/Rank'
 import Profile from './pages/Profile'
 import Promo from './pages/Promo'
+import Welcome from './pages/Welcome'
 
 const LS_KEY = 'p888_live_cache'
 
@@ -42,9 +43,17 @@ function saveToStorage(events, counts, topEvents, recommended) {
   } catch {}
 }
 
+const AUTH_KEY = 'p888_authenticated'
+
 export default function App() {
+  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem(AUTH_KEY) === '1')
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
+
+  const handleStart = () => {
+    localStorage.setItem(AUTH_KEY, '1')
+    setAuthenticated(true)
+  }
 
   const cached = loadFromStorage()
   const [allEvents, setAllEvents] = useState(cached?.events ?? [])
@@ -90,6 +99,8 @@ export default function App() {
     if (event) setCurrentEvent(event)
     setPage(to)
   }
+
+  // if (!authenticated) return <Welcome onStart={handleStart} />
 
   if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} recommended={recommended} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
