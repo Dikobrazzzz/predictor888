@@ -1,19 +1,51 @@
 import BottomNav from '../components/BottomNav'
+import vectorSvg from '/icons/Vector-3.svg'
+import redLightSvg from '/icons/red light.svg'
+import imgInner from '../assets/img-inner.webp'
 
 export default function Welcome({ onStart }) {
   return (
     <div style={{
       minHeight: '100vh',
       background: '#131313',
-      backgroundImage: 'url(/icons/BG.svg)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       paddingBottom: '110px',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      {/* Vector with overlay blend — white stroke becomes invisible on dark bg */}
+      <img
+        src={vectorSvg}
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          mixBlendMode: 'overlay',
+        }}
+      />
+      {/* Red light on top of Vector */}
+      <img
+        src={redLightSvg}
+        alt=""
+        decoding="async"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      />
       {/* Logo instead of Header */}
       <div style={{
         width: '100%',
@@ -21,8 +53,9 @@ export default function Welcome({ onStart }) {
         display: 'flex',
         justifyContent: 'center',
         boxSizing: 'border-box',
+        position: 'relative', zIndex: 1,
       }}>
-        <img src="/icons/Logo-2.svg" alt="Logo" style={{ height: '32px' }} />
+        <img src="/icons/Logo-2.svg" alt="Logo" style={{ width: '101px' }} />
       </div>
 
       <div style={{
@@ -33,36 +66,46 @@ export default function Welcome({ onStart }) {
         justifyContent: 'center',
         padding: '0 30px',
         gap: '20px',
+        position: 'relative', zIndex: 1,
         maxWidth: '375px',
       }}>
-        <h1 style={{
-          color: '#FFFFFF',
-          fontFamily: 'Roboto Flex, sans-serif',
-          fontWeight: 700,
-          fontSize: '28px',
-          textAlign: 'center',
-          textTransform: 'capitalize',
-          margin: 0,
-        }}>
-          Welcome!
-        </h1>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <h1 style={{
+            color: '#FFFFFF',
+            fontFamily: 'Roboto Flex, sans-serif',
+            fontWeight: 700,
+            fontSize: '42px',
+            textAlign: 'center',
+            textTransform: 'capitalize',
+            margin: 0,
+          }}>
+            Welcome!
+          </h1>
 
-        <p style={{
-          color: '#FFFFFF',
-          fontFamily: 'Roboto Flex, sans-serif',
-          fontWeight: 400,
-          fontSize: '16px',
-          textAlign: 'center',
-          margin: 0,
-          lineHeight: 1.4,
-        }}>
-          Bet on events and get bonuses
-        </p>
+          <p style={{
+            color: '#FFFFFF',
+            fontFamily: 'Roboto Flex, sans-serif',
+            fontWeight: 400,
+            fontSize: '16px',
+            textAlign: 'center',
+            margin: 0,
+            lineHeight: 1.4,
+          }}>
+            Bet on events and get bonuses
+          </p>
+        </div>
 
         <img
-          src="/icons/img.svg"
+          src={imgInner}
           alt=""
-          style={{ width: '100%', maxWidth: '300px' }}
+          fetchpriority="high"
+          decoding="async"
+          style={{
+            width: 'calc(200% + 60px)',
+            marginLeft: '-30px',
+            transform: 'rotate(12.71deg)',
+            filter: 'drop-shadow(0px 8px 24px rgba(0,0,0,0.5))',
+          }}
         />
 
         <p style={{
@@ -82,7 +125,7 @@ export default function Welcome({ onStart }) {
           style={{
             width: '334px',
             height: '56px',
-            borderRadius: '400px',
+            borderRadius: '18px',
             background: '#FFFE45',
             color: '#0E0D0D',
             fontFamily: 'Roboto Flex, sans-serif',

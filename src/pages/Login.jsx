@@ -1,0 +1,247 @@
+import { useState } from 'react'
+import BottomNav from '../components/BottomNav'
+import vectorSvg from '/icons/Vector-3.svg'
+import redLightSvg from '/icons/red light.svg'
+import closeIcon from '/icons/Icon-3.svg'
+
+function isValidEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+}
+
+const KNOWN_EMAILS = ['user@888starz.com', 'test@test.com']
+
+export default function Login({ onLogin }) {
+  const [mail, setMail] = useState('')
+  const [touched, setTouched] = useState(false)
+  const [notFound, setNotFound] = useState(false)
+
+  const invalid = touched && !isValidEmail(mail)
+
+  const handleLogin = () => {
+    setTouched(true)
+    if (!isValidEmail(mail)) return
+    if (!KNOWN_EMAILS.includes(mail.trim().toLowerCase())) {
+      setNotFound(true)
+      return
+    }
+    onLogin()
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#131313',
+      position: 'relative',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      paddingBottom: '110px',
+    }}>
+      <img
+        src={vectorSvg}
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          mixBlendMode: 'overlay',
+        }}
+      />
+      <img
+        src={redLightSvg}
+        alt=""
+        decoding="async"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      />
+      {/* Logo */}
+      <div style={{
+        width: '100%',
+        padding: '16px 20px',
+        display: 'flex',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+        position: 'relative', zIndex: 1,
+      }}>
+        <img src="/icons/Logo-2.svg" alt="Logo" style={{ width: '101px' }} />
+      </div>
+
+      {/* Centered card */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '16px',
+        position: 'relative', zIndex: 1,
+      }}>
+        <div style={{
+          width: '322px',
+          borderRadius: '27.35px',
+          border: '0.7px solid transparent',
+          background: 'linear-gradient(60.59deg, rgba(27,27,29,0.7) 3.68%, rgba(79,79,79,0.3) 109.56%) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+          backdropFilter: 'blur(60px)',
+          WebkitBackdropFilter: 'blur(60px)',
+          boxShadow: '0px 20px 60px 0px #0000001A',
+          padding: '28px 24px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '12px',
+          position: 'relative',
+        }}>
+
+          {notFound ? (
+            /* ── Email not found state ── */
+            <>
+              <button
+                onClick={() => { setNotFound(false); setMail(''); setTouched(false) }}
+                style={{
+                  position: 'absolute', top: '16px', right: '16px',
+                  background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <img src={closeIcon} alt="close" style={{ width: '24px', height: '24px' }} />
+              </button>
+
+              <span style={{
+                color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
+                fontWeight: 700, fontSize: '18px', textAlign: 'center',
+                marginTop: '8px',
+              }}>
+                We couldn't find this email
+              </span>
+
+              <span style={{
+                color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
+                fontWeight: 400, fontSize: '13px', textAlign: 'center',
+                lineHeight: 1.5,
+              }}>
+                If you registered recently, please try again later.
+              </span>
+
+              <span style={{
+                color: '#6E6E6E', fontFamily: 'Roboto Flex, sans-serif',
+                fontWeight: 400, fontSize: '13px', textAlign: 'center',
+              }}>
+                Need personalized support?
+              </span>
+
+              <span style={{
+                color: '#FFFE45', fontFamily: 'Roboto Flex, sans-serif',
+                fontWeight: 400, fontSize: '13px', textAlign: 'center',
+              }}>
+                support@888STARZ
+              </span>
+            </>
+          ) : (
+            /* ── Default login state ── */
+            <>
+              <span style={{
+                color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
+                fontWeight: 700, fontSize: '20px', alignSelf: 'flex-start',
+              }}>
+                Login
+              </span>
+
+              <div style={{ width: '274px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <input
+                  type="email"
+                  placeholder="Mail"
+                  value={mail}
+                  onChange={e => { setMail(e.target.value); setTouched(false) }}
+                  onBlur={() => setTouched(true)}
+                  style={{
+                    width: '274px',
+                    height: '62px',
+                    minWidth: '100px',
+                    borderRadius: '18px',
+                    border: invalid
+                      ? '1px solid #FF0000'
+                      : '1px solid transparent',
+                    background: invalid
+                      ? 'linear-gradient(#131313, #131313) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box'
+                      : 'linear-gradient(#131313, #131313) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+                    color: '#FFFFFF',
+                    fontFamily: 'Roboto Flex, sans-serif',
+                    fontSize: '15px',
+                    fontWeight: 400,
+                    padding: '0 20px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                  }}
+                />
+                {invalid && (
+                  <span style={{
+                    color: '#ED0000', fontFamily: 'Roboto Flex, sans-serif',
+                    fontWeight: 400, fontSize: '12px', paddingLeft: '4px',
+                  }}>
+                    Incorrect email! Please contact support.
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={handleLogin}
+                style={{
+                  width: '274px',
+                  height: '56px',
+                  borderRadius: '18px',
+                  border: '1px solid transparent',
+                  background: 'linear-gradient(#FFFE45, #FFFE45) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+                  color: '#0E0D0D',
+                  fontFamily: 'Roboto Flex, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '17px',
+                  cursor: 'pointer',
+                  boxShadow: '0px 20px 60px 0px #0000001A',
+                  backdropFilter: 'blur(60px)',
+                  WebkitBackdropFilter: 'blur(60px)',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                Login
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Below card */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
+            fontWeight: 400, fontSize: '14px',
+          }}>
+            Do you have a problem?
+          </span>
+          <button style={{
+            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: '#FFFE45', fontFamily: 'Roboto Flex, sans-serif',
+            fontWeight: 400, fontSize: '14px',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            Support
+          </button>
+        </div>
+      </div>
+
+      <BottomNav active="" onNavigate={() => {}} />
+    </div>
+  )
+}

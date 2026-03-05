@@ -6,6 +6,8 @@ import Rank from './pages/Rank'
 import Profile from './pages/Profile'
 import Promo from './pages/Promo'
 import Welcome from './pages/Welcome'
+import Telegram from './pages/Telegram'
+import Login from './pages/Login'
 
 const LS_KEY = 'p888_live_cache'
 
@@ -44,15 +46,36 @@ function saveToStorage(events, counts, topEvents, recommended) {
 }
 
 const AUTH_KEY = 'p888_authenticated'
+const ONBOARD_KEY = 'p888_onboarded'
+const LOGIN_KEY = 'p888_logged_in'
 
 export default function App() {
-  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem(AUTH_KEY) === '1')
+  const [authenticated, setAuthenticated] = useState(false)
+  const [onboarded, setOnboarded] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
 
   const handleStart = () => {
     localStorage.setItem(AUTH_KEY, '1')
     setAuthenticated(true)
+  }
+
+  const handleTelegramSubscribe = () => {
+    localStorage.setItem(ONBOARD_KEY, '1')
+    setOnboarded(true)
+  }
+
+  const handleTelegramSkip = () => {
+    localStorage.setItem(ONBOARD_KEY, '1')
+    localStorage.setItem(LOGIN_KEY, '1')
+    setOnboarded(true)
+    setLoggedIn(true)
+  }
+
+  const handleLogin = () => {
+    localStorage.setItem(LOGIN_KEY, '1')
+    setLoggedIn(true)
   }
 
   const cached = loadFromStorage()
@@ -100,7 +123,9 @@ export default function App() {
     setPage(to)
   }
 
-  // if (!authenticated) return <Welcome onStart={handleStart} />
+  if (!authenticated) return <Welcome onStart={handleStart} />
+  if (!onboarded) return <Telegram onSubscribe={handleTelegramSubscribe} onSkip={handleTelegramSkip} />
+  if (!loggedIn) return <Login onLogin={handleLogin} />
 
   if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} recommended={recommended} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
