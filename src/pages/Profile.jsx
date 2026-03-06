@@ -25,7 +25,7 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
       gap: '12px',
       boxSizing: 'border-box',
     }}>
-      {/* Left icon square */}
+      
       <div style={{
         width: '44px',
         height: '44px',
@@ -39,7 +39,7 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
         <img src={icon} alt="" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
       </div>
 
-      {/* Text */}
+      
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <span style={{ color: '#686868', fontSize: '11px', fontWeight: 400, marginBottom: '3px' }}>{label}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -48,7 +48,7 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
         </div>
       </div>
 
-      {/* Optional right button */}
+      
       {rightSlot}
     </div>
   )
@@ -73,13 +73,13 @@ export default function Profile({ navigate }) {
           boxSizing: 'border-box',
         }}>
 
-          {/* Title */}
+          
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src={iconTapbar} alt="" style={{ width: '20px', height: '20px' }} />
             <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Information</span>
           </div>
 
-          {/* Your Position + Win rate */}
+          
           <div style={{ display: 'flex', gap: '12px', marginBottom: '10px' }}>
             <div style={{
               width: '147px', height: '64px', borderRadius: '10px',
@@ -114,7 +114,7 @@ export default function Profile({ navigate }) {
             </div>
           </div>
 
-          {/* Info rows */}
+          
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
             <InfoRow

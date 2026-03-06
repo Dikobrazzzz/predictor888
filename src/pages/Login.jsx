@@ -67,7 +67,7 @@ export default function Login({ onLogin }) {
           userSelect: 'none',
         }}
       />
-      {/* Logo */}
+      
       <div style={{
         width: '100%',
         padding: '16px 20px',
@@ -79,7 +79,7 @@ export default function Login({ onLogin }) {
         <img src="/icons/Logo-2.svg" alt="Logo" style={{ width: '101px' }} />
       </div>
 
-      {/* Centered card */}
+      
       <div style={{
         flex: 1,
         display: 'flex',
@@ -222,7 +222,7 @@ export default function Login({ onLogin }) {
           )}
         </div>
 
-        {/* Below card */}
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{
             color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',

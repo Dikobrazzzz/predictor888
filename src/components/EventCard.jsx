@@ -70,7 +70,7 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         boxSizing: 'border-box',
       }}
     >
-      {/* Status row */}
+      
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {!forceTopBadge && status === 'live' ? (
           <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>Live bet
@@ -87,16 +87,16 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         </div>
       </div>
 
-      {/* League */}
+      
       <p style={{ color: '#FFFFFF', fontSize: '12px', textAlign: 'center', margin: 0 }}>{league}</p>
 
-      {/* Teams — fixed positions, icons close to center */}
+      
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: '48px' }}>
         <TeamCircle name={home.name} icon={home.icon} />
         <TeamCircle name={away.name} icon={away.icon} />
       </div>
 
-      {/* Coefficient buttons — only shown when odds are available */}
+      
       {outcomes.length > 0 && (
         <div style={{
           display: 'flex',
@@ -132,7 +132,7 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         </div>
       )}
 
-      {/* Make Prediction */}
+      
       <button
         onClick={handleMakePredict}
         style={{

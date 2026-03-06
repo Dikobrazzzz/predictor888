@@ -15,7 +15,7 @@ export default function Welcome({ onStart }) {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Vector with overlay blend — white stroke becomes invisible on dark bg */}
+      
       <img
         src={vectorSvg}
         alt=""
@@ -31,7 +31,7 @@ export default function Welcome({ onStart }) {
           mixBlendMode: 'overlay',
         }}
       />
-      {/* Red light on top of Vector */}
+      
       <img
         src={redLightSvg}
         alt=""
@@ -46,7 +46,7 @@ export default function Welcome({ onStart }) {
           userSelect: 'none',
         }}
       />
-      {/* Logo instead of Header */}
+      
       <div style={{
         width: '100%',
         padding: '16px 20px',

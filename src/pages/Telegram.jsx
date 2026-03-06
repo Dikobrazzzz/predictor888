@@ -37,23 +37,23 @@ export default function Telegram({ onSubscribe, onSkip }) {
       alignItems: 'center',
       paddingBottom: '110px',
     }}>
-      {/* Vector with overlay blend */}
+      
       <img src={vectorSvg} alt="" fetchpriority="high" decoding="async" style={{
         position: 'absolute', top: 0, left: 0, width: '100%',
         objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
         mixBlendMode: 'overlay',
       }} />
-      {/* BG-3 red light layer */}
+      
       <img src={bg3Svg} alt="" decoding="async" style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%',
         objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
       }} />
-      {/* Red light-2 layer */}
+      
       <img src={redLight2Svg} alt="" decoding="async" style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%',
         objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
       }} />
-      {/* Logo */}
+      
       <div style={{
         width: '100%',
         padding: '16px 20px',

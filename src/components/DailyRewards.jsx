@@ -5,16 +5,16 @@ import imgAviator from '/icons/087e19e8.webp'
 export default function DailyRewards() {
   return (
     <div style={{ marginTop: '24px' }}>
-      {/* Section title */}
+      
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 20px', marginBottom: '12px' }}>
         <img src="/icons/Icon-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
         <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', margin: 0 }}>Promo</h2>
       </div>
 
-      {/* Horizontal scroll */}
+      
       <div style={{ display: 'flex', gap: '12px', paddingLeft: '20px', paddingRight: '20px', overflowX: 'auto', paddingBottom: '4px' }} className="scrollbar-hide">
 
-        {/* Card 1 — Gates of Olympus */}
+        
         <div style={{
           flexShrink: 0,
           width: '255px',
@@ -59,7 +59,7 @@ export default function DailyRewards() {
           }} />
         </div>
 
-        {/* Card 2 — Aviator */}
+        
         <div style={{
           flexShrink: 0,
           width: '255px',

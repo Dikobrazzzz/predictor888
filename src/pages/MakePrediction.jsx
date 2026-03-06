@@ -103,7 +103,7 @@ export default function MakePrediction({ event, navigate }) {
   return (
     <div className="min-h-screen" style={{ background: '#131313', paddingBottom: '110px' }}>
 
-      {/* Congratulations popup */}
+      
       {confirmed && (
         <div
           onClick={() => setConfirmed(false)}
@@ -172,7 +172,7 @@ export default function MakePrediction({ event, navigate }) {
         </div>
       )}
 
-      {/* Header */}
+      
       <div style={{ height: '1px', background: '#72777C33' }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 14px' }}>
         <button
@@ -188,9 +188,9 @@ export default function MakePrediction({ event, navigate }) {
       </div>
       <div style={{ height: '1px', background: '#72777C33', marginBottom: '20px' }} />
 
-      {/* Event preview card */}
+      
       <div style={{ margin: '0 20px 28px', background: '#1A1A1A', borderRadius: '27px', border: '0.68px solid rgba(255,255,255,0.08)', padding: '16px' }}>
-        {/* Top row */}
+        
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{
             background: '#0285FF4D', border: 'none',
@@ -208,10 +208,10 @@ export default function MakePrediction({ event, navigate }) {
           </div>
         </div>
 
-        {/* League */}
+        
         <p style={{ color: '#FFFFFF', fontSize: '11px', textAlign: 'center', margin: '0 0 14px' }}>{league}</p>
 
-        {/* Teams VS */}
+        
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
             <TeamIcon icon={home.icon} emoji={home.emoji} />
@@ -226,7 +226,7 @@ export default function MakePrediction({ event, navigate }) {
         </div>
       </div>
 
-      {/* Choose Your Prediction */}
+      
       <div style={{ padding: '0 20px' }}>
         <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '18px', margin: '0 0 16px', textAlign: 'center' }}>
           Choose Your Prediction
@@ -273,7 +273,7 @@ export default function MakePrediction({ event, navigate }) {
           })}
         </div>
 
-        {/* Make Prediction button */}
+        
         <button
           onClick={handleConfirm}
           style={{

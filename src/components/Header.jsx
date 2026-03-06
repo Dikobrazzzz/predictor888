@@ -5,12 +5,12 @@ export default function Header() {
 
   return (
     <div>
-      {/* Top line above header */}
+      
       <div style={{ height: '1px', background: '#72777C33', width: '100%' }} />
 
-      {/* Header row */}
+      
       <div className="flex items-center justify-between px-5 pt-4 pb-3">
-        {/* Left: avatar + greeting */}
+        
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-lg font-bold overflow-hidden">
@@ -23,7 +23,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Right: XP badge + flag */}
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <div
             style={{
@@ -49,7 +49,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Bottom divider — full width, extra space below */}
+      
       <div style={{ height: '1px', background: '#72777C33', width: '100%', marginBottom: '16px' }} />
     </div>
   )

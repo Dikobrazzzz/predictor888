@@ -10,13 +10,13 @@ export default function Promo({ navigate }) {
       <Header />
 
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Section title */}
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
           <img src="/icons/Icon-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
           <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Promo</span>
         </div>
 
-        {/* Promo card 1 — Gates of Olympus */}
+        
         <div style={{
           width: '100%',
           height: '142px',
@@ -31,7 +31,7 @@ export default function Promo({ navigate }) {
           overflow: 'hidden',
           position: 'relative',
         }}>
-          {/* Text + button */}
+          
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
               <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>
@@ -52,7 +52,7 @@ export default function Promo({ navigate }) {
             </button>
           </div>
 
-          {/* Star image — rotated 90° clockwise, mirrored horizontally */}
+          
           <img
             src={imgStar}
             alt=""
@@ -71,7 +71,7 @@ export default function Promo({ navigate }) {
             }}
           />
 
-          {/* Gates of Olympus image */}
+          
           <img
             src={imgGates}
             alt="Gates of Olympus"
@@ -89,7 +89,7 @@ export default function Promo({ navigate }) {
           />
         </div>
 
-        {/* Promo card 2 — Aviator */}
+        
         <div style={{
           width: '100%',
           height: '142px',
@@ -104,7 +104,7 @@ export default function Promo({ navigate }) {
           overflow: 'hidden',
           position: 'relative',
         }}>
-          {/* Text + button */}
+          
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
               <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>
@@ -125,7 +125,7 @@ export default function Promo({ navigate }) {
             </button>
           </div>
 
-          {/* Aviator image — mirrored horizontally */}
+          
           <img
             src={imgAviator}
             alt="Aviator"

@@ -6,11 +6,9 @@ const PAGE_SIZE = 5
 const RECOMMEND_TOP_N = 5
 const RECOMMEND_DAYS = 4
 
-// Cyber/virtual leagues — always excluded regardless of sport
 const CYBER_EXCLUDE = ['cyber', 'virtual', '2k', 'blast hockey', 'dream league',
                        'frostball', 'table basketball', 'ipbl', 'subhockey', '3hl', 'rhl', 'mnhl']
 
-// Football top leagues — exact match only (prevents "Ethiopia. Premier League" etc.)
 const TOP_FOOTBALL_EXACT = new Set([
   'england. premier league', 'germany. bundesliga', 'spain. la liga',
   'italy. serie a', 'france. ligue 1', 'netherlands. eredivisie',
@@ -18,13 +16,11 @@ const TOP_FOOTBALL_EXACT = new Set([
   'germany. 2. bundesliga', 'spain. la liga 2', 'italy. serie b', 'france. ligue 2',
   'russia. premier league', 'turkey. super lig', 'scotland. premiership',
 ])
-// UEFA competitions matched by substring (appear in different formats)
 const TOP_FOOTBALL_CONTAINS = ['champions league', 'europa league', 'conference league']
 
 function isTopLiveEvent(event) {
   const league = (event.league || '').toLowerCase()
 
-  // Step 1: exclude all cyber/virtual/simulated
   if (CYBER_EXCLUDE.some((kw) => league.includes(kw))) return false
 
   switch (event.sport) {
@@ -33,17 +29,13 @@ function isTopLiveEvent(event) {
              TOP_FOOTBALL_CONTAINS.some((kw) => league.includes(kw))
 
     case 'Ice Hockey':
-      // khl / kontinental / nhl (real) / vhl / liiga / shl
-      // "NHL 26. Blast..." already excluded by CYBER_EXCLUDE above
       return ['khl', 'kontinental', 'nhl', 'vhl', 'liiga', 'shl'].some((kw) => league.includes(kw))
 
     case 'Basketball':
-      // Exclude ITF-style lower-tier
       if (league.includes('itf')) return false
       return ['nba', 'euroleague', 'fiba world', 'acb', 'bbl', 'lnb'].some((kw) => league.includes(kw))
 
     case 'Tennis':
-      // Only main ATP/WTA tours — exclude Challenger, ITF, UTR
       if (['challenger', 'itf.', 'utr '].some((kw) => league.includes(kw))) return false
       return ['atp.', 'wta.', 'grand slam', 'masters'].some((kw) => league.includes(kw))
 
@@ -87,7 +79,6 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
 
   const loading = !dataReady
 
-  // Reset visible count when switching sport
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
   }, [activeSport])
@@ -99,7 +90,6 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
   const visible = filtered.slice(0, visibleCount)
   const hasMore = visibleCount < filtered.length
 
-  // IntersectionObserver — load next 5 when sentinel enters view
   const setupObserver = useCallback(() => {
     if (observerRef.current) observerRef.current.disconnect()
     if (!sentinelRef.current || !hasMore) return
@@ -120,14 +110,12 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
     return () => observerRef.current?.disconnect()
   }, [setupObserver])
 
-  // tab badge counts computed from allEvents
   const tabCounts = {}
   SPORT_TABS.forEach((tab) => {
     if (tab === 'All Sports') { tabCounts[tab] = allEvents.length; return }
     tabCounts[tab] = allEvents.filter((e) => e.sport === SPORT_MAP[tab]).length
   })
 
-  // Compute top upcoming recommendations for the active sport filter
   const REC_SPORT_MAP = {
     'Football':   'football',
     'Basketball': 'basketball',
@@ -139,7 +127,6 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
       return Object.values(recommended)
         .flat()
         .sort((a, b) => {
-          // sort by day label: Today < Tomorrow < rest
           const rank = (t) => t?.startsWith('Today') ? 0 : t?.startsWith('Tomorrow') ? 1 : 2
           return rank(a.timeLeft) - rank(b.timeLeft)
         })
@@ -155,7 +142,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
   return (
     <div className="min-h-screen" style={{ background: '#131313', paddingBottom: '110px' }}>
 
-      {/* Header */}
+      
       <div style={{ height: '1px', background: '#72777C33' }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 14px' }}>
         <button
@@ -169,7 +156,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
       </div>
       <div style={{ height: '1px', background: '#72777C33', marginBottom: '16px' }} />
 
-      {/* Sport filter tabs */}
+      
       <div
         style={{ display: 'flex', gap: '8px', paddingLeft: '20px', paddingRight: '20px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '20px' }}
         className="scrollbar-hide"
@@ -228,7 +215,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             </div>
           )}
 
-          {/* Top upcoming events from eventsstat.com */}
+          
           {topUpcoming.length > 0 && (
             <div style={{ padding: '0 20px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -276,7 +263,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             </div>
           )}
 
-          {/* Sentinel for IntersectionObserver */}
+          
           {hasMore && (
             <div ref={sentinelRef} style={{ padding: '16px 20px', textAlign: 'center' }}>
               <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px' }}>

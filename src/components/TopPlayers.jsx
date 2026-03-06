@@ -7,13 +7,12 @@ const MY_PREDICTIONS = [
   { date: '08.09', xp: '1000', status: 'Win' },
 ]
 
-
 export default function TopPlayers() {
   const [tab, setTab] = useState('tournament')
 
   return (
     <div style={{ marginTop: '36px', padding: '0 20px' }}>
-      {/* Segmented tabs */}
+      
       <div style={{ width: '100%', height: '48px', background: '#1A1A1A', borderRadius: '12px', display: 'flex', alignItems: 'center', marginBottom: '16px', overflow: 'hidden', boxSizing: 'border-box' }}>
         <button
           onClick={() => setTab('tournament')}
@@ -36,7 +35,7 @@ export default function TopPlayers() {
             <span style={{ color: '#FFFFFF', fontWeight: 600, fontSize: '14px' }}>Top Players</span>
             <button style={{ color: '#FFFE45', fontWeight: 400, fontSize: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View All</button>
           </div>
-          {/* Header row — full width edge to edge */}
+          
           <div style={{ display: 'flex', alignItems: 'center', margin: '0 -15px 6px', padding: '4px 15px', background: 'rgba(0,0,0,0.20)', height: '40px' }}>
             <span style={{ width: '44px', color: 'rgba(255,255,255,0.42)', fontSize: '12px', fontWeight: 400 }}>#</span>
             <span style={{ flex: 1, color: 'rgba(255,255,255,0.42)', fontSize: '12px', fontWeight: 400 }}>Player</span>
@@ -70,7 +69,7 @@ export default function TopPlayers() {
                     position: 'relative',
                     minHeight: '52px',
                   }}>
-                    {/* Left accent bar for rank 1 */}
+                    
                     {isFirst && (
                       <div style={{
                         position: 'absolute', left: 0, top: 0,
@@ -82,7 +81,7 @@ export default function TopPlayers() {
                     )}
 
                     <div style={{ display: 'flex', alignItems: 'center', flex: 1, padding: '6px 15px', paddingLeft: isFirst ? '19px' : '15px' }}>
-                      {/* Rank circle */}
+                      
                       <div style={{ width: '44px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                         <div style={{
                           width: '28px', height: '28px', borderRadius: '50%',
@@ -96,9 +95,9 @@ export default function TopPlayers() {
                           )}
                         </div>
                       </div>
-                      {/* Name */}
+                      
                       <span style={{ flex: 1, fontSize: '14px', fontWeight: 500, color: nameColor }}>{player.name}</span>
-                      {/* XP */}
+                      
                       <span style={{ fontSize: '14px', fontWeight: 500, color: ptsColor }}>{player.pts}</span>
                     </div>
                   </div>
@@ -113,7 +112,7 @@ export default function TopPlayers() {
       ) : (
         /* My Prediction section */
         <>
-          {/* Info rectangle between tabs and table */}
+          
           <div style={{
             width: '100%',
             height: '66px',
@@ -127,7 +126,7 @@ export default function TopPlayers() {
             border: '1px solid transparent',
             background: 'linear-gradient(#1B1B1D, #1B1B1D) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
           }}>
-            {/* Left: labels + values */}
+            
             <div style={{ display: 'flex', gap: '24px' }}>
               <div>
                 <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Your position</div>
@@ -139,7 +138,7 @@ export default function TopPlayers() {
               </div>
             </div>
 
-            {/* Right: circle with icon */}
+            
             <div style={{
               width: '42px', height: '42px', borderRadius: '50%',
               background: 'rgba(255,254,69,0.05)',
@@ -151,21 +150,21 @@ export default function TopPlayers() {
             </div>
           </div>
 
-          {/* My Prediction table */}
+          
           <div style={{ width: '100%', borderRadius: '24px', padding: '15px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', border: '1px solid transparent', background: 'linear-gradient(#1A1A1A, #1A1A1A) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <span style={{ color: '#FFFFFF', fontWeight: 600, fontSize: '14px' }}>My Prediction</span>
               <button style={{ color: '#FFFE45', fontWeight: 400, fontSize: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View All</button>
             </div>
 
-            {/* Column headers — edge to edge, same style as # Player XP */}
+            
             <div style={{ display: 'flex', alignItems: 'center', margin: '0 -15px 0', padding: '4px 15px', background: 'rgba(0,0,0,0.20)', height: '40px' }}>
               <span style={{ flex: 1, color: 'rgba(255,255,255,0.42)', fontSize: '12px', fontWeight: 400 }}>Date</span>
               <span style={{ width: '60px', textAlign: 'right', color: 'rgba(255,255,255,0.42)', fontSize: '12px', fontWeight: 400, marginRight: '8px' }}>XP</span>
               <span style={{ width: '60px', textAlign: 'right', color: 'rgba(255,255,255,0.42)', fontSize: '12px', fontWeight: 400 }}>Status</span>
             </div>
 
-            {/* Rows — edge to edge dividers, same height as Top Players */}
+            
             <div style={{ display: 'flex', flexDirection: 'column', margin: '0 -15px' }}>
               {MY_PREDICTIONS.map((row, idx) => (
                 <div key={idx}>

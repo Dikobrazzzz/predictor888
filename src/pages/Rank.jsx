@@ -50,7 +50,6 @@ const STATUS_CONFIG = {
 
 const TABS = ['All', 'Active', 'Finished']
 
-
 function PredictionCard({ p }) {
   const cfg = STATUS_CONFIG[p.status]
 
@@ -64,7 +63,7 @@ function PredictionCard({ p }) {
       padding: '14px 16px',
       boxSizing: 'border-box',
     }}>
-      {/* Top row: league + status */}
+      
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
         <span style={{ color: 'rgba(255,255,255,0.53)', fontSize: '10px', fontWeight: 400, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
           {p.league}&nbsp;•&nbsp;{p.time}
@@ -81,7 +80,7 @@ function PredictionCard({ p }) {
         </span>
       </div>
 
-      {/* Match title */}
+      
       <div style={{ marginBottom: '10px', fontSize: '16px', lineHeight: 1.3 }}>
         {p.score ? (
           <>
@@ -98,7 +97,7 @@ function PredictionCard({ p }) {
         )}
       </div>
 
-      {/* Pick row */}
+      
       <div style={{
         background: p.status === 'win'
           ? 'linear-gradient(90deg, #060706 0%, #182D1A 100%)'
@@ -153,7 +152,7 @@ export default function Rank({ navigate }) {
 
       <div style={{ padding: '0 20px' }}>
 
-        {/* Profile Statistick — title INSIDE the card */}
+        
         <div style={{ marginBottom: '28px' }}>
           <div style={{
             width: '100%',
@@ -165,15 +164,15 @@ export default function Rank({ navigate }) {
             padding: '20px 16px',
             boxSizing: 'border-box',
           }}>
-            {/* Title row inside card */}
+            
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <img src="/icons/Icon-5.svg" alt="" style={{ width: '20px', height: '20px' }} />
               <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Statistick</span>
             </div>
 
-            {/* Stats row */}
+            
             <div style={{ display: 'flex', gap: '12px' }}>
-              {/* Your Position */}
+              
               <div style={{
                 width: '147px', height: '64px', flexShrink: 0,
                 borderRadius: '10px',
@@ -195,7 +194,7 @@ export default function Rank({ navigate }) {
                 </div>
               </div>
 
-              {/* Win rate */}
+              
               <div style={{
                 width: '147px', height: '64px', flexShrink: 0,
                 borderRadius: '10px',
@@ -220,19 +219,19 @@ export default function Rank({ navigate }) {
           </div>
         </div>
 
-        {/* Promo — same as Home */}
+        
         <div style={{ margin: '0 -20px 28px' }}>
           <DailyRewards />
         </div>
 
-        {/* My Prediction */}
+        
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src="/icons/Vector-2.svg" alt="" style={{ width: '18px', height: '18px' }} />
             <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>My Prediction</span>
           </div>
 
-          {/* Tabs */}
+          
           <div style={{
             width: '100%',
             height: '40px',
@@ -270,12 +269,12 @@ export default function Rank({ navigate }) {
             })}
           </div>
 
-          {/* Prediction cards */}
+          
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {filtered.map((p) => <PredictionCard key={p.id} p={p} />)}
           </div>
 
-          {/* Make New Prediction */}
+          
           <button
             onClick={() => navigate?.('events')}
             style={{
