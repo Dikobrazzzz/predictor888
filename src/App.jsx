@@ -123,9 +123,9 @@ export default function App() {
     setPage(to)
   }
 
-  if (!authenticated) return <Welcome onStart={handleStart} />
-  if (!onboarded) return <Telegram onSubscribe={handleTelegramSubscribe} onSkip={handleTelegramSkip} />
-  if (!loggedIn) return <Login onLogin={handleLogin} />
+  // if (!authenticated) return <Welcome onStart={handleStart} />
+  // if (!onboarded) return <Telegram onSubscribe={handleTelegramSubscribe} onSkip={handleTelegramSkip} />
+  // if (!loggedIn) return <Login onLogin={handleLogin} />
 
   if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} recommended={recommended} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />

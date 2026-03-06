@@ -147,7 +147,6 @@ func (h *LiveHandler) fetchViaWorker(workerURL, targetURL string) ([]map[string]
 		return nil, err
 	}
 
-	// Try gzip if first two bytes match
 	if len(body) >= 2 && body[0] == 0x1f && body[1] == 0x8b {
 		gr, err := gzip.NewReader(io.NopCloser(strings.NewReader(string(body))))
 		if err == nil {
