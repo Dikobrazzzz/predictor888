@@ -53,6 +53,7 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [onboarded, setOnboarded] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
+  const [user, setUser] = useState(null)
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
 
@@ -68,13 +69,12 @@ export default function App() {
 
   const handleTelegramSkip = () => {
     localStorage.setItem(ONBOARD_KEY, '1')
-    localStorage.setItem(LOGIN_KEY, '1')
     setOnboarded(true)
-    setLoggedIn(true)
   }
 
-  const handleLogin = () => {
+  const handleLogin = (userData) => {
     localStorage.setItem(LOGIN_KEY, '1')
+    setUser(userData)
     setLoggedIn(true)
   }
 

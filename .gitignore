@@ -32,3 +32,9 @@ proxy/__pycache__/
 
 # Backup files
 *.bak
+
+# Docker
+pg_data/
+
+# Go
+api/server

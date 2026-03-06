@@ -8,23 +8,36 @@ function isValidEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 }
 
-const KNOWN_EMAILS = ['user@888starz.com', 'test@test.com']
-
 export default function Login({ onLogin }) {
   const [mail, setMail] = useState('')
   const [touched, setTouched] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const invalid = touched && !isValidEmail(mail)
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setTouched(true)
     if (!isValidEmail(mail)) return
-    if (!KNOWN_EMAILS.includes(mail.trim().toLowerCase())) {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: mail.trim().toLowerCase() }),
+      })
+      const data = await res.json()
+      if (res.ok && data.user) {
+        localStorage.setItem('p888_user', JSON.stringify(data.user))
+        onLogin(data.user)
+      } else {
+        setNotFound(true)
+      }
+    } catch {
       setNotFound(true)
-      return
+    } finally {
+      setLoading(false)
     }
-    onLogin()
   }
 
   return (
