@@ -1,7 +1,6 @@
 import BottomNav from '../components/BottomNav'
-import vectorSvg from '/icons/Vector-3.svg'
-import bg3Svg from '/icons/BG-3.svg'
-import redLight2Svg from '/icons/red light-2.svg'
+import firstSvg from '/icons/first.svg'
+import secondSvg from '/icons/second.svg'
 import head2Svg from '/icons/3d_headphone_2023_36 [Converted] 2.svg'
 import head3Svg from '/icons/3d_headphone_2023_36 [Converted] 3.svg'
 import tg2Svg from '/icons/Telegram-2.svg'
@@ -38,18 +37,12 @@ export default function Telegram({ onSubscribe, onSkip }) {
       paddingBottom: '110px',
     }}>
       
-      <img src={vectorSvg} alt="" fetchpriority="high" decoding="async" style={{
-        position: 'absolute', top: 0, left: 0, width: '100%',
+      <img src={firstSvg} alt="" fetchpriority="high" decoding="async" style={{
+        position: 'absolute', inset: 0, width: '100%', height: '100%',
         objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
         mixBlendMode: 'overlay',
       }} />
-      
-      <img src={bg3Svg} alt="" decoding="async" style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%',
-        objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
-      }} />
-      
-      <img src={redLight2Svg} alt="" decoding="async" style={{
+      <img src={secondSvg} alt="" decoding="async" style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%',
         objectFit: 'cover', pointerEvents: 'none', userSelect: 'none',
       }} />
@@ -76,19 +69,23 @@ export default function Telegram({ onSubscribe, onSkip }) {
         maxWidth: '375px',
         position: 'relative', zIndex: 1,
       }}>
-        <img src={tg2Svg} alt="" fetchpriority="high"
-          style={{ width: '100%', display: 'block' }} />
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '12px',
-          width: '100%',
-          marginTop: '-16px',
-        }}>
-          <img src={head2Svg} alt="" fetchpriority="high"
-            style={{ width: '48%' }} />
-          <img src={head3Svg} alt="" fetchpriority="high"
-            style={{ width: '48%' }} />
+        <div style={{ position: 'relative', width: '120%', marginLeft: '-10%' }}>
+          <img src={head2Svg} alt="" fetchpriority="high" style={{
+            position: 'absolute',
+            bottom: '15%',
+            left: '2%',
+            width: '57%',
+            zIndex: 0,
+          }} />
+          <img src={head3Svg} alt="" fetchpriority="high" style={{
+            position: 'absolute',
+            bottom: '-13%',
+            right: '-8%',
+            width: '79%',
+            zIndex: 0,
+          }} />
+          <img src={tg2Svg} alt="" fetchpriority="high"
+            style={{ width: '100%', display: 'block', position: 'relative', zIndex: 1 }} />
         </div>
 
         <p style={{
