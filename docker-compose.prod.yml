@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-predictor888}
+      POSTGRES_USER: ${POSTGRES_USER:-predictor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-predictor_secret}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-predictor}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: ./api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-predictor}:${POSTGRES_PASSWORD:-predictor_secret}@postgres:5432/${POSTGRES_DB:-predictor888}?sslmode=disable
+      CF_WORKER_URL: ${CF_WORKER_URL:-}
+      PORT: "8082"
+    ports:
+      - "127.0.0.1:8082:8082"
+
+volumes:
+  pg_data:
