@@ -13,6 +13,33 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    command:
+      - "postgres"
+      - "-c" 
+      - "max_connections=100"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=512MB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "maintenance_work_mem=64MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "log_min_duration_statement=500"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    shm_size: 256mb
 
   api:
     build: ./api
@@ -24,8 +51,15 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-predictor}:${POSTGRES_PASSWORD:-predictor_secret}@postgres:5432/${POSTGRES_DB:-predictor888}?sslmode=disable
       CF_WORKER_URL: ${CF_WORKER_URL:-}
       PORT: "8082"
+      GOMAXPROCS: "4"
     ports:
       - "127.0.0.1:8082:8082"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
 volumes:
   pg_data:

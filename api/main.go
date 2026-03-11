@@ -35,7 +35,17 @@ func main() {
 		log.Fatal("DATABASE_URL environment variable is required")
 	}
 
-	pool, err := pgxpool.New(context.Background(), dbURL)
+	poolCfg, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatalf("cannot parse db url: %v", err)
+	}
+	poolCfg.MaxConns = 30
+	poolCfg.MinConns = 5
+	poolCfg.MaxConnLifetime = 30 * time.Minute
+	poolCfg.MaxConnIdleTime = 5 * time.Minute
+	poolCfg.HealthCheckPeriod = 30 * time.Second
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		log.Fatalf("cannot connect to db: %v", err)
 	}
@@ -49,11 +59,14 @@ func main() {
 
 	cfURLs := parseCFWorkerURLs(os.Getenv("CF_WORKER_URL"))
 
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
 	auth := &handlers.AuthHandler{DB: pool}
 	user := &handlers.UserHandler{DB: pool}
 	pred := &handlers.PredictionHandler{DB: pool}
 	lb := &handlers.LeaderboardHandler{DB: pool}
-	live := handlers.NewLiveHandler(cfURLs)
+	live := handlers.NewLiveHandler(appCtx, cfURLs)
 
 	mux := http.NewServeMux()
 
@@ -93,11 +106,13 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      cors(mux),
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:              ":" + port,
+		Handler:           cors(mux),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    1 << 20,
 	}
 
 	go func() {
@@ -111,10 +126,13 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	log.Println("shutting down...")
+	appCancel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
+	live.Shutdown()
 }
 
 func parseCFWorkerURLs(env string) []string {

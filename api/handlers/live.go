@@ -1,11 +1,15 @@
 package handlers
 
 import (
+	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -90,23 +94,47 @@ type cacheEntry struct {
 }
 
 type LiveHandler struct {
-	cfWorkerURLs    []string
-	cache           sync.Map
-	circuit         sync.Map
-	workerFailures  sync.Map
-	httpClient      *http.Client
+	cfWorkerURLs   []string
+	cache          sync.Map
+	circuit        sync.Map
+	workerFailures sync.Map
+	httpClient     *http.Client
+	cancel         context.CancelFunc
+	wg             sync.WaitGroup
+
+	jsonCache   sync.Map // key -> []byte (pre-serialized JSON for hot endpoints)
 }
 
-func NewLiveHandler(cfWorkerURLs []string) *LiveHandler {
+func NewLiveHandler(ctx context.Context, cfWorkerURLs []string) *LiveHandler {
+	ctx, cancel := context.WithCancel(ctx)
 	h := &LiveHandler{
 		cfWorkerURLs: cfWorkerURLs,
+		cancel:       cancel,
 		httpClient: &http.Client{
 			Timeout: fetchTimeout,
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 20,
+				MaxConnsPerHost:     30,
+				IdleConnTimeout:     90 * time.Second,
+				DialContext: (&net.Dialer{
+					Timeout:   5 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				ResponseHeaderTimeout: 10 * time.Second,
+			},
 		},
 	}
-	go h.bgRefresh()
-	go h.bgRefreshRecommendations()
+	h.wg.Add(2)
+	go h.bgRefresh(ctx)
+	go h.bgRefreshRecommendations(ctx)
 	return h
+}
+
+func (h *LiveHandler) Shutdown() {
+	h.cancel()
+	h.wg.Wait()
+	log.Println("live handler background tasks stopped")
 }
 
 func (h *LiveHandler) makeHeaders() http.Header {
@@ -142,15 +170,16 @@ func (h *LiveHandler) fetchViaWorker(workerURL, targetURL string) ([]map[string]
 		reader = gr
 	}
 
-	body, err := io.ReadAll(reader)
+	const maxResponseSize = 10 << 20 // 10 MB
+	body, err := io.ReadAll(io.LimitReader(reader, maxResponseSize))
 	if err != nil {
 		return nil, err
 	}
 
 	if len(body) >= 2 && body[0] == 0x1f && body[1] == 0x8b {
-		gr, err := gzip.NewReader(io.NopCloser(strings.NewReader(string(body))))
+		gr, err := gzip.NewReader(io.NopCloser(bytes.NewReader(body)))
 		if err == nil {
-			body, _ = io.ReadAll(gr)
+			body, _ = io.ReadAll(io.LimitReader(gr, maxResponseSize))
 			gr.Close()
 		}
 	}
@@ -184,7 +213,8 @@ func (h *LiveHandler) fetchDirect(targetURL string) ([]map[string]interface{}, e
 		reader = gr
 	}
 
-	body, err := io.ReadAll(reader)
+	const maxResponseSize = 10 << 20
+	body, err := io.ReadAll(io.LimitReader(reader, maxResponseSize))
 	if err != nil {
 		return nil, err
 	}
@@ -456,6 +486,7 @@ func (h *LiveHandler) refreshSport(key string) {
 	if len(matches) > 0 {
 		h.cache.Store(key, cacheEntry{data: matches, ts: time.Now()})
 		h.circuitReset(key)
+		h.preSerialize(key, matches)
 	}
 }
 
@@ -479,6 +510,7 @@ func (h *LiveHandler) refreshTop() {
 	if len(matches) > 0 {
 		h.cache.Store("_top", cacheEntry{data: matches, ts: time.Now()})
 		h.circuitReset("_top")
+		h.preSerialize("_top", matches)
 	}
 }
 
@@ -505,6 +537,7 @@ func (h *LiveHandler) refreshCounts() {
 
 	h.cache.Store("_counts", cacheEntry{data: totals, ts: time.Now()})
 	h.circuitReset("_counts")
+	h.preSerialize("_counts", totals)
 }
 
 func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
@@ -516,7 +549,6 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 	}
 	var all []scoredMatch
 
-	client := &http.Client{Timeout: 15 * time.Second}
 	eventsstatBase := "https://eventsstat.com/en/services-api/core-api/v1/daygames"
 	eventsstatCDN := "https://eventsstat.com"
 
@@ -530,7 +562,7 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("Referer", "https://eventsstat.com/en/statistic/")
 
-		resp, err := client.Do(req)
+		resp, err := h.httpClient.Do(req)
 		if err != nil {
 			continue
 		}
@@ -653,12 +685,17 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 	fmt.Printf("[REC] %s: cached top %d upcoming\n", sportKey, len(top))
 }
 
-func (h *LiveHandler) bgRefresh() {
+func (h *LiveHandler) bgRefresh(ctx context.Context) {
+	defer h.wg.Done()
 	h.doRefresh()
 	for {
 		sleepSec := 25 + rand.Intn(15)
-		time.Sleep(time.Duration(sleepSec) * time.Second)
-		h.doRefresh()
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Duration(sleepSec) * time.Second):
+			h.doRefresh()
+		}
 	}
 }
 
@@ -676,13 +713,37 @@ func (h *LiveHandler) doRefresh() {
 	wg.Add(1)
 	go func() { defer wg.Done(); h.refreshCounts() }()
 	wg.Wait()
+	h.rebuildAllCache()
 }
 
-func (h *LiveHandler) bgRefreshRecommendations() {
+func (h *LiveHandler) rebuildAllCache() {
+	seen := map[interface{}]bool{}
+	results := []map[string]interface{}{}
+	for _, key := range []string{"football", "basketball", "tennis", "hockey"} {
+		if data := h.readCache(key); data != nil {
+			if matches, ok := data.([]map[string]interface{}); ok {
+				for _, m := range matches {
+					if !seen[m["id"]] {
+						seen[m["id"]] = true
+						results = append(results, m)
+					}
+				}
+			}
+		}
+	}
+	h.preSerialize("_all", results)
+}
+
+func (h *LiveHandler) bgRefreshRecommendations(ctx context.Context) {
+	defer h.wg.Done()
 	h.doRefreshRecommendations()
 	for {
-		time.Sleep(recommendTTL / 2)
-		h.doRefreshRecommendations()
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(recommendTTL / 2):
+			h.doRefreshRecommendations()
+		}
 	}
 }
 
@@ -696,14 +757,41 @@ func (h *LiveHandler) doRefreshRecommendations() {
 		}(key)
 	}
 	wg.Wait()
+	h.rebuildRecommendedCache()
+}
+
+func (h *LiveHandler) rebuildRecommendedCache() {
+	result := map[string]interface{}{}
+	for key := range eventsstatSports {
+		data := h.readCache("_rec_" + key)
+		if data == nil {
+			data = []map[string]interface{}{}
+		}
+		result[key] = data
+	}
+	h.preSerialize("_recommended", result)
+}
+
+func (h *LiveHandler) preSerialize(key string, data interface{}) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return
+	}
+	h.jsonCache.Store(key, b)
+}
+
+func (h *LiveHandler) writePreCached(w http.ResponseWriter, key string, fallback interface{}) {
+	if cached, ok := h.jsonCache.Load(key); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(cached.([]byte))
+		return
+	}
+	writeJSON(w, http.StatusOK, fallback)
 }
 
 func (h *LiveHandler) Counts(w http.ResponseWriter, r *http.Request) {
-	data := h.readCache("_counts")
-	if data == nil {
-		data = map[string]int{}
-	}
-	writeJSON(w, http.StatusOK, data)
+	h.writePreCached(w, "_counts", map[string]int{})
 }
 
 func (h *LiveHandler) Match(w http.ResponseWriter, r *http.Request) {
@@ -719,50 +807,19 @@ func (h *LiveHandler) Match(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LiveHandler) Football(w http.ResponseWriter, r *http.Request) {
-	data := h.readCache("football")
-	if data == nil {
-		data = []map[string]interface{}{}
-	}
-	writeJSON(w, http.StatusOK, data)
+	h.writePreCached(w, "football", []map[string]interface{}{})
 }
 
 func (h *LiveHandler) All(w http.ResponseWriter, r *http.Request) {
-	seen := map[interface{}]bool{}
-	results := []map[string]interface{}{}
-	order := []string{"football", "basketball", "tennis", "hockey"}
-	for _, key := range order {
-		if data := h.readCache(key); data != nil {
-			if matches, ok := data.([]map[string]interface{}); ok {
-				for _, m := range matches {
-					if !seen[m["id"]] {
-						seen[m["id"]] = true
-						results = append(results, m)
-					}
-				}
-			}
-		}
-	}
-	writeJSON(w, http.StatusOK, results)
+	h.writePreCached(w, "_all", []map[string]interface{}{})
 }
 
 func (h *LiveHandler) Home(w http.ResponseWriter, r *http.Request) {
-	data := h.readCache("_top")
-	if data == nil {
-		data = []map[string]interface{}{}
-	}
-	writeJSON(w, http.StatusOK, data)
+	h.writePreCached(w, "_top", []map[string]interface{}{})
 }
 
 func (h *LiveHandler) Recommended(w http.ResponseWriter, r *http.Request) {
-	result := map[string]interface{}{}
-	for key := range eventsstatSports {
-		data := h.readCache("_rec_" + key)
-		if data == nil {
-			data = []map[string]interface{}{}
-		}
-		result[key] = data
-	}
-	writeJSON(w, http.StatusOK, result)
+	h.writePreCached(w, "_recommended", map[string]interface{}{})
 }
 
 func (h *LiveHandler) Status(w http.ResponseWriter, r *http.Request) {
