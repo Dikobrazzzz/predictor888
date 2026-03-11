@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"predictor888/handlers"
 
@@ -29,7 +32,7 @@ func cors(next http.Handler) http.Handler {
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://predictor:predictor_secret@localhost:5432/predictor888?sslmode=disable"
+		log.Fatal("DATABASE_URL environment variable is required")
 	}
 
 	pool, err := pgxpool.New(context.Background(), dbURL)
@@ -89,8 +92,29 @@ func main() {
 		port = "8082"
 	}
 
-	fmt.Printf("api server listening on :%s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, cors(mux)))
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      cors(mux),
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	go func() {
+		fmt.Printf("api server listening on :%s\n", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	log.Println("shutting down...")
+	srv.Shutdown(ctx)
 }
 
 func parseCFWorkerURLs(env string) []string {
