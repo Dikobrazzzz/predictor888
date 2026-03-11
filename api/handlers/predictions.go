@@ -16,11 +16,7 @@ type PredictionHandler struct {
 }
 
 func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
-		return
-	}
+	userID := UserID(r)
 
 	var req models.PredictionRequest
 	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
@@ -32,7 +28,26 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "event_id and outcome required"})
 		return
 	}
-
+	if !validStringField(req.EventID, 64) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "event_id too long"})
+		return
+	}
+	if req.Sport != "" && !validStringField(req.Sport, 200) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "sport too long"})
+		return
+	}
+	if req.League != "" && !validStringField(req.League, 200) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "league too long"})
+		return
+	}
+	if req.HomeTeam != "" && !validStringField(req.HomeTeam, 200) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "home_team too long"})
+		return
+	}
+	if req.AwayTeam != "" && !validStringField(req.AwayTeam, 200) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "away_team too long"})
+		return
+	}
 	if req.Outcome != "home" && req.Outcome != "draw" && req.Outcome != "away" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "outcome must be home, draw, or away"})
 		return
@@ -58,11 +73,7 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PredictionHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
-		return
-	}
+	userID := UserID(r)
 
 	rows, err := h.DB.Query(r.Context(),
 		`SELECT id, user_id, event_id, sport, league, home_team, away_team, outcome, points, status, created_at

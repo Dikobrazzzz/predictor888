@@ -61,5 +61,26 @@ services:
         reservations:
           memory: 128M
 
+  backup:
+    image: postgres:16-alpine
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:-predictor}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-predictor_secret}
+      PGDATABASE: ${POSTGRES_DB:-predictor888}
+    volumes:
+      - ./backup/backup.sh:/backup.sh:ro
+      - pg_backups:/backups
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
 volumes:
   pg_data:
+  pg_backups:

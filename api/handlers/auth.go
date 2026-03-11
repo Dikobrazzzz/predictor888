@@ -59,8 +59,16 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !emailRe.MatchString(req.Email) || req.Login == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid email or login"})
+	if !emailRe.MatchString(req.Email) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid email"})
+		return
+	}
+	if !validLogin(req.Login) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "login must be 2-30 alphanumeric or underscore characters"})
+		return
+	}
+	if req.Region != "" && !validStringField(req.Region, 100) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "region too long"})
 		return
 	}
 

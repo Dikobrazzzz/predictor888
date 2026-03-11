@@ -16,11 +16,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
-		return
-	}
+	userID := UserID(r)
 
 	var user models.User
 	err := h.DB.QueryRow(r.Context(),
@@ -37,11 +33,7 @@ func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
-		return
-	}
+	userID := UserID(r)
 
 	var req struct {
 		Login  *string `json:"login"`
@@ -53,6 +45,10 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Login != nil {
+		if !validLogin(*req.Login) {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "login must be 2-30 alphanumeric or underscore characters"})
+			return
+		}
 		_, err := h.DB.Exec(r.Context(),
 			`UPDATE users SET login = $1 WHERE id = $2`, *req.Login, userID)
 		if err != nil {
@@ -62,6 +58,10 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if req.Region != nil {
+		if !validStringField(*req.Region, 100) {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "region too long"})
+			return
+		}
 		h.DB.Exec(r.Context(),
 			`UPDATE users SET region = $1 WHERE id = $2`, *req.Region, userID)
 	}

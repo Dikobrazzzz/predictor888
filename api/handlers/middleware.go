@@ -6,12 +6,37 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type ctxKey string
 
 const RequestIDKey ctxKey = "request_id"
+const UserIDKey ctxKey = "user_id"
+
+func RequireUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw := r.Header.Get("X-User-ID")
+		if raw == "" {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
+			return
+		}
+		if _, err := strconv.Atoi(raw); err != nil {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid user id"})
+			return
+		}
+		ctx := context.WithValue(r.Context(), UserIDKey, raw)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func UserID(r *http.Request) string {
+	if v, ok := r.Context().Value(UserIDKey).(string); ok {
+		return v
+	}
+	return ""
+}
 
 func RequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

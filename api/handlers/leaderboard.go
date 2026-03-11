@@ -46,11 +46,7 @@ func (h *LeaderboardHandler) Top(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LeaderboardHandler) UserStats(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
-		return
-	}
+	userID := UserID(r)
 
 	var e models.LeaderboardEntry
 	err := h.DB.QueryRow(r.Context(),

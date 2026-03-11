@@ -81,14 +81,16 @@ func main() {
 	mux.HandleFunc("POST /api/auth/login", auth.Login)
 	mux.HandleFunc("POST /api/auth/register", auth.Register)
 
-	mux.HandleFunc("GET /api/user/profile", user.Profile)
-	mux.HandleFunc("PUT /api/user/profile", user.Update)
+	protected := handlers.RequireUser
 
-	mux.HandleFunc("POST /api/predictions", pred.Create)
-	mux.HandleFunc("GET /api/predictions", pred.ListByUser)
+	mux.Handle("GET /api/user/profile", protected(http.HandlerFunc(user.Profile)))
+	mux.Handle("PUT /api/user/profile", protected(http.HandlerFunc(user.Update)))
+
+	mux.Handle("POST /api/predictions", protected(http.HandlerFunc(pred.Create)))
+	mux.Handle("GET /api/predictions", protected(http.HandlerFunc(pred.ListByUser)))
 
 	mux.HandleFunc("GET /api/leaderboard", lb.Top)
-	mux.HandleFunc("GET /api/leaderboard/me", lb.UserStats)
+	mux.Handle("GET /api/leaderboard/me", protected(http.HandlerFunc(lb.UserStats)))
 
 	mux.HandleFunc("GET /api/live/counts", live.Counts)
 	mux.HandleFunc("GET /api/live/match", live.Match)
