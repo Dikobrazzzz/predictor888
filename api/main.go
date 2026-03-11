@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,14 +29,21 @@ func cors(next http.Handler) http.Handler {
 }
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
+
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		log.Fatal("DATABASE_URL environment variable is required")
+		slog.Error("DATABASE_URL environment variable is required")
+		os.Exit(1)
 	}
 
 	poolCfg, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
-		log.Fatalf("cannot parse db url: %v", err)
+		slog.Error("cannot parse db url", "err", err)
+		os.Exit(1)
 	}
 	poolCfg.MaxConns = 30
 	poolCfg.MinConns = 5
@@ -47,12 +53,14 @@ func main() {
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
-		log.Fatalf("cannot connect to db: %v", err)
+		slog.Error("cannot connect to db", "err", err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
 	if err := pool.Ping(context.Background()); err != nil {
-		log.Fatalf("cannot ping db: %v", err)
+		slog.Error("cannot ping db", "err", err)
+		os.Exit(1)
 	}
 
 	runMigrations(pool)
@@ -105,9 +113,11 @@ func main() {
 		port = "8082"
 	}
 
+	handler := handlers.RequestID(handlers.AccessLog(cors(mux)))
+
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           cors(mux),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
@@ -116,9 +126,10 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("api server listening on :%s\n", port)
+		slog.Info("server started", "port", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server error: %v", err)
+			slog.Error("server error", "err", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -126,13 +137,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("shutting down...")
+	slog.Info("shutting down")
 	appCancel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	srv.Shutdown(ctx)
 	live.Shutdown()
+	slog.Info("server stopped")
 }
 
 func parseCFWorkerURLs(env string) []string {
@@ -153,12 +165,12 @@ func parseCFWorkerURLs(env string) []string {
 func runMigrations(pool *pgxpool.Pool) {
 	sql, err := os.ReadFile("migrations/001_init.sql")
 	if err != nil {
-		log.Printf("no migrations file found, skipping: %v", err)
+		slog.Warn("no migrations file found, skipping", "err", err)
 		return
 	}
 	if _, err := pool.Exec(context.Background(), string(sql)); err != nil {
-		log.Printf("migration note (may already exist): %v", err)
+		slog.Warn("migration note", "err", err)
 	} else {
-		log.Println("migrations applied successfully")
+		slog.Info("migrations applied")
 	}
 }

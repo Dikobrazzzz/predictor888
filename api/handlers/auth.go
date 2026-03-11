@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 
@@ -38,10 +39,12 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
 	if err != nil {
+		slog.Warn("login: email not found", "email", req.Email, "err", err)
 		writeJSON(w, http.StatusNotFound, models.LoginResponse{Error: "email not found"})
 		return
 	}
 
+	slog.Info("login ok", "user_id", user.ID, "email", user.Email)
 	writeJSON(w, http.StatusOK, models.LoginResponse{User: &user})
 }
 
@@ -69,6 +72,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
 	if err != nil {
+		slog.Warn("register: conflict", "email", req.Email, "login", req.Login, "err", err)
 		writeJSON(w, http.StatusConflict, map[string]string{"error": "email or login already exists"})
 		return
 	}
@@ -76,5 +80,6 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	h.DB.Exec(r.Context(),
 		`INSERT INTO leaderboard (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, user.ID)
 
+	slog.Info("register ok", "user_id", user.ID, "email", user.Email)
 	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user})
 }

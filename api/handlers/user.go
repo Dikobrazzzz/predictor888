@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"predictor888/models"
@@ -27,6 +28,7 @@ func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
 	if err != nil {
+		slog.Warn("profile: user not found", "user_id", userID, "err", err)
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "user not found"})
 		return
 	}
@@ -54,6 +56,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		_, err := h.DB.Exec(r.Context(),
 			`UPDATE users SET login = $1 WHERE id = $2`, *req.Login, userID)
 		if err != nil {
+			slog.Warn("user update: login conflict", "user_id", userID, "login", *req.Login, "err", err)
 			writeJSON(w, http.StatusConflict, map[string]string{"error": "login already taken"})
 			return
 		}
@@ -68,5 +71,6 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		`SELECT id, email, login, region, points, created_at FROM users WHERE id = $1`, userID,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
+	slog.Info("user updated", "user_id", userID)
 	writeJSON(w, http.StatusOK, user)
 }

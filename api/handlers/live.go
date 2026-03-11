@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"math/rand"
 	"net"
 	"net/http"
@@ -134,7 +134,7 @@ func NewLiveHandler(ctx context.Context, cfWorkerURLs []string) *LiveHandler {
 func (h *LiveHandler) Shutdown() {
 	h.cancel()
 	h.wg.Wait()
-	log.Println("live handler background tasks stopped")
+	slog.Info("live handler background tasks stopped")
 }
 
 func (h *LiveHandler) makeHeaders() http.Header {
@@ -242,7 +242,7 @@ func (h *LiveHandler) fetchRaw(targetURL string) []map[string]interface{} {
 		}
 		result, err := h.fetchViaWorker(w, targetURL)
 		if err != nil {
-			fmt.Printf("[WARN] worker %s: %v\n", w, err)
+			slog.Warn("worker fetch failed", "worker", w, "err", err)
 			h.workerFailures.Store(w, now)
 			continue
 		}
@@ -252,7 +252,7 @@ func (h *LiveHandler) fetchRaw(targetURL string) []map[string]interface{} {
 
 	result, err := h.fetchDirect(targetURL)
 	if err != nil {
-		fmt.Printf("[WARN] direct fetch: %v\n", err)
+		slog.Warn("direct fetch failed", "url", targetURL, "err", err)
 		return nil
 	}
 	return result
@@ -682,7 +682,7 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 	}
 
 	h.cache.Store("_rec_"+sportKey, cacheEntry{data: top, ts: time.Now()})
-	fmt.Printf("[REC] %s: cached top %d upcoming\n", sportKey, len(top))
+	slog.Info("recommendations cached", "sport", sportKey, "count", len(top))
 }
 
 func (h *LiveHandler) bgRefresh(ctx context.Context) {

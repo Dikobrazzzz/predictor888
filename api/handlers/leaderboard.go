@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
 
 	"predictor888/models"
@@ -19,6 +20,7 @@ func (h *LeaderboardHandler) Top(w http.ResponseWriter, r *http.Request) {
 		 WHERE l.period = 'all'
 		 ORDER BY l.total_points DESC LIMIT 50`)
 	if err != nil {
+		slog.Error("leaderboard top query failed", "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "query failed"})
 		return
 	}
@@ -29,11 +31,13 @@ func (h *LeaderboardHandler) Top(w http.ResponseWriter, r *http.Request) {
 		var e models.LeaderboardEntry
 		if err := rows.Scan(&e.UserID, &e.Login, &e.TotalPoints, &e.Wins, &e.Losses,
 			&e.Rank, &e.Period, &e.UpdatedAt); err != nil {
+			slog.Warn("leaderboard scan error", "err", err)
 			continue
 		}
 		entries = append(entries, e)
 	}
 	if err := rows.Err(); err != nil {
+		slog.Error("leaderboard iteration failed", "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "read failed"})
 		return
 	}
@@ -56,6 +60,7 @@ func (h *LeaderboardHandler) UserStats(w http.ResponseWriter, r *http.Request) {
 	).Scan(&e.UserID, &e.Login, &e.TotalPoints, &e.Wins, &e.Losses, &e.Rank, &e.Period, &e.UpdatedAt)
 
 	if err != nil {
+		slog.Warn("leaderboard user stats not found", "user_id", userID, "err", err)
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "user not found in leaderboard"})
 		return
 	}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"predictor888/models"
@@ -47,10 +48,12 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		&pred.HomeTeam, &pred.AwayTeam, &pred.Outcome, &pred.Points, &pred.Status, &pred.CreatedAt)
 
 	if err != nil {
+		slog.Error("prediction create failed", "user_id", userID, "event_id", req.EventID, "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create prediction"})
 		return
 	}
 
+	slog.Info("prediction created", "id", pred.ID, "user_id", userID, "event_id", req.EventID, "outcome", req.Outcome)
 	writeJSON(w, http.StatusCreated, pred)
 }
 
@@ -65,6 +68,7 @@ func (h *PredictionHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
 		`SELECT id, user_id, event_id, sport, league, home_team, away_team, outcome, points, status, created_at
 		 FROM predictions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`, userID)
 	if err != nil {
+		slog.Error("predictions list query failed", "user_id", userID, "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "query failed"})
 		return
 	}
@@ -75,11 +79,13 @@ func (h *PredictionHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
 		var p models.Prediction
 		if err := rows.Scan(&p.ID, &p.UserID, &p.EventID, &p.Sport, &p.League,
 			&p.HomeTeam, &p.AwayTeam, &p.Outcome, &p.Points, &p.Status, &p.CreatedAt); err != nil {
+			slog.Warn("predictions scan error", "user_id", userID, "err", err)
 			continue
 		}
 		preds = append(preds, p)
 	}
 	if err := rows.Err(); err != nil {
+		slog.Error("predictions iteration failed", "user_id", userID, "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "read failed"})
 		return
 	}
