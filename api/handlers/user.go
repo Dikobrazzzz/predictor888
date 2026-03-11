@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"predictor888/models"
@@ -22,7 +22,7 @@ func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	err := h.DB.QueryRow(context.Background(),
+	err := h.DB.QueryRow(r.Context(),
 		`SELECT id, email, login, region, points, created_at FROM users WHERE id = $1`, userID,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
@@ -45,13 +45,13 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Login  *string `json:"login"`
 		Region *string `json:"region"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		return
 	}
 
 	if req.Login != nil {
-		_, err := h.DB.Exec(context.Background(),
+		_, err := h.DB.Exec(r.Context(),
 			`UPDATE users SET login = $1 WHERE id = $2`, *req.Login, userID)
 		if err != nil {
 			writeJSON(w, http.StatusConflict, map[string]string{"error": "login already taken"})
@@ -59,12 +59,12 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if req.Region != nil {
-		h.DB.Exec(context.Background(),
+		h.DB.Exec(r.Context(),
 			`UPDATE users SET region = $1 WHERE id = $2`, *req.Region, userID)
 	}
 
 	var user models.User
-	h.DB.QueryRow(context.Background(),
+	h.DB.QueryRow(r.Context(),
 		`SELECT id, email, login, region, points, created_at FROM users WHERE id = $1`, userID,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 

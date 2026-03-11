@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"regexp"
 
@@ -10,6 +10,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const maxBodySize = 1 << 20 // 1 MB
 
 var emailRe = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
@@ -19,7 +21,7 @@ type AuthHandler struct {
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, models.LoginResponse{Error: "invalid request"})
 		return
 	}
@@ -30,7 +32,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	err := h.DB.QueryRow(context.Background(),
+	err := h.DB.QueryRow(r.Context(),
 		`SELECT id, email, login, region, points, created_at FROM users WHERE email = $1`,
 		req.Email,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
@@ -49,7 +51,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Login  string `json:"login"`
 		Region string `json:"region"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		return
 	}
@@ -60,7 +62,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	err := h.DB.QueryRow(context.Background(),
+	err := h.DB.QueryRow(r.Context(),
 		`INSERT INTO users (email, login, region) VALUES ($1, $2, $3)
 		 RETURNING id, email, login, region, points, created_at`,
 		req.Email, req.Login, req.Region,
@@ -71,7 +73,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Exec(context.Background(),
+	h.DB.Exec(r.Context(),
 		`INSERT INTO leaderboard (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, user.ID)
 
 	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user})

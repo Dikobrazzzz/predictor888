@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"predictor888/models"
@@ -22,7 +22,7 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req models.PredictionRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		return
 	}
@@ -38,7 +38,7 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pred models.Prediction
-	err := h.DB.QueryRow(context.Background(),
+	err := h.DB.QueryRow(r.Context(),
 		`INSERT INTO predictions (user_id, event_id, sport, league, home_team, away_team, outcome)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id, user_id, event_id, sport, league, home_team, away_team, outcome, points, status, created_at`,
@@ -61,7 +61,7 @@ func (h *PredictionHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := h.DB.Query(context.Background(),
+	rows, err := h.DB.Query(r.Context(),
 		`SELECT id, user_id, event_id, sport, league, home_team, away_team, outcome, points, status, created_at
 		 FROM predictions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`, userID)
 	if err != nil {
@@ -78,6 +78,10 @@ func (h *PredictionHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		preds = append(preds, p)
+	}
+	if err := rows.Err(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "read failed"})
+		return
 	}
 
 	writeJSON(w, http.StatusOK, preds)

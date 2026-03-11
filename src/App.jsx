@@ -8,26 +8,9 @@ import Promo from './pages/Promo'
 import Welcome from './pages/Welcome'
 import Telegram from './pages/Telegram'
 import Login from './pages/Login'
+import parseEvent from './utils/parseEvent'
 
 const LS_KEY = 'p888_live_cache'
-
-function parseEvent(d) {
-  return {
-    id: d.id,
-    status: d.status || 'live',
-    timeLeft: d.timeLeft || 'LIVE',
-    league: d.league || '',
-    home: { name: d.home, icon: d.homeIcon || null },
-    away: { name: d.away, icon: d.awayIcon || null },
-    score: d.score || null,
-    sport: d.sport || '',
-    coef: {
-      home: d.coef?.home ?? 0,
-      draw: d.coef?.draw ?? 0,
-      away: d.coef?.away ?? 0,
-    },
-  }
-}
 
 function loadFromStorage() {
   try {

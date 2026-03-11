@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 
 	"predictor888/models"
@@ -14,7 +13,7 @@ type LeaderboardHandler struct {
 }
 
 func (h *LeaderboardHandler) Top(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.DB.Query(context.Background(),
+	rows, err := h.DB.Query(r.Context(),
 		`SELECT l.user_id, u.login, l.total_points, l.wins, l.losses, l.rank, l.period, l.updated_at
 		 FROM leaderboard l JOIN users u ON u.id = l.user_id
 		 WHERE l.period = 'all'
@@ -34,6 +33,10 @@ func (h *LeaderboardHandler) Top(w http.ResponseWriter, r *http.Request) {
 		}
 		entries = append(entries, e)
 	}
+	if err := rows.Err(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "read failed"})
+		return
+	}
 
 	writeJSON(w, http.StatusOK, entries)
 }
@@ -46,7 +49,7 @@ func (h *LeaderboardHandler) UserStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var e models.LeaderboardEntry
-	err := h.DB.QueryRow(context.Background(),
+	err := h.DB.QueryRow(r.Context(),
 		`SELECT l.user_id, u.login, l.total_points, l.wins, l.losses, l.rank, l.period, l.updated_at
 		 FROM leaderboard l JOIN users u ON u.id = l.user_id
 		 WHERE l.user_id = $1 AND l.period = 'all'`, userID,
