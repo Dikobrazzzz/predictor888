@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+export AWS_ACCESS_KEY_ID="{{ AWS_ACCESS_KEY_ID }}"
+export AWS_SECRET_ACCESS_KEY="{{ AWS_SECRET_ACCESS_KEY }}"
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${GREEN}Starting certificate issuance...${NC}"
+
+if [ ! -d "$HOME/.acme.sh" ]; then
+    echo -e "${GREEN}Installing acme.sh...${NC}"
+    curl https://get.acme.sh | sh -s
+fi
+
+ACME_SH="$HOME/.acme.sh/acme.sh"
+DOMAIN="{{ CERT_DOMAIN }}"
+CERT_DIR="{{ nginx_config_path }}/certs/$DOMAIN/"
+
+mkdir -p "$CERT_DIR"
+
+echo -e "${GREEN}Issuing certificate for ${DOMAIN}...${NC}"
+
+$ACME_SH --issue \
+  --dns dns_aws \
+  -d "$DOMAIN" \
+  --server letsencrypt \
+  --force || true
+
+echo -e "${GREEN}Installing certificate...${NC}"
+
+$ACME_SH --install-cert -d "$DOMAIN" \
+  --cert-file "$CERT_DIR/$DOMAIN.crt" \
+  --key-file "$CERT_DIR/$DOMAIN.key" \
+  --fullchain-file "$CERT_DIR/fullchain.crt" \
+  --ca-file "$CERT_DIR/ca.crt"
+
+chmod 644 "$CERT_DIR"/*.crt
+chmod 600 "$CERT_DIR"/*.key
+
+echo -e "${GREEN}Certificate issuance completed!${NC}"

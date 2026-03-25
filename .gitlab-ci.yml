@@ -1,0 +1,193 @@
+stages:
+  - build
+  - deploy
+
+.build_backend_template: &build_backend_template
+  image: docker:cli
+  stage: build
+  services:
+    - name: docker:dind
+      alias: docker
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+        DOCKER_DRIVER: overlay2
+      command: ["--insecure-registry=gitlab.luckytits.org:5050", "--log-level=warn"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    BUILDKIT_PROGRESS: auto
+    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA
+    DOCKER_CONFIG: /tmp/docker
+  before_script:
+    - until docker info >/dev/null 2>&1; do sleep 1; done
+    - echo "Docker daemon is ready"
+    - mkdir -p $DOCKER_CONFIG
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - echo "Building api image..."
+    - docker build --pull -t "$DOCKER_IMAGE_NAME" api
+    - echo "Pushing image to registry..."
+    - docker push --quiet "$DOCKER_IMAGE_NAME"
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Tagging and pushing as latest..."
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
+        docker push --quiet "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
+      fi
+
+.build_frontend_template: &build_frontend_template
+  image: docker:cli
+  stage: build
+  services:
+    - name: docker:dind
+      alias: docker
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+        DOCKER_DRIVER: overlay2
+      command: ["--insecure-registry=gitlab.luckytits.org:5050", "--log-level=warn"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    BUILDKIT_PROGRESS: auto
+    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA
+    DOCKER_CONFIG: /tmp/docker
+  before_script:
+    - until docker info >/dev/null 2>&1; do sleep 1; done
+    - echo "Docker daemon is ready"
+    - mkdir -p $DOCKER_CONFIG
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - echo "Building web image..."
+    - docker build --pull -f web/Dockerfile -t "$DOCKER_IMAGE_NAME" .
+    - echo "Pushing image to registry..."
+    - docker push --quiet "$DOCKER_IMAGE_NAME"
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Tagging and pushing as latest..."
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
+        docker push --quiet "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
+      fi
+
+build_production:
+  extends: .build_backend_template
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      exists:
+        - api/Dockerfile
+    - when: never
+
+build_dev:
+  extends: .build_backend_template
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      exists:
+        - api/Dockerfile
+    - when: never
+
+build_web_production:
+  extends: .build_frontend_template
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      exists:
+        - web/Dockerfile
+    - when: never
+
+build_web_dev:
+  extends: .build_frontend_template
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      exists:
+        - web/Dockerfile
+    - when: never
+
+.deploy_template: &deploy_template
+  stage: deploy
+  image: python:3.9-alpine
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apk update && apk add openssh-client wget rsync )'
+    - apk add --virtual .build-deps gcc musl-dev libffi-dev openssl-dev
+    - pip install ansible docker
+    - apk del .build-deps
+    - eval "$(ssh-agent -s)"
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SERVER_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa
+    - touch ~/.ssh/config
+    - |
+      cat > ~/.ssh/config <<'SSHCONF'
+      Host *
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+        LogLevel ERROR
+      SSHCONF
+    - chmod 600 ~/.ssh/config
+  script:
+    - |
+      cat > inventory.ini << EOF
+      [all]
+      ${SERVER_HOST} ansible_host=${SERVER_HOST} ansible_user=${SERVER_USER} ansible_port=${SERVER_PORT}
+      EOF
+    - |
+      ansible-playbook -i inventory.ini ansible/deploy.yml
+
+
+deploy_production:
+  extends: .deploy_template
+  environment: production
+  variables:
+    SERVER_SSH_KEY: $PRODUCTION_SERVER_SSH_KEY
+    SERVER_PORT: $PRODUCTION_SERVER_PORT
+    SERVER_USER: $PRODUCTION_SERVER_USER
+    SERVER_HOST: $PRODUCTION_SERVER_HOST
+
+    SERVER_PROJECT_PATH: $SERVER_PROJECT_PATH
+    REPO_BRANCH: $CI_COMMIT_REF_NAME
+
+    POSTGRES_USER: $PRODUCTION_POSTGRES_USER
+    POSTGRES_PASSWORD: $PRODUCTION_POSTGRES_PASSWORD
+    POSTGRES_DB: $PRODUCTION_POSTGRES_DB
+    DB_PORT: $PRODUCTION_DB_PORT
+
+    CF_WORKER_URL: $PRODUCTION_CF_WORKER_URL
+    API_PORT: $PRODUCTION_API_PORT
+    GOMAXPROCS: $PRODUCTION_GOMAXPROCS
+    NGINX_SERVER_NAME: $PRODUCTION_NGINX_SERVER_NAME
+    CERT_DOMAIN: $PRODUCTION_CERT_DOMAIN
+    AWS_ACCESS_KEY_ID: $PRODUCTION_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $PRODUCTION_AWS_SECRET_ACCESS_KEY
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  when: manual
+
+deploy_dev:
+  extends: .deploy_template
+  environment: development
+  variables:
+    SERVER_SSH_KEY: $STAGING_SERVER_SSH_KEY
+    SERVER_PORT: $STAGING_SERVER_PORT
+    SERVER_USER: $STAGING_SERVER_USER
+    SERVER_HOST: $STAGING_SERVER_HOST
+
+    SERVER_PROJECT_PATH: $STAGING_SERVER_PROJECT_PATH
+    REPO_BRANCH: $CI_COMMIT_REF_NAME
+
+    POSTGRES_USER: $STAGING_POSTGRES_USER
+    POSTGRES_PASSWORD: $STAGING_POSTGRES_PASSWORD
+    POSTGRES_DB: $STAGING_POSTGRES_DB
+    DB_PORT: $STAGING_DB_PORT
+
+    CF_WORKER_URL: $STAGING_CF_WORKER_URL
+    API_PORT: $STAGING_API_PORT
+    GOMAXPROCS: $STAGING_GOMAXPROCS
+    NGINX_SERVER_NAME: $STAGING_NGINX_SERVER_NAME
+    CERT_DOMAIN: $STAGING_CERT_DOMAIN
+    AWS_ACCESS_KEY_ID: $STAGING_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $STAGING_AWS_SECRET_ACCESS_KEY
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
