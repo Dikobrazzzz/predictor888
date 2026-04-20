@@ -2,6 +2,12 @@ stages:
   - build
   - deploy
 
+include:
+  - project: infrastructure/prod-deploy
+    ref: main
+    file:
+      - .gitlab-ci/deploy-template.yml
+
 .build_backend_template: &build_backend_template
   image: docker:cli
   stage: build
@@ -137,33 +143,24 @@ build_web_dev:
       ansible-playbook -i inventory.ini ansible/deploy.yml
 
 
-deploy_production:
-  extends: .deploy_template
-  environment: production
+deploy-prod:
+  extends: .deploy-prod
+  tags:
+    - prod-deploy
+  needs:
+    - build_production
+    - build_web_production
   variables:
-    SERVER_SSH_KEY: $PRODUCTION_SERVER_SSH_KEY
-    SERVER_PORT: $PRODUCTION_SERVER_PORT
-    SERVER_USER: $PRODUCTION_SERVER_USER
-    SERVER_HOST: $PRODUCTION_SERVER_HOST
-
-    SERVER_PROJECT_PATH: $SERVER_PROJECT_PATH
-    REPO_BRANCH: $CI_COMMIT_REF_NAME
-
-    POSTGRES_USER: $PRODUCTION_POSTGRES_USER
-    POSTGRES_PASSWORD: $PRODUCTION_POSTGRES_PASSWORD
-    POSTGRES_DB: $PRODUCTION_POSTGRES_DB
-    DB_PORT: $PRODUCTION_DB_PORT
-
-    CF_WORKER_URL: $PRODUCTION_CF_WORKER_URL
-    API_PORT: $PRODUCTION_API_PORT
-    GOMAXPROCS: $PRODUCTION_GOMAXPROCS
-    NGINX_SERVER_NAME: $PRODUCTION_NGINX_SERVER_NAME
-    CERT_DOMAIN: $PRODUCTION_CERT_DOMAIN
-    AWS_ACCESS_KEY_ID: $PRODUCTION_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $PRODUCTION_AWS_SECRET_ACCESS_KEY
+    DEPLOY_PATH: "/opt/gamification-prod"
+    VAULT_SECRET_PATH: "pve-prod/marketing/gamification"
+    EXTRA_TASKS_PATH: "deploy/prod/extra-tasks.yml"
+    ANSIBLE_EXTRA_ARGS: >-
+      -e docker_image=$CI_REGISTRY_IMAGE/main:latest
+      -e web_image=$CI_REGISTRY_IMAGE/web/main:latest
+      -e migrations_src_dir=$CI_PROJECT_DIR/api/migrations
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-  when: manual
+      when: manual
 
 deploy_dev:
   extends: .deploy_template

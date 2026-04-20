@@ -1,0 +1,48 @@
+---
+- name: Ensure migrations directory exists
+  file:
+    path: "{{ deploy_path }}/migrations"
+    state: directory
+    mode: "0755"
+
+- name: Copy migrations to server
+  copy:
+    src: "{{ migrations_src_dir }}/"
+    dest: "{{ deploy_path }}/migrations/"
+    mode: "0644"
+    directory_mode: "0755"
+
+- name: Ensure backup script is executable
+  file:
+    path: "{{ deploy_path }}/backup/backup.sh"
+    mode: "0755"
+
+- name: Start database container
+  shell: |
+    cd "{{ deploy_path }}"
+    docker compose up -d db
+  args:
+    executable: /bin/bash
+
+- name: Wait for database to be healthy
+  shell: |
+    cd "{{ deploy_path }}"
+    for i in $(seq 1 30); do
+      docker compose exec -T db pg_isready -U {{ postgres_user }} -d {{ postgres_db }} && break
+      sleep 2
+    done
+  args:
+    executable: /bin/bash
+
+- name: Run database migrations
+  shell: |
+    cd "{{ deploy_path }}"
+    for f in migrations/*.sql; do
+      echo "Applying $f..."
+      docker compose exec -T db psql -v ON_ERROR_STOP=0 \
+        -U {{ postgres_user }} -d {{ postgres_db }} \
+        -f "/migrations/$(basename $f)" || true
+    done
+  args:
+    executable: /bin/bash
+
