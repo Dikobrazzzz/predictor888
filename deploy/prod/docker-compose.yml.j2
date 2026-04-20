@@ -47,7 +47,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: "postgres://{{ postgres_user }}:{{ postgres_password }}@db:5432/{{ postgres_db }}?sslmode=disable"
-      CF_WORKER_URL: "{{ cf_worker_url | to_json }}"
+      CF_WORKER_URL: '{{ cf_worker_url | to_json }}'
       PORT: "8082"
       GOMAXPROCS: "{{ gomaxprocs }}"
     networks:
