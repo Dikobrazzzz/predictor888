@@ -40,6 +40,7 @@ services:
 
   api:
     image: "{{ docker_image }}"
+    container_name: gamification-api
     restart: always
     depends_on:
       db:
@@ -49,25 +50,20 @@ services:
       CF_WORKER_URL: "{{ cf_worker_url | to_json }}"
       PORT: "8082"
       GOMAXPROCS: "{{ gomaxprocs }}"
-    ports:
-      - "127.0.0.1:{{ api_port }}:8082"
+    networks:
+      - default
+      - nginx_net
 
   web:
     image: "{{ web_image }}"
+    container_name: gamification-web
     restart: always
-    expose:
-      - "80"
-
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/gamification.conf:ro
     depends_on:
       - api
-      - web
+    expose:
+      - "80"
+    networks:
+      - nginx_net
 
   backup:
     image: postgres:16-alpine
@@ -88,3 +84,7 @@ services:
 volumes:
   pg_data:
   pg_backups:
+
+networks:
+  nginx_net:
+    external: true

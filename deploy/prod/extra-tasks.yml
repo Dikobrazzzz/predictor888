@@ -46,3 +46,85 @@
   args:
     executable: /bin/bash
 
+- name: Ensure nginx directories exist
+  vars:
+    nginx_base_dir: "/opt/nginx-marketing"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ nginx_base_dir }}"
+    - "{{ nginx_base_dir }}/conf.d"
+
+- name: Check nginx container status
+  community.docker.docker_container_info:
+    name: "nginx-marketing"
+  register: nginx_container_info
+  failed_when: false
+
+- name: Determine if nginx needs start
+  set_fact:
+    nginx_needs_start: >-
+      {{
+        (nginx_container_info.container is not defined)
+        or (nginx_container_info.container is none)
+        or ((nginx_container_info.container.State.Status | default('')) != 'running')
+      }}
+
+- name: Render nginx.conf to nginx conf.d
+  template:
+    src: "{{ files_dir }}/nginx.conf.j2"
+    dest: "/opt/nginx-marketing/conf.d/gamification.conf"
+    mode: "0644"
+
+- name: Ensure nginx network exists
+  community.docker.docker_network:
+    name: nginx_net
+    state: present
+  when: nginx_needs_start
+
+- name: Install nginx docker-compose.yml
+  vars:
+    nginx_base_dir: "/opt/nginx-marketing"
+  copy:
+    dest: "{{ nginx_base_dir }}/docker-compose.yml"
+    mode: "0644"
+    content: |
+      services:
+        nginx:
+          image: nginx:alpine
+          container_name: nginx-marketing
+          ports:
+            - "80:80"
+          volumes:
+            - ./conf.d:/etc/nginx/conf.d:ro
+          restart: unless-stopped
+          healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost/"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
+          networks: [nginx_net]
+
+      networks:
+        nginx_net:
+          external: true
+  when: nginx_needs_start
+
+- name: Stop nginx container with docker compose
+  vars:
+    nginx_base_dir: "/opt/nginx-marketing"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nginx_base_dir }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Start nginx container with docker compose
+  vars:
+    nginx_base_dir: "/opt/nginx-marketing"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nginx_base_dir }}"
+    state: present
+    pull: always
+    recreate: always
