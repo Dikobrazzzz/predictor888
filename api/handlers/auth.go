@@ -1,15 +1,20 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"predictor888/models"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -60,9 +65,21 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		req.Email,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
 
-	if err != nil {
-		slog.Warn("login: email not found", "email", req.Email, "err", err)
-		writeJSON(w, http.StatusNotFound, models.LoginResponse{Error: "email not found"})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		slog.Error("login: db error", "err", err)
+		writeJSON(w, http.StatusInternalServerError, models.LoginResponse{Error: "internal error"})
+		return
+	}
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		user, err = h.autoCreateUser(r.Context(), req.Email)
+		if err != nil {
+			slog.Error("login: auto-create failed", "email", req.Email, "err", err)
+			writeJSON(w, http.StatusInternalServerError, models.LoginResponse{Error: "internal error"})
+			return
+		}
+		slog.Info("login: new user created", "user_id", user.ID, "email", user.Email)
+		writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user, Token: h.issueToken(user.ID)})
 		return
 	}
 
@@ -147,4 +164,66 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("register ok", "user_id", user.ID, "email", user.Email)
 	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user, Token: h.issueToken(user.ID)})
+}
+
+func (h *AuthHandler) autoCreateUser(ctx context.Context, email string) (models.User, error) {
+	base := sanitizeLogin(email)
+	for attempt := 0; attempt < 5; attempt++ {
+		login := base
+		if attempt > 0 {
+			login = fmt.Sprintf("%s_%04x", base, rand.Intn(0x10000))
+		}
+		user, err := h.insertUser(ctx, email, login)
+		if err == nil {
+			return user, nil
+		}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			continue
+		}
+		return models.User{}, err
+	}
+	return models.User{}, fmt.Errorf("could not allocate unique login after 5 attempts")
+}
+
+func (h *AuthHandler) insertUser(ctx context.Context, email, login string) (models.User, error) {
+	tx, err := h.DB.Begin(ctx)
+	if err != nil {
+		return models.User{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	var user models.User
+	err = tx.QueryRow(ctx,
+		`INSERT INTO users (email, login, region) VALUES ($1, $2, '')
+		 RETURNING id, email, login, region, points, created_at`,
+		email, login,
+	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	if _, err := tx.Exec(ctx, `INSERT INTO leaderboard (user_id) VALUES ($1)`, user.ID); err != nil {
+		return models.User{}, err
+	}
+
+	return user, tx.Commit(ctx)
+}
+
+func sanitizeLogin(email string) string {
+	prefix := strings.SplitN(email, "@", 2)[0]
+	var b strings.Builder
+	for _, c := range strings.ToLower(prefix) {
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' {
+			b.WriteRune(c)
+		}
+	}
+	s := b.String()
+	if len(s) > 24 {
+		s = s[:24]
+	}
+	if len(s) < 2 {
+		s = "user"
+	}
+	return s
 }
