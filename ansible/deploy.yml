@@ -17,6 +17,8 @@
     DB_PORT: "{{ lookup('ansible.builtin.env','DB_PORT') | default('5432', true) }}"
 
     CF_WORKER_URL: "{{ lookup('ansible.builtin.env','CF_WORKER_URL') | default('', true) }}"
+    LOOKUP_API_URL: "{{ lookup('ansible.builtin.env','LOOKUP_API_URL') | default('', true) }}"
+    LOOKUP_API_KEY: "{{ lookup('ansible.builtin.env','LOOKUP_API_KEY') | default('', true) }}"
     API_PORT: "{{ lookup('ansible.builtin.env','API_PORT') | default('8082', true) }}"
     GOMAXPROCS: "{{ lookup('ansible.builtin.env','GOMAXPROCS') | default('4', true) }}"
     NGINX_SERVER_NAME: "{{ lookup('ansible.builtin.env','NGINX_SERVER_NAME') | default('_', true) }}"

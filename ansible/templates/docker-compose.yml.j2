@@ -47,6 +47,8 @@ services:
     environment:
       DATABASE_URL: "postgres://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgres:5432/{{ POSTGRES_DB }}?sslmode=disable"
       CF_WORKER_URL: "{{ CF_WORKER_URL }}"
+      LOOKUP_API_URL: "{{ LOOKUP_API_URL }}"
+      LOOKUP_API_KEY: "{{ LOOKUP_API_KEY }}"
       PORT: "8082"
       GOMAXPROCS: "{{ GOMAXPROCS }}"
     ports:
