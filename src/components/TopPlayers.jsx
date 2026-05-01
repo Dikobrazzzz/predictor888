@@ -1,13 +1,7 @@
 import { useState } from 'react'
 import { mockLeaderboard } from '../mockData'
 
-const MY_PREDICTIONS = [
-  { date: '08.09', xp: '1000', status: 'Win' },
-  { date: '08.09', xp: '1000', status: 'Win' },
-  { date: '08.09', xp: '1000', status: 'Win' },
-]
-
-export default function TopPlayers() {
+export default function TopPlayers({ user }) {
   const [tab, setTab] = useState('tournament')
 
   return (
@@ -128,11 +122,11 @@ export default function TopPlayers() {
             <div style={{ display: 'flex', gap: '24px' }}>
               <div>
                 <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Your position</div>
-                <div style={{ color: '#FFFE45', fontSize: '16px', fontWeight: 700 }}>#4</div>
+                <div style={{ color: '#FFFE45', fontSize: '16px', fontWeight: 700 }}>—</div>
               </div>
               <div>
                 <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '11px', fontWeight: 400, marginBottom: '4px' }}>Total Points</div>
-                <div style={{ color: '#FFFE45', fontSize: '16px', fontWeight: 700 }}>1240</div>
+                <div style={{ color: '#FFFE45', fontSize: '16px', fontWeight: 700 }}>{user?.points ?? 0}</div>
               </div>
             </div>
 
@@ -163,19 +157,8 @@ export default function TopPlayers() {
             </div>
 
             
-            <div style={{ display: 'flex', flexDirection: 'column', margin: '0 -15px' }}>
-              {MY_PREDICTIONS.map((row, idx) => (
-                <div key={idx}>
-                  <div style={{ display: 'flex', alignItems: 'center', minHeight: '52px', padding: '6px 15px' }}>
-                    <span style={{ flex: 1, color: '#AEAEAE', fontSize: '14px', fontWeight: 400 }}>{row.date}</span>
-                    <span style={{ width: '60px', textAlign: 'right', color: '#FFFFFF', fontSize: '14px', fontWeight: 700, marginRight: '8px' }}>{row.xp}</span>
-                    <span style={{ width: '60px', textAlign: 'right', color: '#FFFE45', fontSize: '14px', fontWeight: 700 }}>{row.status}</span>
-                  </div>
-                  {idx < MY_PREDICTIONS.length - 1 && (
-                    <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-                  )}
-                </div>
-              ))}
+            <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.30)', fontSize: '14px' }}>
+              No predictions yet
             </div>
           </div>
         </>

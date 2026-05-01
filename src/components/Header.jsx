@@ -1,7 +1,6 @@
-import { mockUser } from '../mockData'
-
-export default function Header() {
-  const { name, rank, xp } = mockUser
+export default function Header({ user }) {
+  const name = user?.login || '—'
+  const xp = user?.points ?? 0
 
   return (
     <div>
@@ -14,7 +13,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-lg font-bold overflow-hidden">
-              {name.charAt(0)}
+              {name.charAt(0).toUpperCase()}
             </div>
           </div>
           <div>

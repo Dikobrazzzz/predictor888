@@ -54,12 +54,12 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
   )
 }
 
-export default function Profile({ navigate }) {
+export default function Profile({ navigate, user }) {
   const [subscribed, setSubscribed] = useState(false)
 
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
-      <Header />
+      <Header user={user} />
 
       <div style={{ padding: '0 20px' }}>
         <div style={{
@@ -93,7 +93,7 @@ export default function Profile({ navigate }) {
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Your Position</div>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>#4</div>
+                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>—</div>
               </div>
             </div>
 
@@ -109,7 +109,7 @@ export default function Profile({ navigate }) {
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Win rate</div>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>68%</div>
+                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>—</div>
               </div>
             </div>
           </div>
@@ -120,13 +120,13 @@ export default function Profile({ navigate }) {
             <InfoRow
               icon={iconEmail}
               label="Email"
-              value="alex.rank@gmail.com"
+              value={user?.email || '—'}
             />
 
             <InfoRow
               icon={iconLocation}
               label="Region"
-              value="Uzbekistan"
+              value={user?.region || '—'}
               rightSlot={
                 <img src={iconEdit} alt="" style={{ width: '20px', height: '20px', flexShrink: 0 }} />
               }

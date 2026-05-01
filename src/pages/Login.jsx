@@ -1,6 +1,22 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
-import { setSession } from '../utils/api'
+import { setSession, apiFetch } from '../utils/api'
+
+function detectRegion() {
+  try {
+    const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code
+    const locale = tgLang || navigator.language || (navigator.languages && navigator.languages[0]) || ''
+    const parts = locale.split('-')
+    const countryCode = parts.length > 1 ? parts[parts.length - 1].toUpperCase() : ''
+    if (countryCode.length === 2) {
+      return new Intl.DisplayNames(['en'], { type: 'region' }).of(countryCode) || countryCode
+    }
+    const lang2country = { ru: 'Russia', uz: 'Uzbekistan', kz: 'Kazakhstan', uk: 'Ukraine', az: 'Azerbaijan', tr: 'Turkey', en: 'United States' }
+    return lang2country[parts[0].toLowerCase()] || parts[0].toUpperCase()
+  } catch {
+    return ''
+  }
+}
 import vectorSvg from '/icons/Vector-3.svg'
 import redLightSvg from '/icons/red light.svg'
 import closeIcon from '/icons/Icon-3.svg'
@@ -29,8 +45,30 @@ export default function Login({ onLogin }) {
       })
       const data = await res.json()
       if (res.ok && data.user) {
-        setSession(data.user, data.token)
-        onLogin(data.user)
+        if (!data.user.region) {
+          const region = detectRegion()
+          if (region) {
+            try {
+              const upd = await apiFetch('/api/users/me', {
+                method: 'PATCH',
+                body: JSON.stringify({ region }),
+              })
+              const updUser = upd.ok ? await upd.json() : null
+              const finalUser = updUser?.id ? updUser : data.user
+              setSession(finalUser, data.token)
+              onLogin(finalUser)
+            } catch {
+              setSession(data.user, data.token)
+              onLogin(data.user)
+            }
+          } else {
+            setSession(data.user, data.token)
+            onLogin(data.user)
+          }
+        } else {
+          setSession(data.user, data.token)
+          onLogin(data.user)
+        }
       } else {
         setNotFound(true)
       }
