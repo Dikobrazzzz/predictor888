@@ -19,7 +19,7 @@ func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-User-ID")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-User-ID, Authorization")
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -78,7 +78,13 @@ func main() {
 		slog.Warn("LOOKUP_API_URL or LOOKUP_API_KEY not set, 888starz check disabled")
 	}
 
-	auth := &handlers.AuthHandler{DB: pool, Lookup: lookup}
+	signer := handlers.NewTokenSigner(os.Getenv("SESSION_SECRET"))
+	if signer == nil {
+		slog.Warn("SESSION_SECRET not set or too short (<16 chars), bearer tokens disabled, falling back to X-User-ID")
+	}
+	handlers.SetSessionSigner(signer)
+
+	auth := &handlers.AuthHandler{DB: pool, Lookup: lookup, Signer: signer}
 	user := &handlers.UserHandler{DB: pool}
 	pred := &handlers.PredictionHandler{DB: pool}
 	lb := &handlers.LeaderboardHandler{DB: pool}
@@ -152,7 +158,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	srv.Shutdown(ctx)
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("server shutdown error", "err", err)
+	}
 	live.Shutdown()
 	slog.Info("server stopped")
 }
@@ -172,15 +180,3 @@ func parseCFWorkerURLs(env string) []string {
 	return urls
 }
 
-func runMigrations(pool *pgxpool.Pool) {
-	sql, err := os.ReadFile("migrations/001_init.sql")
-	if err != nil {
-		slog.Warn("no migrations file found, skipping", "err", err)
-		return
-	}
-	if _, err := pool.Exec(context.Background(), string(sql)); err != nil {
-		slog.Warn("migration note", "err", err)
-	} else {
-		slog.Info("migrations applied")
-	}
-}

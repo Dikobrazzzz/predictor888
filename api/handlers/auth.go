@@ -14,13 +14,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const maxBodySize = 1 << 20 // 1 MB
+const maxBodySize = 1 << 20
 
 var emailRe = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 type AuthHandler struct {
 	DB     *pgxpool.Pool
 	Lookup *LookupClient
+	Signer *TokenSigner
+}
+
+func (h *AuthHandler) issueToken(userID string) string {
+	if h.Signer == nil {
+		return ""
+	}
+	return h.Signer.Issue(userID)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +67,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("login ok", "user_id", user.ID, "email", user.Email)
-	writeJSON(w, http.StatusOK, models.LoginResponse{User: &user})
+	writeJSON(w, http.StatusOK, models.LoginResponse{User: &user, Token: h.issueToken(user.ID)})
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -138,5 +146,5 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("register ok", "user_id", user.ID, "email", user.Email)
-	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user})
+	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user, Token: h.issueToken(user.ID)})
 }

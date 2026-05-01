@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import { setSession } from '../utils/api'
 import vectorSvg from '/icons/Vector-3.svg'
 import redLightSvg from '/icons/red light.svg'
 import closeIcon from '/icons/Icon-3.svg'
@@ -28,7 +29,7 @@ export default function Login({ onLogin }) {
       })
       const data = await res.json()
       if (res.ok && data.user) {
-        localStorage.setItem('p888_user', JSON.stringify(data.user))
+        setSession(data.user, data.token)
         onLogin(data.user)
       } else {
         setNotFound(true)
@@ -120,7 +121,6 @@ export default function Login({ onLogin }) {
         }}>
 
           {notFound ? (
-            /* ── Email not found state ── */
             <>
               <button
                 onClick={() => { setNotFound(false); setMail(''); setTouched(false) }}
@@ -164,7 +164,6 @@ export default function Login({ onLogin }) {
               </span>
             </>
           ) : (
-            /* ── Default login state ── */
             <>
               <span style={{
                 color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',

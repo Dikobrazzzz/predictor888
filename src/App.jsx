@@ -31,12 +31,22 @@ function saveToStorage(events, counts, topEvents, recommended) {
 const AUTH_KEY = 'p888_authenticated'
 const ONBOARD_KEY = 'p888_onboarded'
 const LOGIN_KEY = 'p888_logged_in'
+const USER_KEY = 'p888_user'
+
+function loadUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
 
 export default function App() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [onboarded, setOnboarded] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
-  const [user, setUser] = useState(null)
+  const [authenticated, setAuthenticated] = useState(() => localStorage.getItem(AUTH_KEY) === '1')
+  const [onboarded, setOnboarded] = useState(() => localStorage.getItem(ONBOARD_KEY) === '1')
+  const [user, setUser] = useState(loadUser)
+  const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem(LOGIN_KEY) === '1' && loadUser() !== null)
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
 

@@ -44,7 +44,6 @@ func (c *LookupClient) LookupByEmail(ctx context.Context, email string) (found b
 	defer resp.Body.Close()
 	io.Copy(io.Discard, io.LimitReader(resp.Body, 64*1024))
 
-	// 200 = found, 404 = not found, anything else = error
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil
 	}

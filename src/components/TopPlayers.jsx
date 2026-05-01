@@ -29,7 +29,6 @@ export default function TopPlayers() {
       </div>
 
       {tab === 'tournament' ? (
-        /* Tournament table — Top Players */
         <div style={{ width: '100%', borderRadius: '24px', padding: '15px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box', border: '1px solid transparent', background: 'linear-gradient(#1A1A1A, #1A1A1A) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span style={{ color: '#FFFFFF', fontWeight: 600, fontSize: '14px' }}>Top Players</span>
@@ -110,7 +109,6 @@ export default function TopPlayers() {
           </div>
         </div>
       ) : (
-        /* My Prediction section */
         <>
           
           <div style={{

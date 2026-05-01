@@ -25,12 +25,10 @@ func validLogin(s string) bool {
 	return loginRe.MatchString(s)
 }
 
-// validStringField reports whether s is non-empty and within max bytes.
 func validStringField(s string, max int) bool {
 	return len(s) > 0 && len(s) <= max
 }
 
-// validOptionalField reports whether s is within max bytes (empty string is allowed).
 func validOptionalField(s string, max int) bool {
 	return len(s) <= max
 }

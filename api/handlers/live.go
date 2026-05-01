@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -68,6 +69,54 @@ var countsMap = map[string]string{
 	"Ice Hockey": "hockey",
 }
 
+var trashPatterns = []string{
+	"short football", "3x3", "4x4", "5x5", "6x6",
+	"amateur", "university", "student", "virtual", "cyber",
+	"daily league", "regional league", "village",
+	"esport", "volta",
+	"fifa 23", "fifa 24", "fifa 25",
+}
+
+func isTrashLeague(league string) bool {
+	l := strings.ToLower(league)
+	for _, p := range trashPatterns {
+		if strings.Contains(l, p) {
+			return true
+		}
+	}
+	return false
+}
+
+func leagueScore(league string) int {
+	l := strings.ToLower(league)
+	for _, kw := range []string{"world cup", "fifa world", "mundial", "coupe du monde"} {
+		if strings.Contains(l, kw) {
+			return 300
+		}
+	}
+	for _, kw := range []string{"world cup qual", "wc qualif", "wcq", "nations league"} {
+		if strings.Contains(l, kw) {
+			return 250
+		}
+	}
+	for _, kw := range []string{"champions league", "europa league", "conference league", "copa america", "uefa euro", "afcon"} {
+		if strings.Contains(l, kw) {
+			return 200
+		}
+	}
+	for _, kw := range []string{"qualification", "qualifier"} {
+		if strings.Contains(l, kw) {
+			return 175
+		}
+	}
+	for _, kw := range []string{"premier league", "la liga", "bundesliga", "serie a", "ligue 1", "eredivisie", "primeira liga", "mls", "khl", "nhl", "nba", "euroleague", "atp", "wta"} {
+		if strings.Contains(l, kw) {
+			return 150
+		}
+	}
+	return 0
+}
+
 type eventsstatSport struct {
 	ID       int
 	Name     string
@@ -75,8 +124,13 @@ type eventsstatSport struct {
 }
 
 var eventsstatSports = map[string]eventsstatSport{
-	"football": {1, "Football", []string{"champions league", "premier league", "la liga", "bundesliga",
-		"serie a", "ligue 1", "eredivisie", "primeira liga", "europa league", "conference league", "serie b"}},
+	"football": {1, "Football", []string{
+		"world cup", "fifa world", "mundial", "coupe du monde",
+		"champions league", "europa league", "conference league",
+		"nations league", "copa america",
+		"premier league", "la liga", "bundesliga", "serie a", "ligue 1",
+		"eredivisie", "primeira liga", "qualification", "qualifier",
+	}},
 	"hockey": {2, "Ice Hockey", []string{"khl", "nhl", "kontinental", "liiga", "shl", "nl "}},
 	"basketball": {3, "Basketball", []string{"nba", "euroleague", "acb", "bbl", "nbl", "lnb"}},
 	"tennis": {4, "Tennis", []string{"atp", "wta", "grand slam", "masters"}},
@@ -102,7 +156,7 @@ type LiveHandler struct {
 	cancel         context.CancelFunc
 	wg             sync.WaitGroup
 
-	jsonCache   sync.Map // key -> []byte (pre-serialized JSON for hot endpoints)
+	jsonCache sync.Map
 }
 
 func NewLiveHandler(ctx context.Context, cfWorkerURLs []string) *LiveHandler {
@@ -170,7 +224,7 @@ func (h *LiveHandler) fetchViaWorker(workerURL, targetURL string) ([]map[string]
 		reader = gr
 	}
 
-	const maxResponseSize = 10 << 20 // 10 MB
+	const maxResponseSize = 10 << 20
 	body, err := io.ReadAll(io.LimitReader(reader, maxResponseSize))
 	if err != nil {
 		return nil, err
@@ -475,13 +529,24 @@ func (h *LiveHandler) refreshSport(key string) {
 
 	matches := []map[string]interface{}{}
 	for _, m := range raw {
-		if getStr(m, "SE") == cfg.Name {
-			matches = append(matches, parseMatch(m, cfg.OddsType))
-			if len(matches) >= 50 {
-				break
-			}
+		if getStr(m, "SE") != cfg.Name {
+			continue
+		}
+		league := getStr(m, "L")
+		if isTrashLeague(league) {
+			continue
+		}
+		matches = append(matches, parseMatch(m, cfg.OddsType))
+		if len(matches) >= 50 {
+			break
 		}
 	}
+
+	sort.SliceStable(matches, func(i, j int) bool {
+		li, _ := matches[i]["league"].(string)
+		lj, _ := matches[j]["league"].(string)
+		return leagueScore(li) > leagueScore(lj)
+	})
 
 	if len(matches) > 0 {
 		h.cache.Store(key, cacheEntry{data: matches, ts: time.Now()})
@@ -540,7 +605,7 @@ func (h *LiveHandler) refreshCounts() {
 	h.preSerialize("_counts", totals)
 }
 
-func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
+func (h *LiveHandler) refreshRecommendationsSport(ctx context.Context, sportKey string) {
 	cfg := eventsstatSports[sportKey]
 	now := time.Now()
 	type scoredMatch struct {
@@ -549,15 +614,19 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 	}
 	var all []scoredMatch
 
-	eventsstatBase := "https://eventsstat.com/en/services-api/core-api/v1/daygames"
-	eventsstatCDN := "https://eventsstat.com"
+	const eventsstatBase = "https://eventsstat.com/en/services-api/core-api/v1/daygames"
+	const eventsstatCDN = "https://eventsstat.com"
+	const maxRecResponse = 10 << 20
 
 	for dayOffset := 0; dayOffset < recommendDays; dayOffset++ {
 		date := now.AddDate(0, 0, dayOffset).Format("02.01.2006")
 		u := fmt.Sprintf("%s?sportId=%d&timeZone=3&lng=en&ref=233&gr=789&fcountry=197&page=1&date=%s",
 			eventsstatBase, cfg.ID, date)
 
-		req, _ := http.NewRequest("GET", u, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+		if err != nil {
+			continue
+		}
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15")
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("Referer", "https://eventsstat.com/en/statistic/")
@@ -566,8 +635,11 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 		if err != nil {
 			continue
 		}
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(io.LimitReader(resp.Body, maxRecResponse))
 		resp.Body.Close()
+		if err != nil {
+			continue
+		}
 
 		var data struct {
 			Teams  []map[string]interface{} `json:"teams"`
@@ -590,11 +662,11 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 				continue
 			}
 			league := getStr(si, "title")
-			leagueScore := 0
+			kwScore := 0
 			lt := strings.ToLower(league)
 			for _, kw := range cfg.Keywords {
 				if strings.Contains(lt, kw) {
-					leagueScore = 100
+					kwScore = 100
 					break
 				}
 			}
@@ -643,7 +715,7 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 					timeLabel = kickoff.Format("Mon 15:04")
 				}
 
-				s := leagueScore + (recommendDays-dayOffset)*20
+				s := kwScore + (recommendDays-dayOffset)*20
 				all = append(all, scoredMatch{
 					m: map[string]interface{}{
 						"id":       fmt.Sprintf("rec_%v", g["id"]),
@@ -668,13 +740,9 @@ func (h *LiveHandler) refreshRecommendationsSport(sportKey string) {
 		return
 	}
 
-	for i := 0; i < len(all)-1; i++ {
-		for j := i + 1; j < len(all); j++ {
-			if all[j].score > all[i].score {
-				all[i], all[j] = all[j], all[i]
-			}
-		}
-	}
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].score > all[j].score
+	})
 
 	top := make([]map[string]interface{}, 0, recommendTopN)
 	for i := 0; i < len(all) && i < recommendTopN; i++ {
@@ -736,24 +804,24 @@ func (h *LiveHandler) rebuildAllCache() {
 
 func (h *LiveHandler) bgRefreshRecommendations(ctx context.Context) {
 	defer h.wg.Done()
-	h.doRefreshRecommendations()
+	h.doRefreshRecommendations(ctx)
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(recommendTTL / 2):
-			h.doRefreshRecommendations()
+			h.doRefreshRecommendations(ctx)
 		}
 	}
 }
 
-func (h *LiveHandler) doRefreshRecommendations() {
+func (h *LiveHandler) doRefreshRecommendations(ctx context.Context) {
 	var wg sync.WaitGroup
 	for key := range eventsstatSports {
 		wg.Add(1)
 		go func(k string) {
 			defer wg.Done()
-			h.refreshRecommendationsSport(k)
+			h.refreshRecommendationsSport(ctx, k)
 		}(key)
 	}
 	wg.Wait()

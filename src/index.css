@@ -30,7 +30,6 @@ body {
   position: relative;
 }
 
-/* Hide scrollbar for horizontal scroll */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -39,7 +38,6 @@ body {
   display: none;
 }
 
-/* Team logo placeholder */
 .team-logo {
   width: 64px;
   height: 64px;
@@ -54,7 +52,6 @@ body {
   overflow: hidden;
 }
 
-/* Pulse animation for live badge */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }

@@ -62,6 +62,7 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	User  *User  `json:"user,omitempty"`
+	Token string `json:"token,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 

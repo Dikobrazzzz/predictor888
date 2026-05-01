@@ -59,7 +59,6 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Single round-trip: COALESCE leaves field unchanged when nil is passed.
 	var user models.User
 	err := h.DB.QueryRow(r.Context(),
 		`UPDATE users

@@ -14,20 +14,48 @@ type ctxKey string
 const RequestIDKey ctxKey = "request_id"
 const UserIDKey ctxKey = "user_id"
 
+var sessionSigner *TokenSigner
+
+func SetSessionSigner(s *TokenSigner) { sessionSigner = s }
+
 func RequireUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		raw := r.Header.Get("X-User-ID")
-		if raw == "" {
-			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
+		userID, ok := extractUserID(r)
+		if !ok {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
 			return
 		}
-		if !validUUID(raw) {
-			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid user id"})
-			return
-		}
-		ctx := context.WithValue(r.Context(), UserIDKey, raw)
+		ctx := context.WithValue(r.Context(), UserIDKey, userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func extractUserID(r *http.Request) (string, bool) {
+	if sessionSigner != nil {
+		if auth := r.Header.Get("Authorization"); auth != "" {
+			if token, ok := bearerToken(auth); ok {
+				if uid, err := sessionSigner.Verify(token); err == nil {
+					return uid, true
+				}
+			}
+		}
+	}
+	raw := r.Header.Get("X-User-ID")
+	if raw != "" && validUUID(raw) {
+		return raw, true
+	}
+	return "", false
+}
+
+func bearerToken(h string) (string, bool) {
+	const prefix = "Bearer "
+	if len(h) <= len(prefix) {
+		return "", false
+	}
+	if h[:len(prefix)] != prefix {
+		return "", false
+	}
+	return h[len(prefix):], true
 }
 
 func UserID(r *http.Request) string {
