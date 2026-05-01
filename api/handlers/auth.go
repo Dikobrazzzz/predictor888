@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"predictor888/models"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,7 +19,8 @@ const maxBodySize = 1 << 20 // 1 MB
 var emailRe = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 type AuthHandler struct {
-	DB *pgxpool.Pool
+	DB     *pgxpool.Pool
+	Lookup *LookupClient
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +33,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if !emailRe.MatchString(req.Email) {
 		writeJSON(w, http.StatusBadRequest, models.LoginResponse{Error: "invalid email"})
 		return
+	}
+
+	if h.Lookup != nil {
+		found, err := h.Lookup.LookupByEmail(r.Context(), req.Email)
+		if err != nil {
+			slog.Warn("login: lookup service error", "email", req.Email, "err", err)
+		} else if !found {
+			slog.Warn("login: user not found in 888starz", "email", req.Email)
+			writeJSON(w, http.StatusForbidden, models.LoginResponse{Error: "access denied"})
+			return
+		}
 	}
 
 	var user models.User
@@ -72,21 +86,56 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if h.Lookup != nil {
+		found, err := h.Lookup.LookupByEmail(r.Context(), req.Email)
+		if err != nil {
+			slog.Warn("register: lookup service error", "email", req.Email, "err", err)
+		} else if !found {
+			slog.Warn("register: user not found in 888starz", "email", req.Email)
+			writeJSON(w, http.StatusForbidden, map[string]string{"error": "access denied"})
+			return
+		}
+	}
+
+	tx, err := h.DB.Begin(r.Context())
+	if err != nil {
+		slog.Error("register: begin tx", "err", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal error"})
+		return
+	}
+	defer tx.Rollback(r.Context())
+
 	var user models.User
-	err := h.DB.QueryRow(r.Context(),
+	err = tx.QueryRow(r.Context(),
 		`INSERT INTO users (email, login, region) VALUES ($1, $2, $3)
 		 RETURNING id, email, login, region, points, created_at`,
 		req.Email, req.Login, req.Region,
 	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
-
 	if err != nil {
-		slog.Warn("register: conflict", "email", req.Email, "login", req.Login, "err", err)
-		writeJSON(w, http.StatusConflict, map[string]string{"error": "email or login already exists"})
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			slog.Warn("register: conflict", "email", req.Email, "login", req.Login, "err", err)
+			writeJSON(w, http.StatusConflict, map[string]string{"error": "email or login already exists"})
+			return
+		}
+		slog.Error("register: insert user failed", "email", req.Email, "err", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal error"})
 		return
 	}
 
-	h.DB.Exec(r.Context(),
-		`INSERT INTO leaderboard (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, user.ID)
+	if _, err := tx.Exec(r.Context(),
+		`INSERT INTO leaderboard (user_id) VALUES ($1)`, user.ID,
+	); err != nil {
+		slog.Error("register: insert leaderboard failed", "user_id", user.ID, "err", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal error"})
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		slog.Error("register: commit failed", "user_id", user.ID, "err", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal error"})
+		return
+	}
 
 	slog.Info("register ok", "user_id", user.ID, "email", user.Email)
 	writeJSON(w, http.StatusCreated, models.LoginResponse{User: &user})

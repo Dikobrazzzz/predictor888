@@ -70,7 +70,15 @@ func main() {
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
-	auth := &handlers.AuthHandler{DB: pool}
+	lookup := handlers.NewLookupClient(
+		os.Getenv("LOOKUP_API_URL"),
+		os.Getenv("LOOKUP_API_KEY"),
+	)
+	if lookup == nil {
+		slog.Warn("LOOKUP_API_URL or LOOKUP_API_KEY not set, 888starz check disabled")
+	}
+
+	auth := &handlers.AuthHandler{DB: pool, Lookup: lookup}
 	user := &handlers.UserHandler{DB: pool}
 	pred := &handlers.PredictionHandler{DB: pool}
 	lb := &handlers.LeaderboardHandler{DB: pool}

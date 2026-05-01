@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -22,7 +21,7 @@ func RequireUser(next http.Handler) http.Handler {
 			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "missing user id"})
 			return
 		}
-		if _, err := strconv.Atoi(raw); err != nil {
+		if !validUUID(raw) {
 			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid user id"})
 			return
 		}
