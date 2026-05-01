@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import { apiFetch } from '../utils/api'
+
+const OUTCOME_MAP = { '1': 'home', 'X': 'draw', '2': 'away' }
 
 const OUTCOME_COLORS = {
   '1': '#8FFF37',
@@ -63,6 +66,8 @@ function TeamIcon({ icon, emoji }) {
 export default function MakePrediction({ event, navigate }) {
   const [selected, setSelected] = useState(null)
   const [confirmed, setConfirmed] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
 
   if (!event) return null
 
@@ -95,9 +100,33 @@ export default function MakePrediction({ event, navigate }) {
   ]
   const outcomes = baseOutcomes.filter(Boolean)
 
-  const handleConfirm = () => {
-    if (!selected || confirmed) return
-    setConfirmed(true)
+  const handleConfirm = async () => {
+    if (!selected || saving || confirmed) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const res = await apiFetch('/api/predictions', {
+        method: 'POST',
+        body: JSON.stringify({
+          event_id: String(event.id),
+          sport: event.sport || '',
+          league: event.league || '',
+          home_team: home?.name || '',
+          away_team: away?.name || '',
+          outcome: OUTCOME_MAP[selected],
+        }),
+      })
+      if (res.status === 201 || res.ok) {
+        setConfirmed(true)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setSaveError(data.error || 'Failed to save prediction')
+      }
+    } catch {
+      setSaveError('Network error, please try again')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -273,22 +302,27 @@ export default function MakePrediction({ event, navigate }) {
           })}
         </div>
 
-        
+        {saveError && (
+          <div style={{ color: '#FF4D00', fontSize: '13px', textAlign: 'center', marginBottom: '10px' }}>
+            {saveError}
+          </div>
+        )}
         <button
           onClick={handleConfirm}
+          disabled={saving}
           style={{
             width: '100%', height: '56px', borderRadius: '18px',
-            background: selected ? '#E20000' : '#262626',
+            background: selected && !saving ? '#E20000' : '#262626',
             border: 'none',
-            color: selected ? '#FFFFFF' : '#999999',
+            color: selected && !saving ? '#FFFFFF' : '#999999',
             fontWeight: 700, fontSize: '16px',
-            cursor: selected ? 'pointer' : 'default',
+            cursor: selected && !saving ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'background 0.2s, color 0.2s',
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          Make Prediction
+          {saving ? 'Saving…' : 'Make Prediction'}
         </button>
       </div>
 

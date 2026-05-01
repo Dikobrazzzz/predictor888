@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '../components/Header'
+import { apiFetch } from '../utils/api'
 import BottomNav from '../components/BottomNav'
 import iconTapbar from '/icons/Icon_Tapbar.svg'
 import iconPosition from '/icons/Iocn_Tapbar-2.svg'
@@ -56,6 +57,20 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
 
 export default function Profile({ navigate, user }) {
   const [subscribed, setSubscribed] = useState(false)
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    apiFetch('/api/leaderboard/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (!cancelled && data) setStats(data) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  const position = stats?.rank > 0 ? `#${stats.rank}` : '—'
+  const total = (stats?.wins ?? 0) + (stats?.losses ?? 0)
+  const winRate = total > 0 ? `${Math.round((stats.wins / total) * 100)}%` : '—'
 
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
@@ -93,7 +108,7 @@ export default function Profile({ navigate, user }) {
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Your Position</div>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>—</div>
+                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{position}</div>
               </div>
             </div>
 
@@ -109,7 +124,7 @@ export default function Profile({ navigate, user }) {
               </div>
               <div>
                 <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Win rate</div>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>—</div>
+                <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{winRate}</div>
               </div>
             </div>
           </div>

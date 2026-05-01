@@ -88,7 +88,8 @@ func main() {
 	user := &handlers.UserHandler{DB: pool}
 	pred := &handlers.PredictionHandler{DB: pool}
 	lb := &handlers.LeaderboardHandler{DB: pool}
-	live := handlers.NewLiveHandler(appCtx, cfURLs)
+	resolver := handlers.NewResolver(pool)
+	live := handlers.NewLiveHandler(appCtx, cfURLs, resolver)
 
 	mux := http.NewServeMux()
 

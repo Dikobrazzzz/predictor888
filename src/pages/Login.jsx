@@ -49,8 +49,8 @@ export default function Login({ onLogin }) {
           const region = detectRegion()
           if (region) {
             try {
-              const upd = await apiFetch('/api/users/me', {
-                method: 'PATCH',
+              const upd = await apiFetch('/api/user/profile', {
+                method: 'PUT',
                 body: JSON.stringify({ region }),
               })
               const updUser = upd.ok ? await upd.json() : null

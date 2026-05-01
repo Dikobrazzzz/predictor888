@@ -124,6 +124,6 @@ export default function App() {
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
   if (page === 'rank') return <Rank navigate={navigate} user={user} />
   if (page === 'profile') return <Profile navigate={navigate} user={user} />
-  if (page === 'promo') return <Promo navigate={navigate} />
+  if (page === 'promo') return <Promo navigate={navigate} user={user} />
   return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} user={user} />
 }

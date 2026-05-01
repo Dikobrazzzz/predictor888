@@ -4,10 +4,10 @@ import imgGates from '/icons/0214656b.webp'
 import imgStar from '/icons/bc4c4d84.webp'
 import imgAviator from '/icons/087e19e8.webp'
 
-export default function Promo({ navigate }) {
+export default function Promo({ navigate, user }) {
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
-      <Header />
+      <Header user={user} />
 
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         

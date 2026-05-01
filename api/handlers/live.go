@@ -155,15 +155,17 @@ type LiveHandler struct {
 	httpClient     *http.Client
 	cancel         context.CancelFunc
 	wg             sync.WaitGroup
+	resolver       *Resolver
 
 	jsonCache sync.Map
 }
 
-func NewLiveHandler(ctx context.Context, cfWorkerURLs []string) *LiveHandler {
+func NewLiveHandler(ctx context.Context, cfWorkerURLs []string, resolver *Resolver) *LiveHandler {
 	ctx, cancel := context.WithCancel(ctx)
 	h := &LiveHandler{
 		cfWorkerURLs: cfWorkerURLs,
 		cancel:       cancel,
+		resolver:     resolver,
 		httpClient: &http.Client{
 			Timeout: fetchTimeout,
 			Transport: &http.Transport{
@@ -553,6 +555,14 @@ func (h *LiveHandler) refreshSport(key string) {
 		h.circuitReset(key)
 		h.preSerialize(key, matches)
 	}
+
+	if h.resolver != nil {
+		for _, m := range matches {
+			eventID := fmt.Sprintf("%v", m["id"])
+			score, _ := m["score"].(*string)
+			h.resolver.RecordEvent(eventID, score)
+		}
+	}
 }
 
 func (h *LiveHandler) refreshTop() {
@@ -755,19 +765,22 @@ func (h *LiveHandler) refreshRecommendationsSport(ctx context.Context, sportKey 
 
 func (h *LiveHandler) bgRefresh(ctx context.Context) {
 	defer h.wg.Done()
-	h.doRefresh()
+	h.doRefresh(ctx)
 	for {
 		sleepSec := 25 + rand.Intn(15)
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Duration(sleepSec) * time.Second):
-			h.doRefresh()
+			h.doRefresh(ctx)
 		}
 	}
 }
 
-func (h *LiveHandler) doRefresh() {
+func (h *LiveHandler) doRefresh(ctx context.Context) {
+	if h.resolver != nil {
+		h.resolver.BeginCycle()
+	}
 	var wg sync.WaitGroup
 	for key := range sportsConfig {
 		wg.Add(1)
@@ -782,6 +795,9 @@ func (h *LiveHandler) doRefresh() {
 	go func() { defer wg.Done(); h.refreshCounts() }()
 	wg.Wait()
 	h.rebuildAllCache()
+	if h.resolver != nil {
+		h.resolver.EndCycle(ctx)
+	}
 }
 
 func (h *LiveHandler) rebuildAllCache() {
