@@ -118,6 +118,8 @@ export default function MakePrediction({ event, navigate }) {
       })
       if (res.status === 201 || res.ok) {
         setConfirmed(true)
+      } else if (res.status === 409) {
+        setSaveError('You already made a prediction for this match')
       } else {
         const data = await res.json().catch(() => ({}))
         setSaveError(data.error || 'Failed to save prediction')

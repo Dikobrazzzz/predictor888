@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"predictor888/models"
 
@@ -18,6 +19,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+var loginRL = newRateLimiter(5, time.Minute)
 
 const maxBodySize = 1 << 20
 
@@ -37,6 +40,11 @@ func (h *AuthHandler) issueToken(userID string) string {
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	if !loginRL.Allow(clientIP(r)) {
+		writeJSON(w, http.StatusTooManyRequests, models.LoginResponse{Error: "too many attempts, try again later"})
+		return
+	}
+
 	var req models.LoginRequest
 	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, models.LoginResponse{Error: "invalid request"})

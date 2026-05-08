@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
 
 	"predictor888/models"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -63,6 +65,11 @@ func (h *PredictionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		&pred.HomeTeam, &pred.AwayTeam, &pred.Outcome, &pred.Points, &pred.Status, &pred.CreatedAt)
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			writeJSON(w, http.StatusConflict, map[string]string{"error": "you already made a prediction for this match"})
+			return
+		}
 		slog.Error("prediction create failed", "user_id", userID, "event_id", req.EventID, "err", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create prediction"})
 		return

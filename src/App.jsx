@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Home from './pages/Home'
 import Events from './pages/Events'
 import MakePrediction from './pages/MakePrediction'
@@ -9,6 +9,7 @@ import Welcome from './pages/Welcome'
 import Telegram from './pages/Telegram'
 import Login from './pages/Login'
 import parseEvent from './utils/parseEvent'
+import { apiFetch, setSession } from './utils/api'
 
 const LS_KEY = 'p888_live_cache'
 
@@ -110,6 +111,48 @@ export default function App() {
     refreshTimer.current = setInterval(fetchLiveData, 30000)
     return () => clearInterval(refreshTimer.current)
   }, [])
+
+  // Redirect to login when any API call returns 401 (expired token)
+  useEffect(() => {
+    const onExpired = () => {
+      localStorage.removeItem(LOGIN_KEY)
+      setLoggedIn(false)
+      setUser(null)
+    }
+    window.addEventListener('p888:session-expired', onExpired)
+    return () => window.removeEventListener('p888:session-expired', onExpired)
+  }, [])
+
+  // Refresh user XP/profile every 60s and on tab focus so header stays current
+  const refreshUser = useCallback(async () => {
+    if (!loggedIn) return
+    try {
+      const res = await apiFetch('/api/user/profile')
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.id) {
+          setUser(prev => {
+            if (!prev || prev.points !== data.points || prev.login !== data.login || prev.region !== data.region) {
+              setSession(data, null)
+              return data
+            }
+            return prev
+          })
+        }
+      }
+    } catch {}
+  }, [loggedIn])
+
+  useEffect(() => {
+    if (!loggedIn) return
+    const timer = setInterval(refreshUser, 60000)
+    const onVisible = () => { if (!document.hidden) refreshUser() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [loggedIn, refreshUser])
 
   const navigate = (to, event = null) => {
     if (event) setCurrentEvent(event)

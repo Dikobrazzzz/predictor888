@@ -42,6 +42,7 @@ export async function apiFetch(path, options = {}) {
 
   if (res.status === 401) {
     clearSession()
+    window.dispatchEvent(new CustomEvent('p888:session-expired'))
   }
 
   return res
