@@ -14,12 +14,12 @@ export default function Home({ navigate, topEvents = [], dataReady = false, user
       <div style={{ padding: '0 20px' }}>
         {!dataReady && (
           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-            Loading...
+            Yuklanmoqda...
           </div>
         )}
         {dataReady && topEvents.length === 0 && (
           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-            No live matches right now
+            Hozirda jonli o'yinlar yo'q
           </div>
         )}
         {currentEvent && <EventCard event={currentEvent} navigate={navigate} forceTopBadge />}

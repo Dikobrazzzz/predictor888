@@ -42,31 +42,53 @@ type sportConfig struct {
 
 var sportsConfig = map[string]sportConfig{
 	"football": {
-		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=1&count=50&lng=en&gr=789&mode=4&country=197&partner=233&getEmpty=true",
+		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=1&count=50&lng=uz&gr=789&mode=4&country=197&partner=233&getEmpty=true",
 		"Football", "1x2_g",
 	},
 	"basketball": {
-		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=3&count=40&lng=en&mode=4&country=197&partner=233&getEmpty=true",
+		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=3&count=40&lng=uz&mode=4&country=197&partner=233&getEmpty=true",
 		"Basketball", "bball",
 	},
 	"tennis": {
-		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=4&count=40&lng=en&gr=789&mode=4&country=197&partner=233&getEmpty=true&virtualSports=true&noFilterBlockEvent=true",
+		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=4&count=40&lng=uz&gr=789&mode=4&country=197&partner=233&getEmpty=true&virtualSports=true&noFilterBlockEvent=true",
 		"Tennis", "12_g",
 	},
 	"hockey": {
-		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=2&count=40&lng=en&gr=789&mode=4&country=197&partner=233&getEmpty=true&virtualSports=true&noFilterBlockEvent=true",
+		"https://888starz.bet/service-api/LiveFeed/Get1x2_VZip?sports=2&count=40&lng=uz&gr=789&mode=4&country=197&partner=233&getEmpty=true&virtualSports=true&noFilterBlockEvent=true",
 		"Ice Hockey", "1x2_g",
 	},
 }
 
-var topGamesURL = "https://888starz.bet/service-api/LiveFeed/GetTopGamesStatZip?lng=en&antisports=66&partner=233"
-var countsURL = "https://888starz.bet/service-api/LiveFeed/GetSportsShortZip?sports=1,2,3,4&lng=en&gr=789&country=197&partner=233&virtualSports=true&groupChamps=true"
+var topGamesURL = "https://888starz.bet/service-api/LiveFeed/GetTopGamesStatZip?lng=uz&antisports=66&partner=233"
+var countsURL = "https://888starz.bet/service-api/LiveFeed/GetSportsShortZip?sports=1,2,3,4&lng=uz&gr=789&country=197&partner=233&virtualSports=true&groupChamps=true"
 
+// countsMap covers both English and Uzbek sport names returned by the API.
 var countsMap = map[string]string{
 	"Football":   "football",
+	"Futbol":     "football",
 	"Basketball": "basketball",
+	"Basketbol":  "basketball",
 	"Tennis":     "tennis",
 	"Ice Hockey": "hockey",
+	"Xokkey":     "hockey",
+	"Muz xokkey": "hockey",
+}
+
+// sportNameNorm maps Uzbek sport names returned by the API to the canonical
+// English names used throughout the codebase.
+var sportNameNorm = map[string]string{
+	"futbol":      "Football",
+	"basketbol":   "Basketball",
+	"tennis":      "Tennis",
+	"xokkey":      "Ice Hockey",
+	"muz xokkey":  "Ice Hockey",
+}
+
+func normalizeSportName(name string) string {
+	if n, ok := sportNameNorm[strings.ToLower(strings.TrimSpace(name))]; ok {
+		return n
+	}
+	return name
 }
 
 var trashPatterns = []string{
@@ -89,27 +111,42 @@ func isTrashLeague(league string) bool {
 
 func leagueScore(league string) int {
 	l := strings.ToLower(league)
-	for _, kw := range []string{"world cup", "fifa world", "mundial", "coupe du monde"} {
+	for _, kw := range []string{
+		"world cup", "fifa world", "mundial", "coupe du monde",
+		"jahon chempionati", "jahon kubogi", // UZ: World Cup
+	} {
 		if strings.Contains(l, kw) {
 			return 300
 		}
 	}
-	for _, kw := range []string{"world cup qual", "wc qualif", "wcq", "nations league"} {
+	for _, kw := range []string{
+		"world cup qual", "wc qualif", "wcq", "nations league",
+		"millatlar ligasi", // UZ: Nations League
+	} {
 		if strings.Contains(l, kw) {
 			return 250
 		}
 	}
-	for _, kw := range []string{"champions league", "europa league", "conference league", "copa america", "uefa euro", "afcon"} {
+	for _, kw := range []string{
+		"champions league", "europa league", "conference league", "copa america", "uefa euro", "afcon",
+		"chempionlar ligasi", "yevropa ligasi", "konferensiya ligasi", "yevropa chempionati", // UZ
+	} {
 		if strings.Contains(l, kw) {
 			return 200
 		}
 	}
-	for _, kw := range []string{"qualification", "qualifier"} {
+	for _, kw := range []string{
+		"qualification", "qualifier",
+		"saralash", // UZ: qualification
+	} {
 		if strings.Contains(l, kw) {
 			return 175
 		}
 	}
-	for _, kw := range []string{"premier league", "la liga", "bundesliga", "serie a", "ligue 1", "eredivisie", "primeira liga", "mls", "khl", "nhl", "nba", "euroleague", "atp", "wta"} {
+	for _, kw := range []string{
+		"premier league", "la liga", "bundesliga", "serie a", "ligue 1", "eredivisie", "primeira liga", "mls", "khl", "nhl", "nba", "euroleague", "atp", "wta",
+		"premyer ligasi", "seriya a", // UZ: Premier League, Serie A
+	} {
 		if strings.Contains(l, kw) {
 			return 150
 		}
@@ -130,6 +167,10 @@ var eventsstatSports = map[string]eventsstatSport{
 		"nations league", "copa america",
 		"premier league", "la liga", "bundesliga", "serie a", "ligue 1",
 		"eredivisie", "primeira liga", "qualification", "qualifier",
+		// UZ equivalents
+		"jahon chempionati", "chempionlar ligasi", "yevropa ligasi",
+		"konferensiya ligasi", "millatlar ligasi",
+		"premyer ligasi", "seriya a", "saralash",
 	}},
 	"hockey": {2, "Ice Hockey", []string{"khl", "nhl", "kontinental", "liiga", "shl", "nl "}},
 	"basketball": {3, "Basketball", []string{"nba", "euroleague", "acb", "bbl", "nbl", "lnb"}},
@@ -473,7 +514,7 @@ func parseTopMatch(m map[string]interface{}) map[string]interface{} {
 	if league == "" {
 		league = getStr(m, "LE")
 	}
-	sport := getStr(m, "SE")
+	sport := normalizeSportName(getStr(m, "SE"))
 	if sport == "" {
 		sport = "Football"
 	}
@@ -531,14 +572,15 @@ func (h *LiveHandler) refreshSport(key string) {
 
 	matches := []map[string]interface{}{}
 	for _, m := range raw {
-		if getStr(m, "SE") != cfg.Name {
-			continue
-		}
 		league := getStr(m, "L")
 		if isTrashLeague(league) {
 			continue
 		}
-		matches = append(matches, parseMatch(m, cfg.OddsType))
+		match := parseMatch(m, cfg.OddsType)
+		// Always use canonical English sport name so frontend filtering works
+		// regardless of the API language (lng=uz returns "Futbol" etc.)
+		match["sport"] = cfg.Name
+		matches = append(matches, match)
 		if len(matches) >= 50 {
 			break
 		}
@@ -630,7 +672,7 @@ func (h *LiveHandler) refreshRecommendationsSport(ctx context.Context, sportKey 
 
 	for dayOffset := 0; dayOffset < recommendDays; dayOffset++ {
 		date := now.AddDate(0, 0, dayOffset).Format("02.01.2006")
-		u := fmt.Sprintf("%s?sportId=%d&timeZone=3&lng=en&ref=233&gr=789&fcountry=197&page=1&date=%s",
+		u := fmt.Sprintf("%s?sportId=%d&timeZone=3&lng=uz&ref=233&gr=789&fcountry=197&page=1&date=%s",
 			eventsstatBase, cfg.ID, date)
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)

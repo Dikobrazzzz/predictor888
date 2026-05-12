@@ -10,13 +10,23 @@ const CYBER_EXCLUDE = ['cyber', 'virtual', '2k', 'blast hockey', 'dream league',
                        'frostball', 'table basketball', 'ipbl', 'subhockey', '3hl', 'rhl', 'mnhl']
 
 const TOP_FOOTBALL_EXACT = new Set([
+  // English
   'england. premier league', 'germany. bundesliga', 'spain. la liga',
   'italy. serie a', 'france. ligue 1', 'netherlands. eredivisie',
   'portugal. primeira liga', 'england. championship',
   'germany. 2. bundesliga', 'spain. la liga 2', 'italy. serie b', 'france. ligue 2',
   'russia. premier league', 'turkey. super lig', 'scotland. premiership',
+  // Uzbek (approximate API format)
+  'angliya. premyer ligasi', 'germaniya. bundesliga', 'ispaniya. la liga',
+  'italiya. seriya a', 'fransiya. ligue 1', 'niderlandiya. eredivisie',
+  'angliya. chempionship', 'rossiya. premyer ligasi', 'turkiya. super lig',
 ])
-const TOP_FOOTBALL_CONTAINS = ['champions league', 'europa league', 'conference league']
+const TOP_FOOTBALL_CONTAINS = [
+  'champions league', 'europa league', 'conference league',
+  // Uzbek equivalents
+  'chempionlar ligasi', 'yevropa ligasi', 'konferensiya ligasi',
+  'jahon chempionati', 'millatlar ligasi', 'premyer ligasi',
+]
 
 function isTopLiveEvent(event) {
   const league = (event.league || '').toLowerCase()
@@ -44,17 +54,17 @@ function isTopLiveEvent(event) {
   }
 }
 
-const SPORT_TABS = ['All Sports', 'Football', 'Basketball', 'Tennis', 'Hockey']
+const SPORT_TABS = ['Barcha sport', 'Futbol', 'Basketbol', 'Tennis', 'Xokkey']
 
 const SPORT_MAP = {
-  'Football':   'Football',
-  'Basketball': 'Basketball',
-  'Tennis':     'Tennis',
-  'Hockey':     'Ice Hockey',
+  'Futbol':    'Football',
+  'Basketbol': 'Basketball',
+  'Tennis':    'Tennis',
+  'Xokkey':    'Ice Hockey',
 }
 
 export default function Events({ navigate, allEvents = [], counts: propCounts = {}, recommended = {}, dataReady = false }) {
-  const [activeSport, setActiveSport] = useState('All Sports')
+  const [activeSport, setActiveSport] = useState('Barcha sport')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
   const observerRef = useRef(null)
@@ -65,7 +75,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
     setVisibleCount(PAGE_SIZE)
   }, [activeSport])
 
-  const filtered = activeSport === 'All Sports'
+  const filtered = activeSport === 'Barcha sport'
     ? allEvents
     : allEvents.filter((e) => e.sport === SPORT_MAP[activeSport])
 
@@ -94,18 +104,18 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
 
   const tabCounts = {}
   SPORT_TABS.forEach((tab) => {
-    if (tab === 'All Sports') { tabCounts[tab] = allEvents.length; return }
+    if (tab === 'Barcha sport') { tabCounts[tab] = allEvents.length; return }
     tabCounts[tab] = allEvents.filter((e) => e.sport === SPORT_MAP[tab]).length
   })
 
   const REC_SPORT_MAP = {
-    'Football':   'football',
-    'Basketball': 'basketball',
-    'Tennis':     'tennis',
-    'Hockey':     'hockey',
+    'Futbol':    'football',
+    'Basketbol': 'basketball',
+    'Tennis':    'tennis',
+    'Xokkey':    'hockey',
   }
   const topUpcoming = (() => {
-    if (activeSport === 'All Sports') {
+    if (activeSport === 'Barcha sport') {
       return Object.values(recommended)
         .flat()
         .sort((a, b) => {
@@ -133,7 +143,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
         >
           <img src="/icons/i_arrowUp.svg" alt="Back" style={{ width: '20px', height: '20px' }} />
         </button>
-        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>All Events</span>
+        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>Barcha voqealar</span>
         <div style={{ width: '36px' }} />
       </div>
       <div style={{ height: '1px', background: '#72777C33', marginBottom: '16px' }} />
@@ -152,7 +162,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               onClick={() => setActiveSport(tab)}
               style={{
                 flexShrink: 0,
-                minWidth: tab === 'All Sports' ? '80px' : undefined,
+                minWidth: tab === 'Barcha sport' ? '100px' : undefined,
                 height: '37px',
                 borderRadius: '12px',
                 background: isActive ? '#FFFE45' : '#1A1A1A',
@@ -174,7 +184,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
 
       {loading ? (
         <div style={{ padding: '40px 20px', color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center' }}>
-          Loading live matches...
+          Jonli o'yinlar yuklanmoqda...
         </div>
       ) : (
         <>
@@ -183,10 +193,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Live Now</span>
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Hozir jonli</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  {filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length} matches
+                  {filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length} o'yin
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -203,10 +213,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Live Now</span>
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Kelayotgan o'yinlar</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  next {RECOMMEND_DAYS} days
+                  keyingi {RECOMMEND_DAYS} kun
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -220,9 +230,9 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
           {upcomingVisible.length > 0 && (
             <div style={{ padding: '0 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Upcoming</span>
+                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Rejalashtirilgan</span>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  {filtered.filter(e => e.status === 'upcoming').length} matches
+                  {filtered.filter(e => e.status === 'upcoming').length} o'yin
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -237,10 +247,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             <div style={{ padding: '40px 20px', textAlign: 'center' }}>
               <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '32px', marginBottom: '12px' }}>⚽</div>
               <div style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', fontWeight: 500 }}>
-                No live {activeSport === 'All Sports' ? 'matches' : activeSport.toLowerCase() + ' matches'} right now
+                {activeSport === 'Barcha sport' ? 'Hozirda jonli o\'yinlar yo\'q' : activeSport + ' bo\'yicha jonli o\'yinlar yo\'q'}
               </div>
               <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px', marginTop: '6px' }}>
-                Check back soon
+                Keyinroq qaytib keling
               </div>
             </div>
           )}
@@ -249,7 +259,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
           {hasMore && (
             <div ref={sentinelRef} style={{ padding: '16px 20px', textAlign: 'center' }}>
               <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px' }}>
-                Loading more...
+                Ko'proq yuklanmoqda...
               </div>
             </div>
           )}
