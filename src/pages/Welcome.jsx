@@ -79,7 +79,7 @@ export default function Welcome({ onStart }) {
             textTransform: 'capitalize',
             margin: 0,
           }}>
-            Welcome!
+            Xush kelibsiz!
           </h1>
 
           <p style={{
@@ -91,7 +91,7 @@ export default function Welcome({ onStart }) {
             margin: 0,
             lineHeight: 1.4,
           }}>
-            Bet on events and get bonuses
+            Voqealarga tikib, bonuslar oling
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export default function Welcome({ onStart }) {
           margin: 0,
           lineHeight: 1.5,
         }}>
-          Engaging users in guessing outcomes. Promo codes. Displaying user status.
+          Foydalanuvchilarni natijalarni taxmin qilishga jalb qilish. Promokodlar. Foydalanuvchi statusini ko'rsatish.
         </p>
 
         <button
@@ -142,7 +142,7 @@ export default function Welcome({ onStart }) {
             position: 'relative',
           }}
         >
-          <span style={{ position: 'relative', zIndex: 1 }}>Start</span>
+          <span style={{ position: 'relative', zIndex: 1 }}>Boshlash</span>
         </button>
       </div>
 

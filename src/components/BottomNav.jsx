@@ -30,11 +30,11 @@ const ICONS = {
 }
 
 const NAV_ITEMS = [
-  { key: 'home', label: 'Home' },
-  { key: 'events', label: 'Events' },
-  { key: 'rank', label: 'Rank', center: true },
+  { key: 'home', label: 'Bosh sahifa' },
+  { key: 'events', label: 'Voqealar' },
+  { key: 'rank', label: 'Reyting', center: true },
   { key: 'promo', label: 'Promo' },
-  { key: 'profile', label: 'Profile' },
+  { key: 'profile', label: 'Profil' },
 ]
 
 export default function BottomNav({ active = 'home', onNavigate }) {

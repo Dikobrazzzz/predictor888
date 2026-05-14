@@ -32,9 +32,9 @@ export default function DailyRewards() {
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
-              <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '6px' }}>Promo code</div>
+              <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '6px' }}>Promokod</div>
               <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '12px', lineHeight: 1.45 }}>
-                Get 100 free spins<br />in Gates of Olympus
+                Gates of Olympus'da<br />100 ta free spin oling
               </div>
             </div>
             <button style={{
@@ -42,7 +42,7 @@ export default function DailyRewards() {
               color: '#0E0D0D', fontWeight: 700, fontSize: '12px',
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent', alignSelf: 'flex-start',
             }}>
-              Claim Now
+              Hozir olish
             </button>
           </div>
 
@@ -77,9 +77,9 @@ export default function DailyRewards() {
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
-              <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '6px' }}>Promo code</div>
+              <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '6px' }}>Promokod</div>
               <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '12px', lineHeight: 1.45 }}>
-                Get 100 free spins<br />in Aviator
+                Aviator'da<br />100 ta free spin oling
               </div>
             </div>
             <button style={{
@@ -87,7 +87,7 @@ export default function DailyRewards() {
               color: '#0E0D0D', fontWeight: 700, fontSize: '12px',
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent', alignSelf: 'flex-start',
             }}>
-              Claim Now
+              Hozir olish
             </button>
           </div>
 

@@ -97,11 +97,11 @@ export default function Telegram({ onSubscribe, onSkip }) {
           margin: 0,
           lineHeight: 1.5,
         }}>
-          Engaging users in guessing outcomes. Promo codes. Displaying user status.
+          Foydalanuvchilarni natijalarni taxmin qilishga jalb qilish. Promokodlar. Foydalanuvchi statusini ko'rsatish.
         </p>
 
         <button onClick={onSubscribe} style={BTN_STYLE}>
-          Subscribe Telegram
+          Telegram'ga obuna bo'lish
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -111,7 +111,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
             fontWeight: 400,
             fontSize: '14px',
           }}>
-            Already subscribed?
+            Allaqachon obuna bo'lganmisiz?
           </span>
           <button
             onClick={onSkip}
@@ -127,7 +127,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            Skip
+            O'tkazib yuborish
           </button>
         </div>
       </div>

@@ -35,10 +35,10 @@ export default function Promo({ navigate, user }) {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
               <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>
-                Promo code
+                Promokod
               </div>
               <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '13px', lineHeight: 1.45 }}>
-                Get 100 free spins<br />in Gates of Olympus
+                Gates of Olympus'da<br />100 ta free spin oling
               </div>
             </div>
             <button style={{
@@ -48,7 +48,7 @@ export default function Promo({ navigate, user }) {
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
               alignSelf: 'flex-start',
             }}>
-              Claim Now
+              Hozir olish
             </button>
           </div>
 
@@ -108,10 +108,10 @@ export default function Promo({ navigate, user }) {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
             <div>
               <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>
-                Promo code
+                Promokod
               </div>
               <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '13px', lineHeight: 1.45 }}>
-                Get 100 free spins<br />in Aviator
+                Aviator'da<br />100 ta free spin oling
               </div>
             </div>
             <button style={{
@@ -121,7 +121,7 @@ export default function Promo({ navigate, user }) {
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
               alignSelf: 'flex-start',
             }}>
-              Claim Now
+              Hozir olish
             </button>
           </div>
 

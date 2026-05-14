@@ -91,7 +91,7 @@ export default function Profile({ navigate, user }) {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src={iconTapbar} alt="" style={{ width: '20px', height: '20px' }} />
-            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Information</span>
+            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profil ma'lumotlari</span>
           </div>
 
           
@@ -107,7 +107,7 @@ export default function Profile({ navigate, user }) {
                 <img src={iconPosition} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
-                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Your Position</div>
+                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Sizning o'rningiz</div>
                 <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{position}</div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function Profile({ navigate, user }) {
                 <img src={iconWinrate} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
-                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Win rate</div>
+                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>G'alaba foizi</div>
                 <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{winRate}</div>
               </div>
             </div>
@@ -140,7 +140,7 @@ export default function Profile({ navigate, user }) {
 
             <InfoRow
               icon={iconLocation}
-              label="Region"
+              label="Hudud"
               value={user?.region || '—'}
               rightSlot={
                 <img src={iconEdit} alt="" style={{ width: '20px', height: '20px', flexShrink: 0 }} />
@@ -149,8 +149,8 @@ export default function Profile({ navigate, user }) {
 
             <InfoRow
               icon={iconTelegram}
-              label="Subscription"
-              value={subscribed ? 'Active' : 'Inactive'}
+              label="Obuna"
+              value={subscribed ? 'Faol' : 'Nofaol'}
               valueColor={subscribed ? '#55B685' : '#FF4D00'}
               valuePrefix={subscribed ? (
                 <img src={iconGroup} alt="" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
@@ -171,14 +171,14 @@ export default function Profile({ navigate, user }) {
                     flexShrink: 0,
                     WebkitTapHighlightColor: 'transparent',
                   }}>
-                  Subscribe
+                  Obuna bo'lish
                 </button>
               )}
             />
 
             <InfoRow
               icon={iconLogout}
-              label="Delete Bot"
+              label="Botni o'chirish"
               value=""
               rightSlot={
                 <button style={{
@@ -194,7 +194,7 @@ export default function Profile({ navigate, user }) {
                   flexShrink: 0,
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  Delete
+                  O'chirish
                 </button>
               }
             />

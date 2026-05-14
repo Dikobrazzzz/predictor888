@@ -176,7 +176,7 @@ export default function Login({ onLogin }) {
                 fontWeight: 700, fontSize: '18px', textAlign: 'center',
                 marginTop: '8px',
               }}>
-                We couldn't find this email
+                Bu email topilmadi
               </span>
 
               <span style={{
@@ -184,14 +184,14 @@ export default function Login({ onLogin }) {
                 fontWeight: 400, fontSize: '13px', textAlign: 'center',
                 lineHeight: 1.5,
               }}>
-                If you registered recently, please try again later.
+                Agar yaqinda ro'yxatdan o'tgan bo'lsangiz, keyinroq qayta urinib ko'ring.
               </span>
 
               <span style={{
                 color: '#6E6E6E', fontFamily: 'Roboto Flex, sans-serif',
                 fontWeight: 400, fontSize: '13px', textAlign: 'center',
               }}>
-                Need personalized support?
+                Shaxsiy yordam kerakmi?
               </span>
 
               <span style={{
@@ -205,15 +205,15 @@ export default function Login({ onLogin }) {
             <>
               <span style={{
                 color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
-                fontWeight: 700, fontSize: '20px', alignSelf: 'flex-start',
-              }}>
-                Login
-              </span>
+              fontWeight: 700, fontSize: '20px', alignSelf: 'flex-start',
+            }}>
+              Kirish
+            </span>
 
               <div style={{ width: '274px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <input
                   type="email"
-                  placeholder="Mail"
+                  placeholder="Email"
                   value={mail}
                   onChange={e => { setMail(e.target.value); setTouched(false) }}
                   onBlur={() => setTouched(true)}
@@ -242,7 +242,7 @@ export default function Login({ onLogin }) {
                     color: '#ED0000', fontFamily: 'Roboto Flex, sans-serif',
                     fontWeight: 400, fontSize: '12px', paddingLeft: '4px',
                   }}>
-                    Incorrect email! Please contact support.
+                    Email noto'g'ri! Iltimos, qo'llab-quvvatlash xizmatiga murojaat qiling.
                   </span>
                 )}
               </div>
@@ -266,7 +266,7 @@ export default function Login({ onLogin }) {
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                Login
+                Kirish
               </button>
             </>
           )}
@@ -278,7 +278,7 @@ export default function Login({ onLogin }) {
             color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
             fontWeight: 400, fontSize: '14px',
           }}>
-            Do you have a problem?
+            Muammo bormi?
           </span>
           <button style={{
             background: 'none', border: 'none', padding: 0, cursor: 'pointer',
@@ -286,7 +286,7 @@ export default function Login({ onLogin }) {
             fontWeight: 400, fontSize: '14px',
             WebkitTapHighlightColor: 'transparent',
           }}>
-            Support
+            Qo'llab-quvvatlash
           </button>
         </div>
       </div>

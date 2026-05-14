@@ -4,14 +4,14 @@ import BottomNav from '../components/BottomNav'
 import DailyRewards from '../components/DailyRewards'
 import { apiFetch } from '../utils/api'
 
-const TABS = ['All', 'Active', 'Finished']
+const TABS = ['Hammasi', 'Faol', 'Yakunlangan']
 
 const PICK_LABEL = { home: '1', draw: 'X', away: '2' }
 
 const STATUS_CFG = {
-  win:     { label: 'Win',    color: '#8FFF37' },
-  loss:    { label: 'Loss',   color: '#FF4D00' },
-  waiting: { label: 'Active', color: '#FFFE45' },
+  win:     { label: "G'alaba",    color: '#8FFF37' },
+  loss:    { label: "Mag'lubiyat", color: '#FF4D00' },
+  waiting: { label: 'Faol',       color: '#FFFE45' },
 }
 
 function PredictionCard({ p }) {
@@ -42,7 +42,7 @@ function PredictionCard({ p }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ color: 'rgba(255,255,255,0.44)', fontSize: '12px' }}>
-          {p.league} · Pick: <span style={{ color: '#FFFFFF' }}>{pick}</span>
+          {p.league} · Tanlov: <span style={{ color: '#FFFFFF' }}>{pick}</span>
         </span>
         <span style={{ color: p.status === 'win' ? '#8FFF37' : 'rgba(255,255,255,0.44)', fontSize: '12px', fontWeight: 600 }}>
           {xpLabel}
@@ -87,8 +87,8 @@ export default function Rank({ navigate, user }) {
   }, [])
 
   const filtered = predictions.filter(p => {
-    if (activeTab === 'Active') return p.status === 'waiting'
-    if (activeTab === 'Finished') return p.status !== 'waiting'
+    if (activeTab === 'Faol') return p.status === 'waiting'
+    if (activeTab === 'Yakunlangan') return p.status !== 'waiting'
     return true
   })
 
@@ -115,7 +115,7 @@ export default function Rank({ navigate, user }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <img src="/icons/Icon-5.svg" alt="" style={{ width: '20px', height: '20px' }} />
-              <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profile Statistics</span>
+              <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profil statistikasi</span>
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -135,7 +135,7 @@ export default function Rank({ navigate, user }) {
                   <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Your Position</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Sizning o'rningiz</div>
                   <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>{loading ? '…' : position}</div>
                 </div>
               </div>
@@ -156,7 +156,7 @@ export default function Rank({ navigate, user }) {
                   <img src="/icons/Icon_Tapbar-3.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Win rate</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>G'alaba foizi</div>
                   <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>{loading ? '…' : winRate}</div>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function Rank({ navigate, user }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src="/icons/Vector-2.svg" alt="" style={{ width: '18px', height: '18px' }} />
-            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>My Prediction</span>
+            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Mening taxminim</span>
           </div>
 
           <div style={{
@@ -214,11 +214,11 @@ export default function Rank({ navigate, user }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.30)', fontSize: '14px' }}>
-                Loading…
+                Yuklanmoqda…
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.30)', fontSize: '14px' }}>
-                No predictions yet
+                Hozircha taxminlar yo'q
               </div>
             ) : (
               filtered.map(p => <PredictionCard key={p.id} p={p} />)
@@ -243,7 +243,7 @@ export default function Rank({ navigate, user }) {
               justifyContent: 'center',
             }}
           >
-            Make New Prediction
+            Yangi taxmin qilish
           </button>
         </div>
 

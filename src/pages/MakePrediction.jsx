@@ -77,7 +77,7 @@ export default function MakePrediction({ event, navigate }) {
     {
       key: '1',
       title: `1 - ${home.name}`,
-      subtitle: 'Home team wins',
+      subtitle: "Mezbon jamoa g'alaba qozonadi",
       coef: coef.home,
       icon: <TeamIcon icon={home.icon} emoji={home.emoji} />,
     },
@@ -85,7 +85,7 @@ export default function MakePrediction({ event, navigate }) {
       ? {
           key: 'X',
           title: 'X - Draw',
-          subtitle: 'Match ends in draw',
+          subtitle: "O'yin durang bilan tugaydi",
           coef: coef.draw,
           icon: <DrawIcon />,
         }
@@ -93,7 +93,7 @@ export default function MakePrediction({ event, navigate }) {
     {
       key: '2',
       title: `2 - ${away.name}`,
-      subtitle: 'Away team wins',
+      subtitle: "Mehmon jamoa g'alaba qozonadi",
       coef: coef.away,
       icon: <TeamIcon icon={away.icon} emoji={away.emoji} />,
     },
@@ -119,13 +119,13 @@ export default function MakePrediction({ event, navigate }) {
       if (res.status === 201 || res.ok) {
         setConfirmed(true)
       } else if (res.status === 409) {
-        setSaveError('You already made a prediction for this match')
+        setSaveError("Siz bu o'yin uchun allaqachon taxmin qilgansiz")
       } else {
         const data = await res.json().catch(() => ({}))
-        setSaveError(data.error || 'Failed to save prediction')
+        setSaveError(data.error || "Taxminni saqlab bo'lmadi")
       }
     } catch {
-      setSaveError('Network error, please try again')
+      setSaveError('Tarmoq xatosi, iltimos qayta urinib ko\'ring')
     } finally {
       setSaving(false)
     }
@@ -177,10 +177,10 @@ export default function MakePrediction({ event, navigate }) {
               <img src="/icons/Icon-3.svg" alt="Close" style={{ width: '24px', height: '24px' }} />
             </button>
             <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '20px' }}>
-              Congratulations!
+              Tabriklaymiz!
             </div>
             <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '14px', lineHeight: 1.5, marginBottom: '8px' }}>
-              You have successfully registered your forecast.
+              Taxminingiz muvaffaqiyatli ro'yxatdan o'tkazildi.
             </div>
             <button
               onClick={() => navigate?.('home')}
@@ -197,7 +197,7 @@ export default function MakePrediction({ event, navigate }) {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              My Prediction
+              Mening taxminim
             </button>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function MakePrediction({ event, navigate }) {
         >
           <img src="/icons/i_arrowUp.svg" alt="Back" style={{ width: '20px', height: '20px' }} />
         </button>
-        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>Make Prediction</span>
+        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>Taxmin qilish</span>
         <button style={{ width: '36px', height: '36px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img src="/icons/i_info.svg" alt="Info" style={{ width: '22px', height: '22px' }} />
         </button>
@@ -228,7 +228,7 @@ export default function MakePrediction({ event, navigate }) {
             color: '#6490FF', fontSize: '11px', fontWeight: 600,
             padding: '4px 10px', borderRadius: '20px',
           }}>
-            Champions League
+            {league}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#FFFE45', fontSize: '11px', fontWeight: 600 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -260,7 +260,7 @@ export default function MakePrediction({ event, navigate }) {
       
       <div style={{ padding: '0 20px' }}>
         <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '18px', margin: '0 0 16px', textAlign: 'center' }}>
-          Choose Your Prediction
+          Taxminingizni tanlang
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -324,7 +324,7 @@ export default function MakePrediction({ event, navigate }) {
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          {saving ? 'Saving…' : 'Make Prediction'}
+          {saving ? 'Saqlanmoqda…' : 'Taxmin qilish'}
         </button>
       </div>
 

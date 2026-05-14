@@ -17,7 +17,7 @@ export default function Header({ user }) {
             </div>
           </div>
           <div>
-            <div className="text-xs leading-none mb-0.5" style={{ color: '#525252' }}>Welcome back,</div>
+            <div className="text-xs leading-none mb-0.5" style={{ color: '#525252' }}>Qaytganingizdan xursandmiz,</div>
             <div className="text-white font-bold text-sm leading-none">{name}</div>
           </div>
         </div>
