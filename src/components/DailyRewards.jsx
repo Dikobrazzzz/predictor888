@@ -11,12 +11,6 @@ const PROMOS = [
     star: true,
     gates: true,
   },
-  {
-    code: 'UZ888SPORT',
-    desc: '1.8 mln UZS gacha\nsport bonusi',
-    bg: 'linear-gradient(to bottom right, #802325, #1A0707) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-    aviator: true,
-  },
 ]
 
 function PromoCard({ promo }) {
