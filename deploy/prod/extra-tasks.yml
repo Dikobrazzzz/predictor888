@@ -18,6 +18,7 @@
     mode: "0755"
 
 - name: Start database container
+  become: yes
   shell: |
     cd "{{ deploy_path }}"
     docker compose up -d db
@@ -25,6 +26,7 @@
     executable: /bin/bash
 
 - name: Wait for database to be healthy
+  become: yes
   shell: |
     cd "{{ deploy_path }}"
     for i in $(seq 1 30); do
@@ -35,6 +37,7 @@
     executable: /bin/bash
 
 - name: Run database migrations
+  become: yes
   shell: |
     cd "{{ deploy_path }}"
     for f in migrations/*.sql; do
@@ -58,12 +61,14 @@
     - "{{ nginx_base_dir }}/conf.d"
 
 - name: Check nginx container status
+  become: yes
   community.docker.docker_container_info:
     name: "nginx-marketing"
   register: nginx_container_info
   failed_when: false
 
 - name: Determine if nginx needs start
+  become: yes
   set_fact:
     nginx_needs_start: >-
       {{
@@ -79,12 +84,14 @@
     mode: "0644"
 
 - name: Ensure nginx network exists
+  become: yes
   community.docker.docker_network:
     name: nginx_net
     state: present
   when: nginx_needs_start
 
 - name: Install nginx docker-compose.yml
+  become: yes
   vars:
     nginx_base_dir: "/opt/nginx-marketing"
   copy:
@@ -113,6 +120,7 @@
   when: nginx_needs_start
 
 - name: Stop nginx container with docker compose
+  become: yes
   vars:
     nginx_base_dir: "/opt/nginx-marketing"
   community.docker.docker_compose_v2:
@@ -121,6 +129,7 @@
   ignore_errors: yes
 
 - name: Start nginx container with docker compose
+  become: yes
   vars:
     nginx_base_dir: "/opt/nginx-marketing"
   community.docker.docker_compose_v2:
