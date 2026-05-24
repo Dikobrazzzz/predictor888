@@ -50,6 +50,7 @@
     executable: /bin/bash
 
 - name: Ensure nginx directories exist
+  become: yes
   vars:
     nginx_base_dir: "/opt/nginx-marketing"
   file:
@@ -78,6 +79,7 @@
       }}
 
 - name: Render nginx.conf to nginx conf.d
+  become: yes
   template:
     src: "{{ files_dir }}/nginx.conf.j2"
     dest: "/opt/nginx-marketing/conf.d/gamification.conf"
