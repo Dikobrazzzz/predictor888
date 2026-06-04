@@ -1,8 +1,7 @@
 # backup/
 
-| Путь | Назначение |
+| Path | Назначение |
 |------|------------|
-| `ansible/` | Staging deploy (`deploy_dev`) |
-| `backup.sh` | Скрипт pg_dump (на VM — sidecar; в k8s — CronJob в flux-infra) |
+| `backup.sh` | Справочная копия скрипта бэкапа Postgres (в k8s — CronJob в `flux-infra`) |
 
-См. [README.md](../README.md).
+Staging Ansible (`backup/ansible/`) removed. Production: [`.cicd/prod/files/backup/`](../.cicd/prod/files/backup/).
