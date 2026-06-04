@@ -7,6 +7,10 @@ include:
     ref: main
     file:
       - .gitlab-ci/deploy-template.yml
+  - project: infrastructure/helm-charts
+    ref: main
+    file:
+      - .gitlab-ci/deploy-dev-k8s.yml
 
 .build_backend_template: &build_backend_template
   image: docker:cli
@@ -41,6 +45,11 @@ include:
         echo "Tagging and pushing as latest..."
         docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
         docker push --quiet "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
+      fi
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}"
+        docker push --quiet "$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}"
       fi
 
 .build_frontend_template: &build_frontend_template
@@ -77,71 +86,46 @@ include:
         docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
         docker push --quiet "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
       fi
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/web:${CI_COMMIT_REF_SLUG}"
+        docker push --quiet "$CI_REGISTRY_IMAGE/web:${CI_COMMIT_REF_SLUG}"
+      fi
 
 build_production:
   extends: .build_backend_template
+  after_script:
+    - |
+      _DIGEST=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}" 2>/dev/null | cut -d@ -f2 || true)
+      if [ -n "${_DIGEST}" ]; then
+        echo "EXPECTED_BACKEND_IMAGE=${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}@${_DIGEST}" >> "${CI_PROJECT_DIR}/build.env"
+      fi
+  artifacts:
+    reports:
+      dotenv: build.env
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - api/Dockerfile
     - when: never
 
-build_dev:
-  extends: .build_backend_template
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
-      exists:
-        - api/Dockerfile
-    - when: never
 
 build_web_production:
   extends: .build_frontend_template
+  after_script:
+    - |
+      _DIGEST=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}" 2>/dev/null | cut -d@ -f2 || true)
+      if [ -n "${_DIGEST}" ]; then
+        echo "EXPECTED_UI_IMAGE=${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}@${_DIGEST}" >> "${CI_PROJECT_DIR}/ui-build.env"
+      fi
+  artifacts:
+    reports:
+      dotenv: ui-build.env
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - web/Dockerfile
     - when: never
-
-build_web_dev:
-  extends: .build_frontend_template
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
-      exists:
-        - web/Dockerfile
-    - when: never
-
-.deploy_template: &deploy_template
-  stage: deploy
-  image: python:3.9-alpine
-  before_script:
-    - 'command -v ssh-agent >/dev/null || ( apk update && apk add openssh-client wget rsync )'
-    - apk add --virtual .build-deps gcc musl-dev libffi-dev openssl-dev
-    - pip install ansible docker
-    - apk del .build-deps
-    - eval "$(ssh-agent -s)"
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$SERVER_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-add ~/.ssh/id_rsa
-    - touch ~/.ssh/config
-    - |
-      cat > ~/.ssh/config <<'SSHCONF'
-      Host *
-        StrictHostKeyChecking no
-        UserKnownHostsFile /dev/null
-        LogLevel ERROR
-      SSHCONF
-    - chmod 600 ~/.ssh/config
-  script:
-    - |
-      cat > inventory.ini << EOF
-      [all]
-      ${SERVER_HOST} ansible_host=${SERVER_HOST} ansible_user=${SERVER_USER} ansible_port=${SERVER_PORT}
-      EOF
-    - |
-      ansible-playbook -i inventory.ini ansible/deploy.yml
-
 
 deploy-prod:
   extends: .deploy-prod
@@ -150,10 +134,12 @@ deploy-prod:
   needs:
     - build_production
     - build_web_production
+    - job: indicate-k8s-dev
+      optional: true
   variables:
     DEPLOY_PATH: "/opt/gamification-prod"
     VAULT_SECRET_PATH: "pve-prod/marketing/gamification"
-    EXTRA_TASKS_PATH: "deploy/prod/extra-tasks.yml"
+    EXTRA_TASKS_PATH: ".cicd/prod/extra-tasks.yml"
     ANSIBLE_EXTRA_ARGS: >-
       -e docker_image=$CI_REGISTRY_IMAGE/main:latest
       -e web_image=$CI_REGISTRY_IMAGE/web/main:latest
@@ -162,32 +148,48 @@ deploy-prod:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
 
-deploy_dev:
-  extends: .deploy_template
-  environment: development
+sync-flux-env-to-helm-charts:
+  stage: deploy
+  image: alpine:3.20
+  resource_group: helm-charts-gamification-env-sync
   variables:
-    SERVER_SSH_KEY: $STAGING_SERVER_SSH_KEY
-    SERVER_PORT: $STAGING_SERVER_PORT
-    SERVER_USER: $STAGING_SERVER_USER
-    SERVER_HOST: $STAGING_SERVER_HOST
-
-    SERVER_PROJECT_PATH: $STAGING_SERVER_PROJECT_PATH
-    REPO_BRANCH: $CI_COMMIT_REF_NAME
-
-    POSTGRES_USER: $STAGING_POSTGRES_USER
-    POSTGRES_PASSWORD: $STAGING_POSTGRES_PASSWORD
-    POSTGRES_DB: $STAGING_POSTGRES_DB
-    DB_PORT: $STAGING_DB_PORT
-
-    CF_WORKER_URL: $STAGING_CF_WORKER_URL
-    LOOKUP_API_URL: $STAGING_LOOKUP_API_URL
-    LOOKUP_API_KEY: $STAGING_LOOKUP_API_KEY
-    SESSION_SECRET: $STAGING_SESSION_SECRET
-    API_PORT: $STAGING_API_PORT
-    GOMAXPROCS: $STAGING_GOMAXPROCS
-    NGINX_SERVER_NAME: $STAGING_NGINX_SERVER_NAME
-    CERT_DOMAIN: $STAGING_CERT_DOMAIN
-    AWS_ACCESS_KEY_ID: $STAGING_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $STAGING_AWS_SECRET_ACCESS_KEY
+    HELM_CHARTS_PROJECT_PATH: infrastructure/helm-charts
+    HELM_CHARTS_ENV_FILE: flux/eks-dev/marketing/gamification-api-env/env.yaml
+    HELM_CHARTS_GIT_USERNAME: oauth2
   rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+      changes:
+        - .cicd/deploy/common.yaml
+        - .cicd/deploy/dev.yaml
+  before_script:
+    - apk add --no-cache git curl ca-certificates yq-go
+  script:
+    - |
+      set -euo pipefail
+      test -n "${HELM_CHARTS_PUSH_TOKEN:-}" || { echo "ERROR: HELM_CHARTS_PUSH_TOKEN"; exit 1; }
+      HC_HOST="${HELM_CHARTS_GIT_HOST:-$CI_SERVER_HOST}"
+      CLONE_URL="https://${HELM_CHARTS_GIT_USERNAME:-oauth2}:${HELM_CHARTS_PUSH_TOKEN}@${HC_HOST}/${HELM_CHARTS_PROJECT_PATH}.git"
+      yq eval-all '. as $item ireduce ({}; . * $item)' .cicd/deploy/common.yaml .cicd/deploy/dev.yaml > gamification-env.generated.yaml
+      git clone --depth 1 --branch main "${CLONE_URL}" /tmp/helm-charts
+      install -D -m 0644 gamification-env.generated.yaml "/tmp/helm-charts/${HELM_CHARTS_ENV_FILE}"
+      cd /tmp/helm-charts && git config user.email "gitlab-ci-bot@luckytits.org" && git config user.name "gitlab-ci-bot"
+      git add "${HELM_CHARTS_ENV_FILE}" && git diff --staged --quiet && exit 0
+      git commit -m "chore(gamification): sync eks-dev env [skip ci]" && git push origin HEAD:main
+
+indicate-k8s-dev:
+  extends: .indicate-k8s-dev
+  needs:
+    - build_production
+    - build_web_production
+    - job: sync-flux-env-to-helm-charts
+      optional: true
+  resource_group: "${CI_PROJECT_NAME}-dev-image-tags"
+  variables:
+    K8S_NAMESPACE: marketing
+    BACKEND_DEPLOYMENT: gamification-api-app
+    UI_DEPLOYMENT: gamification-ui-app
+    SMOKE_CHECK_URL: "https://gamification.dev.luckytits.org/"
+    ENVIRONMENT_NAME: "dev/gamification"
+    ENVIRONMENT_URL: "https://gamification.dev.luckytits.org"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'

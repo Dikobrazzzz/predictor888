@@ -1,0 +1,5 @@
+env:
+  PORT: "8082"
+  GOMAXPROCS: "4"
+  CF_WORKER_URL: "https://your-worker.workers.dev"
+  LOOKUP_API_URL: "http://defal-prod-201.888starztech.ru:9978"
