@@ -96,10 +96,12 @@ build_production:
   extends: .build_backend_template
   after_script:
     - |
-      _DIGEST=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}" 2>/dev/null | cut -d@ -f2 || true)
-      if [ -n "${_DIGEST}" ]; then
-        echo "EXPECTED_BACKEND_IMAGE=${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}@${_DIGEST}" >> "${CI_PROJECT_DIR}/build.env"
-      fi
+      _TS=$(date -u +%Y%m%d%H%M%S)
+      _TIMESTAMPED="${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-${_TS}-${CI_COMMIT_SHORT_SHA}"
+      docker tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}" "${_TIMESTAMPED}" \
+        && docker push --quiet "${_TIMESTAMPED}" \
+        && echo "EXPECTED_BACKEND_IMAGE=${_TIMESTAMPED}" >> "${CI_PROJECT_DIR}/build.env" \
+        || echo "WARNING: could not push timestamped backend tag"
   artifacts:
     reports:
       dotenv: build.env
@@ -114,10 +116,12 @@ build_web_production:
   extends: .build_frontend_template
   after_script:
     - |
-      _DIGEST=$(docker image inspect --format='{{index .RepoDigests 0}}' "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}" 2>/dev/null | cut -d@ -f2 || true)
-      if [ -n "${_DIGEST}" ]; then
-        echo "EXPECTED_UI_IMAGE=${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}@${_DIGEST}" >> "${CI_PROJECT_DIR}/ui-build.env"
-      fi
+      _TS=$(date -u +%Y%m%d%H%M%S)
+      _TIMESTAMPED="${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}-${_TS}-${CI_COMMIT_SHORT_SHA}"
+      docker tag "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}" "${_TIMESTAMPED}" \
+        && docker push --quiet "${_TIMESTAMPED}" \
+        && echo "EXPECTED_UI_IMAGE=${_TIMESTAMPED}" >> "${CI_PROJECT_DIR}/ui-build.env" \
+        || echo "WARNING: could not push timestamped UI tag"
   artifacts:
     reports:
       dotenv: ui-build.env
