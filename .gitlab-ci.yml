@@ -134,8 +134,8 @@ deploy-prod:
   needs:
     - build_production
     - build_web_production
-    - job: indicate-k8s-dev
-      optional: true
+    #- job: indicate-k8s-dev
+    #  optional: true
   variables:
     DEPLOY_PATH: "/opt/gamification-prod"
     COMPOSE_TEMPLATE: ".cicd/prod/docker-compose.yml.j2"  
