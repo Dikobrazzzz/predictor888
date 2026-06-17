@@ -138,6 +138,8 @@ deploy-prod:
       optional: true
   variables:
     DEPLOY_PATH: "/opt/gamification-prod"
+    COMPOSE_TEMPLATE: ".cicd/prod/docker-compose.yml.j2"  
+    FILES_DIR: ".cicd/prod/files"                        
     VAULT_SECRET_PATH: "pve-prod/marketing/gamification"
     EXTRA_TASKS_PATH: ".cicd/prod/extra-tasks.yml"
     ANSIBLE_EXTRA_ARGS: >-
