@@ -130,4 +130,10 @@ export default {
   'time.fri': 'Jum',
   'time.sat': 'Shan',
   'time.sun': 'Yak',
+  // Live match timer patterns (from 888starz API, lng=uz)
+  'time.minutesPassed': "{passed}' ({left} qoldi)",
+  'time.minutesLeft': "{left} daqiqa qoldi",
+  'time.untilStart': "Boshlanishigacha {mins} daqiqa",
+  'time.delayed': "Kechikyapti",
+  'time.inProgress': "Tadbir davom etmoqda",
 }

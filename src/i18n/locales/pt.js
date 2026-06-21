@@ -131,4 +131,9 @@ export default {
   'time.fri': 'Sex',
   'time.sat': 'Sáb',
   'time.sun': 'Dom',
+  'time.minutesPassed': "{passed}' ({left} restantes)",
+  'time.minutesLeft': "{left} min restantes",
+  'time.untilStart': "Começa em {mins} min",
+  'time.delayed': "Atrasado",
+  'time.inProgress': "Em andamento",
 }

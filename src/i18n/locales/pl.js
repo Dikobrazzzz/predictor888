@@ -131,4 +131,9 @@ export default {
   'time.fri': 'Pt',
   'time.sat': 'Sob',
   'time.sun': 'Nie',
+  'time.minutesPassed': "{passed}' ({left} pozostało)",
+  'time.minutesLeft': "{left} min pozostało",
+  'time.untilStart': "Zaczyna się za {mins} min",
+  'time.delayed': "Opóźniony",
+  'time.inProgress': "W trakcie",
 }

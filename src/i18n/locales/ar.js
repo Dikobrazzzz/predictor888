@@ -131,4 +131,9 @@ export default {
   'time.fri': 'الجمعة',
   'time.sat': 'السبت',
   'time.sun': 'الأحد',
+  'time.minutesPassed': "{passed}' ({left} متبقية)",
+  'time.minutesLeft': "{left} دقيقة متبقية",
+  'time.untilStart': "يبدأ في {mins} دقيقة",
+  'time.delayed': "متأخر",
+  'time.inProgress': "جارٍ",
 }

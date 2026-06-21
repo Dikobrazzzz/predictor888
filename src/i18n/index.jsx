@@ -86,13 +86,30 @@ export function useT() {
 // Maps Go time.Format("Mon") output to i18n keys.
 const DAY_KEYS = { Mon: 'time.mon', Tue: 'time.tue', Wed: 'time.wed', Thu: 'time.thu', Fri: 'time.fri', Sat: 'time.sat', Sun: 'time.sun' }
 
-// Translates backend-generated time strings like "LIVE", "Today 14:30", "Mon 14:30".
+// Translates backend-generated time strings (from 888starz API with lng=uz)
+// like "LIVE", "Today 14:30", "Mon 14:30", "54 daqiqa o'tdi", "Kechikyapti" etc.
 export function localizeTimeLeft(str, t) {
   if (!str) return str
   if (str === 'LIVE') return t('time.live')
+  // Backend-generated date prefixes
   if (str.startsWith('Today ')) return t('time.today') + ' ' + str.slice(6)
   if (str.startsWith('Tomorrow ')) return t('time.tomorrow') + ' ' + str.slice(9)
-  const m = str.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (.+)$/)
-  if (m && DAY_KEYS[m[1]]) return t(DAY_KEYS[m[1]]) + ' ' + m[2]
+  const day = str.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (.+)$/)
+  if (day && DAY_KEYS[day[1]]) return t(DAY_KEYS[day[1]]) + ' ' + day[2]
+  // Uzbek API: "54 daqiqa o'tdi, 6 daqiqa qoldi"
+  const elapsedLeft = str.match(/^(\d+) daqiqa o['ʻ]tdi,\s*(\d+) daqiqa qoldi$/)
+  if (elapsedLeft) return t('time.minutesPassed', { passed: elapsedLeft[1], left: elapsedLeft[2] })
+  // Uzbek API: "54 daqiqa o'tdi" (no remaining part) → international "54'"
+  const elapsed = str.match(/^(\d+) daqiqa o['ʻ]tdi$/)
+  if (elapsed) return `${elapsed[1]}'`
+  // Uzbek API: "2 daqiqa qoldi"
+  const left = str.match(/^(\d+) daqiqa qoldi$/)
+  if (left) return t('time.minutesLeft', { left: left[1] })
+  // Uzbek API: "Boshlanishigacha 9 daqiqa"
+  const untilStart = str.match(/^Boshlanishigacha (\d+) daqiqa$/)
+  if (untilStart) return t('time.untilStart', { mins: untilStart[1] })
+  // Uzbek API: status strings
+  if (str === 'Kechikyapti') return t('time.delayed')
+  if (str === 'Tadbir davom etmoqda') return t('time.inProgress')
   return str
 }
