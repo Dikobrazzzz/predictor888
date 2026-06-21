@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 import { setSession, apiFetch } from '../utils/api'
 
 function detectRegion() {
@@ -26,6 +27,7 @@ function isValidEmail(v) {
 }
 
 export default function Login({ onLogin }) {
+  const t = useT()
   const [mail, setMail] = useState('')
   const [touched, setTouched] = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -176,7 +178,7 @@ export default function Login({ onLogin }) {
                 fontWeight: 700, fontSize: '18px', textAlign: 'center',
                 marginTop: '8px',
               }}>
-                Bu email topilmadi
+                {t('login.notFoundTitle')}
               </span>
 
               <span style={{
@@ -184,14 +186,14 @@ export default function Login({ onLogin }) {
                 fontWeight: 400, fontSize: '13px', textAlign: 'center',
                 lineHeight: 1.5,
               }}>
-                Agar yaqinda ro'yxatdan o'tgan bo'lsangiz, keyinroq qayta urinib ko'ring.
+                {t('login.notFoundDesc')}
               </span>
 
               <span style={{
                 color: '#6E6E6E', fontFamily: 'Roboto Flex, sans-serif',
                 fontWeight: 400, fontSize: '13px', textAlign: 'center',
               }}>
-                Shaxsiy yordam kerakmi?
+                {t('login.needHelp')}
               </span>
 
               <span style={{
@@ -207,13 +209,13 @@ export default function Login({ onLogin }) {
                 color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
               fontWeight: 700, fontSize: '20px', alignSelf: 'flex-start',
             }}>
-              Kirish
+              {t('login.title')}
             </span>
 
               <div style={{ width: '274px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder={t('login.email')}
                   value={mail}
                   onChange={e => { setMail(e.target.value); setTouched(false) }}
                   onBlur={() => setTouched(true)}
@@ -242,7 +244,7 @@ export default function Login({ onLogin }) {
                     color: '#ED0000', fontFamily: 'Roboto Flex, sans-serif',
                     fontWeight: 400, fontSize: '12px', paddingLeft: '4px',
                   }}>
-                    Email noto'g'ri! Iltimos, qo'llab-quvvatlash xizmatiga murojaat qiling.
+                    {t('login.invalidEmail')}
                   </span>
                 )}
               </div>
@@ -266,7 +268,7 @@ export default function Login({ onLogin }) {
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                Kirish
+                {t('login.button')}
               </button>
             </>
           )}
@@ -278,7 +280,7 @@ export default function Login({ onLogin }) {
             color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif',
             fontWeight: 400, fontSize: '14px',
           }}>
-            Muammo bormi?
+            {t('login.problem')}
           </span>
           <button style={{
             background: 'none', border: 'none', padding: 0, cursor: 'pointer',
@@ -286,7 +288,7 @@ export default function Login({ onLogin }) {
             fontWeight: 400, fontSize: '14px',
             WebkitTapHighlightColor: 'transparent',
           }}>
-            Qo'llab-quvvatlash
+            {t('login.support')}
           </button>
         </div>
       </div>

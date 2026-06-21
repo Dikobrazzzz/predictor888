@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 import { apiFetch } from '../utils/api'
 
 const OUTCOME_MAP = { '1': 'home', 'X': 'draw', '2': 'away' }
@@ -64,6 +65,7 @@ function TeamIcon({ icon, emoji }) {
 }
 
 export default function MakePrediction({ event, navigate }) {
+  const t = useT()
   const [selected, setSelected] = useState(null)
   const [confirmed, setConfirmed] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -77,15 +79,15 @@ export default function MakePrediction({ event, navigate }) {
     {
       key: '1',
       title: `1 - ${home.name}`,
-      subtitle: "Mezbon jamoa g'alaba qozonadi",
+      subtitle: t('prediction.homeWins'),
       coef: coef.home,
       icon: <TeamIcon icon={home.icon} emoji={home.emoji} />,
     },
     coef.draw != null && coef.draw !== 0
       ? {
           key: 'X',
-          title: 'X - Draw',
-          subtitle: "O'yin durang bilan tugaydi",
+          title: `X - ${t('prediction.drawLabel')}`,
+          subtitle: t('prediction.drawDesc'),
           coef: coef.draw,
           icon: <DrawIcon />,
         }
@@ -93,7 +95,7 @@ export default function MakePrediction({ event, navigate }) {
     {
       key: '2',
       title: `2 - ${away.name}`,
-      subtitle: "Mehmon jamoa g'alaba qozonadi",
+      subtitle: t('prediction.awayWins'),
       coef: coef.away,
       icon: <TeamIcon icon={away.icon} emoji={away.emoji} />,
     },
@@ -119,13 +121,13 @@ export default function MakePrediction({ event, navigate }) {
       if (res.status === 201 || res.ok) {
         setConfirmed(true)
       } else if (res.status === 409) {
-        setSaveError("Siz bu o'yin uchun allaqachon taxmin qilgansiz")
+        setSaveError(t('prediction.already'))
       } else {
         const data = await res.json().catch(() => ({}))
-        setSaveError(data.error || "Taxminni saqlab bo'lmadi")
+        setSaveError(data.error || t('prediction.saveFailed'))
       }
     } catch {
-      setSaveError('Tarmoq xatosi, iltimos qayta urinib ko\'ring')
+      setSaveError(t('prediction.networkError'))
     } finally {
       setSaving(false)
     }
@@ -177,10 +179,10 @@ export default function MakePrediction({ event, navigate }) {
               <img src="/icons/Icon-3.svg" alt="Close" style={{ width: '24px', height: '24px' }} />
             </button>
             <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '20px' }}>
-              Tabriklaymiz!
+              {t('prediction.congrats')}
             </div>
             <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '14px', lineHeight: 1.5, marginBottom: '8px' }}>
-              Taxminingiz muvaffaqiyatli ro'yxatdan o'tkazildi.
+              {t('prediction.success')}
             </div>
             <button
               onClick={() => navigate?.('home')}
@@ -197,7 +199,7 @@ export default function MakePrediction({ event, navigate }) {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              Mening taxminim
+              {t('prediction.myPrediction')}
             </button>
           </div>
         </div>
@@ -212,7 +214,7 @@ export default function MakePrediction({ event, navigate }) {
         >
           <img src="/icons/i_arrowUp.svg" alt="Back" style={{ width: '20px', height: '20px' }} />
         </button>
-        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>Taxmin qilish</span>
+        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>{t('prediction.title')}</span>
         <button style={{ width: '36px', height: '36px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img src="/icons/i_info.svg" alt="Info" style={{ width: '22px', height: '22px' }} />
         </button>
@@ -260,7 +262,7 @@ export default function MakePrediction({ event, navigate }) {
       
       <div style={{ padding: '0 20px' }}>
         <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '18px', margin: '0 0 16px', textAlign: 'center' }}>
-          Taxminingizni tanlang
+          {t('prediction.choose')}
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -324,7 +326,7 @@ export default function MakePrediction({ event, navigate }) {
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          {saving ? 'Saqlanmoqda…' : 'Taxmin qilish'}
+          {saving ? t('prediction.saving') : t('prediction.predict')}
         </button>
       </div>
 

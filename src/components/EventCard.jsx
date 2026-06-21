@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useT } from '../i18n'
 
 function TeamCircle({ name, icon }) {
   return (
@@ -35,6 +36,7 @@ function TeamCircle({ name, icon }) {
 }
 
 export default function EventCard({ event, onPredict, navigate, forceTopBadge = false }) {
+  const t = useT()
   const [selected, setSelected] = useState(null)
 
   const { status, timeLeft, league, home, away, coef } = event
@@ -73,10 +75,10 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {!forceTopBadge && status === 'live' ? (
-          <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>Jonli stavka
+          <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>{t('card.liveBet')}
           </span>
         ) : (
-          <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: '#B40E0E', color: '#FFFFFF' }}>Top voqea</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: '#B40E0E', color: '#FFFFFF' }}>{t('card.topEvent')}</span>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: '#FFFE45' }}>
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +157,7 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
           marginTop: '4px',
         }}
       >
-        Taxmin qilish
+        {t('prediction.predict')}
       </button>
     </div>
   )

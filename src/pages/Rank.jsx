@@ -2,24 +2,27 @@ import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import DailyRewards from '../components/DailyRewards'
+import { useT } from '../i18n'
 import { apiFetch } from '../utils/api'
 
-const TABS = ['Hammasi', 'Faol', 'Yakunlangan']
+const TABS = [
+  { code: 'all',      labelKey: 'rank.tabAll' },
+  { code: 'waiting',  labelKey: 'common.active' },
+  { code: 'finished', labelKey: 'rank.tabFinished' },
+]
 
 const PICK_LABEL = { home: '1', draw: 'X', away: '2' }
 
-const STATUS_CFG = {
-  win:     { label: "G'alaba",    color: '#8FFF37' },
-  loss:    { label: "Mag'lubiyat", color: '#FF4D00' },
-  waiting: { label: 'Faol',       color: '#FFFE45' },
-}
+const STATUS_COLOR = { win: '#8FFF37', loss: '#FF4D00', waiting: '#FFFE45' }
+const STATUS_LABEL_KEY = { win: 'status.win', loss: 'status.loss', waiting: 'status.waiting' }
 
 function PredictionCard({ p }) {
+  const t = useT()
   const d = new Date(p.created_at)
   const date = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
   const pick = PICK_LABEL[p.outcome] || p.outcome
-  const st = STATUS_CFG[p.status] || { label: p.status, color: '#888' }
-  const xpLabel = p.status === 'win' ? `+${p.points} XP` : p.status === 'loss' ? '0 XP' : '—'
+  const st = { label: STATUS_LABEL_KEY[p.status] ? t(STATUS_LABEL_KEY[p.status]) : p.status, color: STATUS_COLOR[p.status] || '#888' }
+  const xpLabel = p.status === 'win' ? `+${p.points} ${t('common.xp')}` : p.status === 'loss' ? `0 ${t('common.xp')}` : '—'
 
   return (
     <div style={{
@@ -42,7 +45,7 @@ function PredictionCard({ p }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ color: 'rgba(255,255,255,0.44)', fontSize: '12px' }}>
-          {p.league} · Tanlov: <span style={{ color: '#FFFFFF' }}>{pick}</span>
+          {p.league} · {t('rank.pick')} <span style={{ color: '#FFFFFF' }}>{pick}</span>
         </span>
         <span style={{ color: p.status === 'win' ? '#8FFF37' : 'rgba(255,255,255,0.44)', fontSize: '12px', fontWeight: 600 }}>
           {xpLabel}
@@ -53,7 +56,8 @@ function PredictionCard({ p }) {
 }
 
 export default function Rank({ navigate, user }) {
-  const [activeTab, setActiveTab] = useState('All')
+  const t = useT()
+  const [activeTab, setActiveTab] = useState('all')
   const [predictions, setPredictions] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -87,8 +91,8 @@ export default function Rank({ navigate, user }) {
   }, [])
 
   const filtered = predictions.filter(p => {
-    if (activeTab === 'Faol') return p.status === 'waiting'
-    if (activeTab === 'Yakunlangan') return p.status !== 'waiting'
+    if (activeTab === 'waiting') return p.status === 'waiting'
+    if (activeTab === 'finished') return p.status !== 'waiting'
     return true
   })
 
@@ -115,7 +119,7 @@ export default function Rank({ navigate, user }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <img src="/icons/Icon-5.svg" alt="" style={{ width: '20px', height: '20px' }} />
-              <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profil statistikasi</span>
+              <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('rank.stats')}</span>
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -135,7 +139,7 @@ export default function Rank({ navigate, user }) {
                   <img src="/icons/Iocn_Tapbar-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>Sizning o'rningiz</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>{t('common.yourPosition')}</div>
                   <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>{loading ? '…' : position}</div>
                 </div>
               </div>
@@ -156,7 +160,7 @@ export default function Rank({ navigate, user }) {
                   <img src="/icons/Icon_Tapbar-3.svg" alt="" style={{ width: '20px', height: '20px' }} />
                 </div>
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>G'alaba foizi</div>
+                  <div style={{ color: 'rgba(255,255,255,0.66)', fontSize: '9px', fontWeight: 500, marginBottom: '2px' }}>{t('common.winRate')}</div>
                   <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 600, lineHeight: 1 }}>{loading ? '…' : winRate}</div>
                 </div>
               </div>
@@ -171,7 +175,7 @@ export default function Rank({ navigate, user }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src="/icons/Vector-2.svg" alt="" style={{ width: '18px', height: '18px' }} />
-            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Mening taxminim</span>
+            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('prediction.myPrediction')}</span>
           </div>
 
           <div style={{
@@ -186,11 +190,11 @@ export default function Rank({ navigate, user }) {
             marginBottom: '14px',
           }}>
             {TABS.map((tab) => {
-              const isActive = activeTab === tab
+              const isActive = activeTab === tab.code
               return (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  key={tab.code}
+                  onClick={() => setActiveTab(tab.code)}
                   style={{
                     flex: 1,
                     height: '100%',
@@ -205,7 +209,7 @@ export default function Rank({ navigate, user }) {
                     transition: 'background 0.15s',
                   }}
                 >
-                  {tab}
+                  {t(tab.labelKey)}
                 </button>
               )
             })}
@@ -214,11 +218,11 @@ export default function Rank({ navigate, user }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.30)', fontSize: '14px' }}>
-                Yuklanmoqda…
+                {t('common.loading')}
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.30)', fontSize: '14px' }}>
-                Hozircha taxminlar yo'q
+                {t('common.noPredictions')}
               </div>
             ) : (
               filtered.map(p => <PredictionCard key={p.id} p={p} />)
@@ -243,7 +247,7 @@ export default function Rank({ navigate, user }) {
               justifyContent: 'center',
             }}
           >
-            Yangi taxmin qilish
+            {t('rank.newPrediction')}
           </button>
         </div>
 

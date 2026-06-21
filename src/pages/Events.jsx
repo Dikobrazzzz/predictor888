@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import EventCard from '../components/EventCard'
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 
 const PAGE_SIZE = 5
 const RECOMMEND_TOP_N = 5
@@ -54,17 +55,20 @@ function isTopLiveEvent(event) {
   }
 }
 
-const SPORT_TABS = ['Barcha sport', 'Futbol', 'Basketbol', 'Tennis', 'Xokkey']
-
-const SPORT_MAP = {
-  'Futbol':    'Football',
-  'Basketbol': 'Basketball',
-  'Tennis':    'Tennis',
-  'Xokkey':    'Ice Hockey',
-}
+// Stable internal codes — UI labels are resolved via i18n so switching language
+// never breaks filtering logic. `sport` matches the canonical English sport name
+// from the API; `recKey` matches the recommended-events bucket key.
+const SPORT_TABS = [
+  { code: 'all',        labelKey: 'events.sportAll',        sport: null,         recKey: null },
+  { code: 'football',   labelKey: 'events.sportFootball',   sport: 'Football',   recKey: 'football' },
+  { code: 'basketball', labelKey: 'events.sportBasketball', sport: 'Basketball', recKey: 'basketball' },
+  { code: 'tennis',     labelKey: 'events.sportTennis',     sport: 'Tennis',     recKey: 'tennis' },
+  { code: 'hockey',     labelKey: 'events.sportHockey',     sport: 'Ice Hockey', recKey: 'hockey' },
+]
 
 export default function Events({ navigate, allEvents = [], counts: propCounts = {}, recommended = {}, dataReady = false }) {
-  const [activeSport, setActiveSport] = useState('Barcha sport')
+  const t = useT()
+  const [activeSport, setActiveSport] = useState('all')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
   const observerRef = useRef(null)
@@ -75,9 +79,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
     setVisibleCount(PAGE_SIZE)
   }, [activeSport])
 
-  const filtered = activeSport === 'Barcha sport'
+  const activeTab = SPORT_TABS.find((s) => s.code === activeSport) || SPORT_TABS[0]
+  const filtered = activeTab.sport == null
     ? allEvents
-    : allEvents.filter((e) => e.sport === SPORT_MAP[activeSport])
+    : allEvents.filter((e) => e.sport === activeTab.sport)
 
   const visible = filtered.slice(0, visibleCount)
   const hasMore = visibleCount < filtered.length
@@ -104,28 +109,22 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
 
   const tabCounts = {}
   SPORT_TABS.forEach((tab) => {
-    if (tab === 'Barcha sport') { tabCounts[tab] = allEvents.length; return }
-    tabCounts[tab] = allEvents.filter((e) => e.sport === SPORT_MAP[tab]).length
+    tabCounts[tab.code] = tab.sport == null
+      ? allEvents.length
+      : allEvents.filter((e) => e.sport === tab.sport).length
   })
 
-  const REC_SPORT_MAP = {
-    'Futbol':    'football',
-    'Basketbol': 'basketball',
-    'Tennis':    'tennis',
-    'Xokkey':    'hockey',
-  }
   const topUpcoming = (() => {
-    if (activeSport === 'Barcha sport') {
+    if (activeTab.recKey == null) {
       return Object.values(recommended)
         .flat()
         .sort((a, b) => {
-          const rank = (t) => t?.startsWith('Today') ? 0 : t?.startsWith('Tomorrow') ? 1 : 2
+          const rank = (tl) => tl?.startsWith('Today') ? 0 : tl?.startsWith('Tomorrow') ? 1 : 2
           return rank(a.timeLeft) - rank(b.timeLeft)
         })
         .slice(0, RECOMMEND_TOP_N)
     }
-    const key = REC_SPORT_MAP[activeSport]
-    return key ? (recommended[key] || []) : []
+    return recommended[activeTab.recKey] || []
   })()
 
   const liveVisible = visible.filter((e) => e.status === 'live' && isTopLiveEvent(e))
@@ -143,7 +142,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
         >
           <img src="/icons/i_arrowUp.svg" alt="Back" style={{ width: '20px', height: '20px' }} />
         </button>
-        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>Barcha voqealar</span>
+        <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '17px', flex: 1, textAlign: 'center' }}>{t('events.allEvents')}</span>
         <div style={{ width: '36px' }} />
       </div>
       <div style={{ height: '1px', background: '#72777C33', marginBottom: '16px' }} />
@@ -154,15 +153,15 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
         className="scrollbar-hide"
       >
         {SPORT_TABS.map((tab) => {
-          const isActive = activeSport === tab
-          const count = tabCounts[tab] || 0
+          const isActive = activeSport === tab.code
+          const count = tabCounts[tab.code] || 0
           return (
             <button
-              key={tab}
-              onClick={() => setActiveSport(tab)}
+              key={tab.code}
+              onClick={() => setActiveSport(tab.code)}
               style={{
                 flexShrink: 0,
-                minWidth: tab === 'Barcha sport' ? '100px' : undefined,
+                minWidth: tab.code === 'all' ? '100px' : undefined,
                 height: '37px',
                 borderRadius: '12px',
                 background: isActive ? '#FFFE45' : '#1A1A1A',
@@ -176,7 +175,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
                 transition: 'background 0.15s',
               }}
             >
-              {tab}
+              {t(tab.labelKey)}
             </button>
           )
         })}
@@ -184,7 +183,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
 
       {loading ? (
         <div style={{ padding: '40px 20px', color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center' }}>
-          Jonli o'yinlar yuklanmoqda...
+          {t('events.loadingLive')}
         </div>
       ) : (
         <>
@@ -193,10 +192,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Hozir jonli</span>
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.liveNow')}</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  {filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length} o'yin
+                  {t('events.matchesCount', { count: filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length })}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -213,10 +212,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Kelayotgan o'yinlar</span>
+                  <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.upcoming')}</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  keyingi {RECOMMEND_DAYS} kun
+                  {t('events.nextDays', { days: RECOMMEND_DAYS })}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -230,9 +229,9 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
           {upcomingVisible.length > 0 && (
             <div style={{ padding: '0 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Rejalashtirilgan</span>
+                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.scheduled')}</span>
                 <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
-                  {filtered.filter(e => e.status === 'upcoming').length} o'yin
+                  {t('events.matchesCount', { count: filtered.filter(e => e.status === 'upcoming').length })}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -247,10 +246,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             <div style={{ padding: '40px 20px', textAlign: 'center' }}>
               <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '32px', marginBottom: '12px' }}>⚽</div>
               <div style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', fontWeight: 500 }}>
-                {activeSport === 'Barcha sport' ? 'Hozirda jonli o\'yinlar yo\'q' : activeSport + ' bo\'yicha jonli o\'yinlar yo\'q'}
+                {activeTab.sport == null ? t('events.noLiveAll') : t('events.noLiveSport', { sport: t(activeTab.labelKey) })}
               </div>
               <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px', marginTop: '6px' }}>
-                Keyinroq qaytib keling
+                {t('events.comeBack')}
               </div>
             </div>
           )}
@@ -259,7 +258,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
           {hasMore && (
             <div ref={sentinelRef} style={{ padding: '16px 20px', textAlign: 'center' }}>
               <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px' }}>
-                Ko'proq yuklanmoqda...
+                {t('events.loadingMore')}
               </div>
             </div>
           )}

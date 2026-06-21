@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useT } from '../i18n'
 import imgGates from '/icons/0214656b.webp'
 import imgStar from '/icons/bc4c4d84.webp'
 import imgAviator from '/icons/087e19e8.webp'
@@ -6,7 +7,7 @@ import imgAviator from '/icons/087e19e8.webp'
 const PROMOS = [
   {
     code: 'UZ150FS',
-    desc: '150 ta free spin\ndepozitsiz',
+    descKey: 'promo.desc150',
     bg: 'linear-gradient(to bottom right, #622380, #14071A) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
     star: true,
     gates: true,
@@ -14,6 +15,7 @@ const PROMOS = [
 ]
 
 function PromoCard({ promo }) {
+  const t = useT()
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -40,7 +42,7 @@ function PromoCard({ promo }) {
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
         <div>
-          <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '4px' }}>Promokod</div>
+          <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '15px', marginBottom: '4px' }}>{t('promo.code')}</div>
           <div style={{
             display: 'inline-block',
             background: 'rgba(255,254,69,0.15)',
@@ -56,7 +58,7 @@ function PromoCard({ promo }) {
             {promo.code}
           </div>
           <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '12px', lineHeight: 1.45, whiteSpace: 'pre-line' }}>
-            {promo.desc}
+            {t(promo.descKey)}
           </div>
         </div>
         <button
@@ -76,7 +78,7 @@ function PromoCard({ promo }) {
             transition: 'background 0.2s, width 0.15s',
           }}
         >
-          {copied ? 'Nusxalandi!' : 'Hozir olish'}
+          {copied ? t('promo.copied') : t('promo.getNow')}
         </button>
       </div>
 
@@ -110,11 +112,12 @@ function PromoCard({ promo }) {
 }
 
 export default function DailyRewards() {
+  const t = useT()
   return (
     <div style={{ marginTop: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 20px', marginBottom: '12px' }}>
         <img src="/icons/Icon-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
-        <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', margin: 0 }}>Promo</h2>
+        <h2 style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px', margin: 0 }}>{t('promo.title')}</h2>
       </div>
 
       <div style={{ display: 'flex', gap: '12px', paddingLeft: '20px', paddingRight: '20px', overflowX: 'auto', paddingBottom: '4px' }} className="scrollbar-hide">

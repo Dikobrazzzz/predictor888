@@ -3,8 +3,10 @@ import EventCard from '../components/EventCard'
 import DailyRewards from '../components/DailyRewards'
 import TopPlayers from '../components/TopPlayers'
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 
 export default function Home({ navigate, topEvents = [], dataReady = false, user }) {
+  const t = useT()
   const currentEvent = topEvents[0] || null
 
   return (
@@ -14,12 +16,12 @@ export default function Home({ navigate, topEvents = [], dataReady = false, user
       <div style={{ padding: '0 20px' }}>
         {!dataReady && (
           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-            Yuklanmoqda...
+            {t('common.loading')}
           </div>
         )}
         {dataReady && topEvents.length === 0 && (
           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-            Hozirda jonli o'yinlar yo'q
+            {t('events.noLiveAll')}
           </div>
         )}
         {currentEvent && <EventCard event={currentEvent} navigate={navigate} forceTopBadge />}

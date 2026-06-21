@@ -1,4 +1,5 @@
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 import firstSvg from '/icons/first.svg'
 import secondSvg from '/icons/second.svg'
 import head2Svg from '/icons/3d_headphone_2023_36 [Converted] 2.svg'
@@ -25,6 +26,7 @@ const BTN_STYLE = {
 }
 
 export default function Telegram({ onSubscribe, onSkip }) {
+  const t = useT()
   return (
     <div style={{
       minHeight: '100vh',
@@ -97,11 +99,11 @@ export default function Telegram({ onSubscribe, onSkip }) {
           margin: 0,
           lineHeight: 1.5,
         }}>
-          Foydalanuvchilarni natijalarni taxmin qilishga jalb qilish. Promokodlar. Foydalanuvchi statusini ko'rsatish.
+          {t('welcome.desc')}
         </p>
 
         <button onClick={onSubscribe} style={BTN_STYLE}>
-          Telegram'ga obuna bo'lish
+          {t('telegram.subscribe')}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -111,7 +113,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
             fontWeight: 400,
             fontSize: '14px',
           }}>
-            Allaqachon obuna bo'lganmisiz?
+            {t('telegram.already')}
           </span>
           <button
             onClick={onSkip}
@@ -127,7 +129,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            O'tkazib yuborish
+            {t('telegram.skip')}
           </button>
         </div>
       </div>

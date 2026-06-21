@@ -1,9 +1,11 @@
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 import vectorSvg from '/icons/Vector-3.svg'
 import redLightSvg from '/icons/red light.svg'
 import imgInner from '../assets/img-inner.webp'
 
 export default function Welcome({ onStart }) {
+  const t = useT()
   return (
     <div style={{
       minHeight: '100vh',
@@ -79,7 +81,7 @@ export default function Welcome({ onStart }) {
             textTransform: 'capitalize',
             margin: 0,
           }}>
-            Xush kelibsiz!
+            {t('welcome.title')}
           </h1>
 
           <p style={{
@@ -91,7 +93,7 @@ export default function Welcome({ onStart }) {
             margin: 0,
             lineHeight: 1.4,
           }}>
-            Voqealarga tikib, bonuslar oling
+            {t('welcome.subtitle')}
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export default function Welcome({ onStart }) {
           margin: 0,
           lineHeight: 1.5,
         }}>
-          Foydalanuvchilarni natijalarni taxmin qilishga jalb qilish. Promokodlar. Foydalanuvchi statusini ko'rsatish.
+          {t('welcome.desc')}
         </p>
 
         <button
@@ -142,7 +144,7 @@ export default function Welcome({ onStart }) {
             position: 'relative',
           }}
         >
-          <span style={{ position: 'relative', zIndex: 1 }}>Boshlash</span>
+          <span style={{ position: 'relative', zIndex: 1 }}>{t('welcome.start')}</span>
         </button>
       </div>
 

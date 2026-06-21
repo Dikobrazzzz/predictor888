@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
+import { useT } from '../i18n'
 import imgGates from '/icons/0214656b.webp'
 import imgStar from '/icons/bc4c4d84.webp'
 import imgAviator from '/icons/087e19e8.webp'
@@ -8,8 +9,8 @@ import imgAviator from '/icons/087e19e8.webp'
 const PROMOS = [
   {
     code: 'UZ150FS',
-    title: 'Promokod',
-    desc: '150 ta free spin\ndepozitsiz',
+    titleKey: 'promo.code',
+    descKey: 'promo.desc150',
     bg: 'linear-gradient(to bottom right, #622380, #14071A) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
     img1: { src: null, star: true },
     img2: { src: null, gates: true },
@@ -17,6 +18,7 @@ const PROMOS = [
 ]
 
 function PromoCard({ promo, large = false }) {
+  const t = useT()
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -43,7 +45,7 @@ function PromoCard({ promo, large = false }) {
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, zIndex: 1 }}>
         <div>
           <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: large ? 16 : 15, marginBottom: '4px' }}>
-            {promo.title}
+            {t(promo.titleKey)}
           </div>
           <div style={{
             display: 'inline-block',
@@ -60,7 +62,7 @@ function PromoCard({ promo, large = false }) {
             {promo.code}
           </div>
           <div style={{ color: '#FFFFFF', fontWeight: 400, fontSize: '12px', lineHeight: 1.45, whiteSpace: 'pre-line' }}>
-            {promo.desc}
+            {t(promo.descKey)}
           </div>
         </div>
         <button
@@ -80,7 +82,7 @@ function PromoCard({ promo, large = false }) {
             transition: 'background 0.2s, width 0.15s',
           }}
         >
-          {copied ? 'Nusxalandi!' : 'Hozir olish'}
+          {copied ? t('promo.copied') : t('promo.getNow')}
         </button>
       </div>
 
@@ -114,6 +116,7 @@ function PromoCard({ promo, large = false }) {
 }
 
 export default function Promo({ navigate, user }) {
+  const t = useT()
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
       <Header user={user} />
@@ -121,7 +124,7 @@ export default function Promo({ navigate, user }) {
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
           <img src="/icons/Icon-2.svg" alt="" style={{ width: '20px', height: '20px' }} />
-          <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Promo</span>
+          <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('promo.title')}</span>
         </div>
 
         {PROMOS.map((promo) => (

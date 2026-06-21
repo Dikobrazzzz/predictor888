@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import { apiFetch } from '../utils/api'
+import { useT } from '../i18n'
 import BottomNav from '../components/BottomNav'
 import iconTapbar from '/icons/Icon_Tapbar.svg'
 import iconPosition from '/icons/Iocn_Tapbar-2.svg'
@@ -56,6 +57,7 @@ function InfoRow({ icon, label, value, valueColor = '#FFFFFF', rightSlot, valueP
 }
 
 export default function Profile({ navigate, user }) {
+  const t = useT()
   const [subscribed, setSubscribed] = useState(false)
   const [stats, setStats] = useState(null)
 
@@ -91,7 +93,7 @@ export default function Profile({ navigate, user }) {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <img src={iconTapbar} alt="" style={{ width: '20px', height: '20px' }} />
-            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>Profil ma'lumotlari</span>
+            <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('profile.info')}</span>
           </div>
 
           
@@ -107,7 +109,7 @@ export default function Profile({ navigate, user }) {
                 <img src={iconPosition} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
-                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>Sizning o'rningiz</div>
+                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>{t('common.yourPosition')}</div>
                 <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{position}</div>
               </div>
             </div>
@@ -123,7 +125,7 @@ export default function Profile({ navigate, user }) {
                 <img src={iconWinrate} alt="" style={{ width: '20px', height: '20px' }} />
               </div>
               <div>
-                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>G'alaba foizi</div>
+                <div style={{ color: '#FFFFFF', fontSize: '9px', fontWeight: 400, marginBottom: '2px' }}>{t('common.winRate')}</div>
                 <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 700, lineHeight: 1 }}>{winRate}</div>
               </div>
             </div>
@@ -134,13 +136,13 @@ export default function Profile({ navigate, user }) {
 
             <InfoRow
               icon={iconEmail}
-              label="Email"
+              label={t('common.email')}
               value={user?.email || '—'}
             />
 
             <InfoRow
               icon={iconLocation}
-              label="Hudud"
+              label={t('profile.region')}
               value={user?.region || '—'}
               rightSlot={
                 <img src={iconEdit} alt="" style={{ width: '20px', height: '20px', flexShrink: 0 }} />
@@ -149,8 +151,8 @@ export default function Profile({ navigate, user }) {
 
             <InfoRow
               icon={iconTelegram}
-              label="Obuna"
-              value={subscribed ? 'Faol' : 'Nofaol'}
+              label={t('profile.subscription')}
+              value={subscribed ? t('common.active') : t('profile.inactive')}
               valueColor={subscribed ? '#55B685' : '#FF4D00'}
               valuePrefix={subscribed ? (
                 <img src={iconGroup} alt="" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
@@ -171,14 +173,14 @@ export default function Profile({ navigate, user }) {
                     flexShrink: 0,
                     WebkitTapHighlightColor: 'transparent',
                   }}>
-                  Obuna bo'lish
+                  {t('profile.subscribe')}
                 </button>
               )}
             />
 
             <InfoRow
               icon={iconLogout}
-              label="Botni o'chirish"
+              label={t('profile.deleteBot')}
               value=""
               rightSlot={
                 <button style={{
@@ -194,7 +196,7 @@ export default function Profile({ navigate, user }) {
                   flexShrink: 0,
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  O'chirish
+                  {t('profile.delete')}
                 </button>
               }
             />

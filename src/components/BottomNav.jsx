@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 const RANK_ICON = (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 8.16216V8.23516C22 9.09516 22 9.52616 21.793 9.87816C21.586 10.2302 21.209 10.4392 20.457 10.8582L19.664 11.2982C20.21 9.45016 20.393 7.46416 20.46 5.76616L20.47 5.54516L20.472 5.49316C21.123 5.71916 21.489 5.88816 21.717 6.20416C22 6.59716 22 7.11916 22 8.16216ZM2 8.16216V8.23516C2 9.09516 2 9.52616 2.207 9.87816C2.414 10.2302 2.791 10.4392 3.543 10.8582L4.337 11.2982C3.79 9.45016 3.607 7.46416 3.54 5.76616L3.53 5.54516L3.529 5.49316C2.877 5.71916 2.511 5.88816 2.283 6.20416C2 6.59716 2 7.12016 2 8.16216Z" fill="white"/>
@@ -30,14 +32,15 @@ const ICONS = {
 }
 
 const NAV_ITEMS = [
-  { key: 'home', label: 'Bosh sahifa' },
-  { key: 'events', label: 'Voqealar' },
-  { key: 'rank', label: 'Reyting', center: true },
-  { key: 'promo', label: 'Promo' },
-  { key: 'profile', label: 'Profil' },
+  { key: 'home', labelKey: 'nav.home' },
+  { key: 'events', labelKey: 'nav.events' },
+  { key: 'rank', labelKey: 'nav.rank', center: true },
+  { key: 'promo', labelKey: 'nav.promo' },
+  { key: 'profile', labelKey: 'nav.profile' },
 ]
 
 export default function BottomNav({ active = 'home', onNavigate }) {
+  const { t } = useI18n()
   return (
     <nav
       style={{
@@ -84,7 +87,7 @@ export default function BottomNav({ active = 'home', onNavigate }) {
                 {RANK_ICON}
               </div>
               <span className={`text-[10px] font-medium mt-0.5 ${isActive ? 'text-white' : 'text-white/60'}`}>
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </button>
           )
@@ -111,7 +114,7 @@ export default function BottomNav({ active = 'home', onNavigate }) {
                 isActive ? 'text-white' : 'text-white/60',
               ].join(' ')}
             >
-              {item.label}
+              {t(item.labelKey)}
             </span>
           </button>
         )
