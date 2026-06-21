@@ -119,4 +119,16 @@ export default {
   // Event card badges — auto
   'card.liveBet': 'Pari en direct', // auto
   'card.topEvent': 'Événement phare', // auto
+
+  // Time labels
+  'time.live': 'LIVE',
+  'time.today': "Aujourd'hui",
+  'time.tomorrow': 'Demain',
+  'time.mon': 'Lun',
+  'time.tue': 'Mar',
+  'time.wed': 'Mer',
+  'time.thu': 'Jeu',
+  'time.fri': 'Ven',
+  'time.sat': 'Sam',
+  'time.sun': 'Dim',
 }

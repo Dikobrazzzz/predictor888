@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useT } from '../i18n'
+import { useT, localizeTimeLeft } from '../i18n'
 
 function TeamCircle({ name, icon }) {
   return (
@@ -39,7 +39,8 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
   const t = useT()
   const [selected, setSelected] = useState(null)
 
-  const { status, timeLeft, league, home, away, coef } = event
+  const { status, timeLeft: rawTimeLeft, league, home, away, coef } = event
+  const timeLeft = localizeTimeLeft(rawTimeLeft, t)
 
   const hasCoef = coef.home != null && coef.home !== 0
   const outcomes = hasCoef ? [

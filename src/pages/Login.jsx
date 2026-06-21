@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import BottomNav from '../components/BottomNav'
 import { useT } from '../i18n'
 import { setSession, apiFetch } from '../utils/api'
 
@@ -292,8 +291,6 @@ export default function Login({ onLogin }) {
           </button>
         </div>
       </div>
-
-      <BottomNav active="" onNavigate={() => {}} />
     </div>
   )
 }

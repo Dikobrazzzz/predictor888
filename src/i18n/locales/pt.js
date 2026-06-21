@@ -119,4 +119,16 @@ export default {
   // Event card badges — auto
   'card.liveBet': 'Aposta ao vivo', // auto
   'card.topEvent': 'Evento em destaque', // auto
+
+  // Time labels
+  'time.live': 'AO VIVO',
+  'time.today': 'Hoje',
+  'time.tomorrow': 'Amanhã',
+  'time.mon': 'Seg',
+  'time.tue': 'Ter',
+  'time.wed': 'Qua',
+  'time.thu': 'Qui',
+  'time.fri': 'Sex',
+  'time.sat': 'Sáb',
+  'time.sun': 'Dom',
 }

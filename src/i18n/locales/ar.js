@@ -119,4 +119,16 @@ export default {
   // Event card badges — auto
   'card.liveBet': 'رهان مباشر', // auto
   'card.topEvent': 'حدث مميز', // auto
+
+  // Time labels
+  'time.live': 'مباشر',
+  'time.today': 'اليوم',
+  'time.tomorrow': 'غداً',
+  'time.mon': 'الاثنين',
+  'time.tue': 'الثلاثاء',
+  'time.wed': 'الأربعاء',
+  'time.thu': 'الخميس',
+  'time.fri': 'الجمعة',
+  'time.sat': 'السبت',
+  'time.sun': 'الأحد',
 }

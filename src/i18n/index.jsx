@@ -82,3 +82,17 @@ export function useI18n() {
 export function useT() {
   return useI18n().t
 }
+
+// Maps Go time.Format("Mon") output to i18n keys.
+const DAY_KEYS = { Mon: 'time.mon', Tue: 'time.tue', Wed: 'time.wed', Thu: 'time.thu', Fri: 'time.fri', Sat: 'time.sat', Sun: 'time.sun' }
+
+// Translates backend-generated time strings like "LIVE", "Today 14:30", "Mon 14:30".
+export function localizeTimeLeft(str, t) {
+  if (!str) return str
+  if (str === 'LIVE') return t('time.live')
+  if (str.startsWith('Today ')) return t('time.today') + ' ' + str.slice(6)
+  if (str.startsWith('Tomorrow ')) return t('time.tomorrow') + ' ' + str.slice(9)
+  const m = str.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (.+)$/)
+  if (m && DAY_KEYS[m[1]]) return t(DAY_KEYS[m[1]]) + ' ' + m[2]
+  return str
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import BottomNav from '../components/BottomNav'
-import { useT } from '../i18n'
+import { useT, localizeTimeLeft } from '../i18n'
 import { apiFetch } from '../utils/api'
 
 const OUTCOME_MAP = { '1': 'home', 'X': 'draw', '2': 'away' }
@@ -73,7 +73,8 @@ export default function MakePrediction({ event, navigate }) {
 
   if (!event) return null
 
-  const { timeLeft, league, home, away, coef } = event
+  const { timeLeft: rawTimeLeft, league, home, away, coef } = event
+  const timeLeft = localizeTimeLeft(rawTimeLeft, t)
 
   const baseOutcomes = [
     {

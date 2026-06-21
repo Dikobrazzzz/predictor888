@@ -1,4 +1,3 @@
-import BottomNav from '../components/BottomNav'
 import { useT } from '../i18n'
 import vectorSvg from '/icons/Vector-3.svg'
 import redLightSvg from '/icons/red light.svg'
@@ -147,8 +146,6 @@ export default function Welcome({ onStart }) {
           <span style={{ position: 'relative', zIndex: 1 }}>{t('welcome.start')}</span>
         </button>
       </div>
-
-      <BottomNav active="" onNavigate={() => {}} />
     </div>
   )
 }

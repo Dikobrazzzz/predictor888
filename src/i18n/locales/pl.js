@@ -119,4 +119,16 @@ export default {
   // Event card badges — auto
   'card.liveBet': 'Zakład na żywo', // auto
   'card.topEvent': 'Najważniejsze wydarzenie', // auto
+
+  // Time labels
+  'time.live': 'NA ŻYWO',
+  'time.today': 'Dzisiaj',
+  'time.tomorrow': 'Jutro',
+  'time.mon': 'Pon',
+  'time.tue': 'Wt',
+  'time.wed': 'Śr',
+  'time.thu': 'Czw',
+  'time.fri': 'Pt',
+  'time.sat': 'Sob',
+  'time.sun': 'Nie',
 }

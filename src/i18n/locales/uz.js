@@ -118,4 +118,16 @@ export default {
   // Event card badges
   'card.liveBet': 'Jonli stavka',
   'card.topEvent': 'Top voqea',
+
+  // Time labels (from backend: "LIVE", "Today HH:MM", "Tomorrow HH:MM", "Mon HH:MM" etc.)
+  'time.live': 'JONLI',
+  'time.today': 'Bugun',
+  'time.tomorrow': 'Ertaga',
+  'time.mon': 'Dush',
+  'time.tue': 'Sesh',
+  'time.wed': 'Chor',
+  'time.thu': 'Pay',
+  'time.fri': 'Jum',
+  'time.sat': 'Shan',
+  'time.sun': 'Yak',
 }

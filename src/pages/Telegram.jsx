@@ -1,4 +1,3 @@
-import BottomNav from '../components/BottomNav'
 import { useT } from '../i18n'
 import firstSvg from '/icons/first.svg'
 import secondSvg from '/icons/second.svg'
@@ -133,8 +132,6 @@ export default function Telegram({ onSubscribe, onSkip }) {
           </button>
         </div>
       </div>
-
-      <BottomNav active="" onNavigate={() => {}} />
     </div>
   )
 }
