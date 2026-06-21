@@ -1,7 +1,7 @@
 import { useT } from '../i18n'
 import vectorSvg from '/icons/Vector-3.svg'
 import redLightSvg from '/icons/red light.svg'
-import imgInner from '../assets/img-inner.webp'
+const imgInner = '/icons/img-inner.webp'
 
 export default function Welcome({ onStart }) {
   const t = useT()
