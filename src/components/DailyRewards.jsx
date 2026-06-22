@@ -46,7 +46,6 @@ function PromoCard({ promo }) {
           <div style={{
             display: 'inline-block',
             background: 'rgba(255,254,69,0.15)',
-            border: '1px solid rgba(255,254,69,0.40)',
             borderRadius: '6px',
             padding: '2px 7px',
             color: '#FFFE45',

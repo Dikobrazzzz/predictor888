@@ -50,6 +50,8 @@ services:
       CF_WORKER_URL: "{{ cf_worker_url }}"
       PORT: "8082"
       GOMAXPROCS: "{{ gomaxprocs }}"
+      LOOKUP_API_URL: "{{ lookup_api_url | default('http://defal-prod-201.888starztech.ru:9978') }}"
+      LOOKUP_API_KEY: "{{ lookup_api_key }}"
     networks:
       - default
       - nginx_net
