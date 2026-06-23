@@ -59,8 +59,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if h.Lookup != nil {
 		found, err := h.Lookup.LookupByEmail(r.Context(), req.Email)
 		if err != nil {
-			slog.Warn("login: lookup service error", "email", req.Email, "err", err)
-		} else if !found {
+			slog.Error("login: lookup service error", "email", req.Email, "err", err)
+			writeJSON(w, http.StatusServiceUnavailable, models.LoginResponse{Error: "service temporarily unavailable"})
+			return
+		}
+		if !found {
 			slog.Warn("login: user not found in 888starz", "email", req.Email)
 			writeJSON(w, http.StatusForbidden, models.LoginResponse{Error: "access denied"})
 			return
@@ -122,8 +125,11 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	if h.Lookup != nil {
 		found, err := h.Lookup.LookupByEmail(r.Context(), req.Email)
 		if err != nil {
-			slog.Warn("register: lookup service error", "email", req.Email, "err", err)
-		} else if !found {
+			slog.Error("register: lookup service error", "email", req.Email, "err", err)
+			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "service temporarily unavailable"})
+			return
+		}
+		if !found {
 			slog.Warn("register: user not found in 888starz", "email", req.Email)
 			writeJSON(w, http.StatusForbidden, map[string]string{"error": "access denied"})
 			return
