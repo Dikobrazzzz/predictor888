@@ -2,7 +2,6 @@ import { useT } from '../i18n'
 import firstSvg from '/icons/first.svg'
 import secondSvg from '/icons/second.svg'
 const head2Svg = '/icons/headphone-2.webp'
-const head3Svg = '/icons/headphone-3.webp'
 const tg2Svg = '/icons/telegram-hero.webp'
 
 const BTN_STYLE = {
@@ -72,13 +71,6 @@ export default function Telegram({ onSubscribe, onSkip }) {
       }}>
         <div style={{ position: 'relative', width: '120%', marginLeft: '-10%' }}>
           <img src={head2Svg} alt="" fetchpriority="high" style={{
-            position: 'absolute',
-            bottom: '15%',
-            left: '2%',
-            width: '57%',
-            zIndex: 0,
-          }} />
-          <img src={head3Svg} alt="" fetchpriority="high" style={{
             position: 'absolute',
             bottom: '-13%',
             right: '-8%',
