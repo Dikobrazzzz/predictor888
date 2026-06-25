@@ -103,8 +103,8 @@ export default function Telegram({ onSubscribe, onSkip }) {
               width: '100%',
               display: 'block',
               filter: 'blur(5px)',
-              maskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
-              WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
+              maskImage: 'linear-gradient(to right, black 0%, transparent 70%)',
+              WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 70%)',
             }} />
           </div>
           <img src={tg2Svg} alt="" fetchpriority="high"
