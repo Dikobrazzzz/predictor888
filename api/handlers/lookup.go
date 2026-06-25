@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -42,7 +43,9 @@ func (c *LookupClient) LookupByEmail(ctx context.Context, email string) (found b
 		return false, err
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, io.LimitReader(resp.Body, 64*1024))
+	bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
+
+	slog.Info("lookup response", "email", email, "status", resp.StatusCode, "body", string(bodyBytes))
 
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil
