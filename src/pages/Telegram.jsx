@@ -84,18 +84,29 @@ export default function Telegram({ onSubscribe, onSkip }) {
               inset: 0,
               width: '100%',
               display: 'block',
-              filter: 'blur(4px)',
+              filter: 'blur(2px)',
               maskImage: 'linear-gradient(28deg, transparent 29%, black 62%)',
               WebkitMaskImage: 'linear-gradient(28deg, transparent 29%, black 62%)',
             }} />
           </div>
-          <img src={head3Svg} alt="" fetchpriority="high" style={{
+          <div style={{
             position: 'absolute',
             bottom: '-52%',
             right: '-8%',
             width: '79%',
             zIndex: 0,
-          }} />
+          }}>
+            <img src={head3Svg} alt="" fetchpriority="high" style={{ width: '100%', display: 'block' }} />
+            <img src={head3Svg} alt="" aria-hidden="true" style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              display: 'block',
+              filter: 'blur(2px)',
+              maskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
+              WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
+            }} />
+          </div>
           <img src={tg2Svg} alt="" fetchpriority="high"
             style={{ width: '100%', display: 'block', position: 'relative', zIndex: 1 }} />
         </div>
