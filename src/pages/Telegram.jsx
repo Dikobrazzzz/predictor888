@@ -77,19 +77,17 @@ export default function Telegram({ onSubscribe, onSkip }) {
             left: '2%',
             width: '57%',
             zIndex: 0,
-            overflow: 'hidden',
           }}>
             <img src={head2Svg} alt="" fetchpriority="high" style={{ width: '100%', display: 'block' }} />
-            {[1, 2, 3, 4].map(level => (
-              <div key={level} style={{
-                position: 'absolute',
-                inset: 0,
-                backdropFilter: `blur(${level}px)`,
-                WebkitBackdropFilter: `blur(${level}px)`,
-                maskImage: `linear-gradient(28deg, transparent ${(level - 1) * 25}%, black ${level * 25}%)`,
-                WebkitMaskImage: `linear-gradient(28deg, transparent ${(level - 1) * 25}%, black ${level * 25}%)`,
-              }} />
-            ))}
+            <img src={head2Svg} alt="" aria-hidden="true" style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              display: 'block',
+              filter: 'blur(4px)',
+              maskImage: 'linear-gradient(28deg, transparent 29%, black 62%)',
+              WebkitMaskImage: 'linear-gradient(28deg, transparent 29%, black 62%)',
+            }} />
           </div>
           <img src={head3Svg} alt="" fetchpriority="high" style={{
             position: 'absolute',
@@ -109,6 +107,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
           fontSize: '14px',
           textAlign: 'center',
           margin: 0,
+          marginTop: '40px',
           lineHeight: 1.5,
         }}>
           {t('welcome.desc')}
