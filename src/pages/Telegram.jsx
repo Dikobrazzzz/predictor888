@@ -1,9 +1,9 @@
 import { useT } from '../i18n'
 import firstSvg from '/icons/first.svg'
 import secondSvg from '/icons/second.svg'
-import head2Svg from '/icons/3d_headphone_2023_36 [Converted] 2.svg'
-import head3Svg from '/icons/3d_headphone_2023_36 [Converted] 3.svg'
-import tg2Svg from '/icons/Telegram-2.svg'
+const head2Svg = '/icons/headphone-2.webp'
+const head3Svg = '/icons/headphone-3.webp'
+const tg2Svg = '/icons/telegram-hero.webp'
 
 const BTN_STYLE = {
   width: '334px',
