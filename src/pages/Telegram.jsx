@@ -73,14 +73,14 @@ export default function Telegram({ onSubscribe, onSkip }) {
         <div style={{ position: 'relative', width: '120%', marginLeft: '-10%' }}>
           <img src={head2Svg} alt="" fetchpriority="high" style={{
             position: 'absolute',
-            bottom: '7%',
+            bottom: '-10%',
             left: '2%',
             width: '57%',
             zIndex: 0,
           }} />
           <img src={head3Svg} alt="" fetchpriority="high" style={{
             position: 'absolute',
-            bottom: '-21%',
+            bottom: '-40%',
             right: '-8%',
             width: '79%',
             zIndex: 0,
