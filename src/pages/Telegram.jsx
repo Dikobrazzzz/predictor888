@@ -102,7 +102,7 @@ export default function Telegram({ onSubscribe, onSkip }) {
               inset: 0,
               width: '100%',
               display: 'block',
-              filter: 'blur(2px)',
+              filter: 'blur(5px)',
               maskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
               WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 45%)',
             }} />
