@@ -10,8 +10,7 @@
 |------|------------|
 | Frontend | Vite, React, nginx (`web/Dockerfile`) |
 | Backend | Go, `pgx`, HTTP API :8082 |
-| БД | PostgreSQL 16 (`api/migrations/`) |
-| Backup (k8s) | CronJob в `flux-infra` |
+| БД | PostgreSQL 16 (`api/migrations/`), CNPG в eks-dev |
 
 ## Структура
 
@@ -21,7 +20,7 @@ web/
 cloudflare-worker/
 .cicd/deploy/
 .cicd/prod/
-backup/backup.sh          # справочно; cron в flux-infra
+backup/backup.sh          # справочно (VM compose); в eks-dev бэкап через CNPG
 docker-compose.yml
 ```
 
@@ -48,15 +47,21 @@ docker compose up --build
 | API | `gamification-api-app` |
 | UI | `gamification-ui-app` |
 | Postgres | `postgresql-gamification` |
-| Backup | CronJob → PVC `gamification-backups` |
 | Vault | `eks-dev/marketing/gamification` |
-| Образы | `…/gamification:main`, `…/web:main` |
+| Образы | `…/gamification:main-<ts>-<sha>`, `…/web:main-<ts>-<sha>` |
 
 Nginx UI: `helm-charts/flux/eks-dev/marketing/gamification-ui/nginx.conf`.
 
 ### CI (`main`, push)
 
-`build_production` + `build_web_production` → `sync-flux-env` → `indicate-k8s-dev`.
+Единственная ветка — `main` (легаси `dev`/`new_dev` удалены). Push в `main`:
+
+`docker-build-api` + `docker-build-web` (шаблон `infrastructure/ci-cd` `multi-images-build`, buildx → теги `main-<ts>-<sha>`) → `sync-flux-env-to-helm-charts` → `indicate-k8s-dev`.
+
+Flux ImagePolicy ловит `main-<ts>-<sha>` для api и `/web`; `deploy-prod` (manual) берёт `EXPECTED_BACKEND_IMAGE` + `EXPECTED_UI_IMAGE`.
+
+Доступ к namespace `marketing` (view + logs + `exec`/`port-forward`) — через IAM-группу
+`dev-exec-ro-traf`, см. `flux-infra/infrastructure/eks-dev/rbac/README.md`.
 
 Миграции: `api/migrations/` на `postgresql-gamification`.
 
