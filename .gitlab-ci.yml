@@ -3,6 +3,10 @@ stages:
   - deploy
 
 include:
+  - project: infrastructure/ci-cd
+    ref: main
+    file:
+      - templates/docker-build/multi-images-build.yaml
   - project: infrastructure/prod-deploy
     ref: main
     file:
@@ -12,96 +16,22 @@ include:
     file:
       - .gitlab-ci/deploy-dev-k8s.yml
 
-.build_backend_template: &build_backend_template
-  image: docker:cli
-  stage: build
-  services:
-    - name: docker:dind
-      alias: docker
-      variables:
-        DOCKER_TLS_CERTDIR: ""
-        DOCKER_DRIVER: overlay2
-      command: ["--insecure-registry=gitlab.luckytits.org:5050", "--log-level=warn"]
+# api- и web-образы собирает шаблон infrastructure/ci-cd (.docker-build-base) →
+# теги main-<ts>-<sha>, которые ловит Flux ImagePolicy; EXPECTED_*_IMAGE идут в прод-деплой.
+docker-build-api:
+  extends: .docker-build-base
   variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    BUILDKIT_PROGRESS: auto
-    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA
-    DOCKER_CONFIG: /tmp/docker
-  before_script:
-    - until docker info >/dev/null 2>&1; do sleep 1; done
-    - echo "Docker daemon is ready"
-    - mkdir -p $DOCKER_CONFIG
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    DOCKERFILE_PATH: "api/Dockerfile"
+    BUILD_CONTEXT: "api"
   script:
-    - echo "Building api image..."
-    - docker build --pull -t "$DOCKER_IMAGE_NAME" api
-    - echo "Pushing image to registry..."
-    - docker push --quiet "$DOCKER_IMAGE_NAME"
     - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        echo "Tagging and pushing as latest..."
-        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
-        docker push --quiet "$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:latest"
-      fi
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}"
-        docker push --quiet "$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}"
-      fi
-
-.build_frontend_template: &build_frontend_template
-  image: docker:cli
-  stage: build
-  services:
-    - name: docker:dind
-      alias: docker
-      variables:
-        DOCKER_TLS_CERTDIR: ""
-        DOCKER_DRIVER: overlay2
-      command: ["--insecure-registry=gitlab.luckytits.org:5050", "--log-level=warn"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
-    DOCKER_BUILDKIT: 1
-    BUILDKIT_PROGRESS: auto
-    DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA
-    DOCKER_CONFIG: /tmp/docker
-  before_script:
-    - until docker info >/dev/null 2>&1; do sleep 1; done
-    - echo "Docker daemon is ready"
-    - mkdir -p $DOCKER_CONFIG
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-  script:
-    - echo "Building web image..."
-    - docker build --pull -f web/Dockerfile -t "$DOCKER_IMAGE_NAME" .
-    - echo "Pushing image to registry..."
-    - docker push --quiet "$DOCKER_IMAGE_NAME"
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        echo "Tagging and pushing as latest..."
-        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
-        docker push --quiet "$CI_REGISTRY_IMAGE/web/$CI_COMMIT_REF_SLUG:latest"
-      fi
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        docker tag "$DOCKER_IMAGE_NAME" "$CI_REGISTRY_IMAGE/web:${CI_COMMIT_REF_SLUG}"
-        docker push --quiet "$CI_REGISTRY_IMAGE/web:${CI_COMMIT_REF_SLUG}"
-      fi
-
-build_production:
-  extends: .build_backend_template
-  after_script:
-    - |
-      _TS=$(date -u +%Y%m%d%H%M%S)
-      _TIMESTAMPED="${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-${_TS}-${CI_COMMIT_SHORT_SHA}"
-      docker tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}" "${_TIMESTAMPED}" \
-        && docker push --quiet "${_TIMESTAMPED}" \
-        && echo "EXPECTED_BACKEND_IMAGE=${_TIMESTAMPED}" >> "${CI_PROJECT_DIR}/build.env" \
-        || echo "WARNING: could not push timestamped backend tag"
+      docker buildx build --push --provenance=false \
+        -t "${CI_REGISTRY_IMAGE}:${TAG}" \
+        -f "${DOCKERFILE_PATH}" \
+        ${BUILD_ARGS} \
+        "${BUILD_CONTEXT}"
+      echo "BUILT_TAG=${TAG}" >> build.env
+      echo "EXPECTED_BACKEND_IMAGE=${CI_REGISTRY_IMAGE}:${TAG}" >> build.env
   artifacts:
     reports:
       dotenv: build.env
@@ -109,19 +39,22 @@ build_production:
     - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - api/Dockerfile
-    - when: never
 
-
-build_web_production:
-  extends: .build_frontend_template
-  after_script:
+docker-build-web:
+  extends: .docker-build-base
+  variables:
+    IMAGE_SUFFIX: "/web"
+    DOCKERFILE_PATH: "web/Dockerfile"
+    BUILD_CONTEXT: "."
+  script:
     - |
-      _TS=$(date -u +%Y%m%d%H%M%S)
-      _TIMESTAMPED="${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}-${_TS}-${CI_COMMIT_SHORT_SHA}"
-      docker tag "${CI_REGISTRY_IMAGE}/web:${CI_COMMIT_REF_SLUG}" "${_TIMESTAMPED}" \
-        && docker push --quiet "${_TIMESTAMPED}" \
-        && echo "EXPECTED_UI_IMAGE=${_TIMESTAMPED}" >> "${CI_PROJECT_DIR}/ui-build.env" \
-        || echo "WARNING: could not push timestamped UI tag"
+      docker buildx build --push --provenance=false \
+        -t "${CI_REGISTRY_IMAGE}/web:${TAG}" \
+        -f "${DOCKERFILE_PATH}" \
+        ${BUILD_ARGS} \
+        "${BUILD_CONTEXT}"
+      echo "BUILT_WEB_TAG=${TAG}" >> ui-build.env
+      echo "EXPECTED_UI_IMAGE=${CI_REGISTRY_IMAGE}/web:${TAG}" >> ui-build.env
   artifacts:
     reports:
       dotenv: ui-build.env
@@ -129,26 +62,25 @@ build_web_production:
     - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - web/Dockerfile
-    - when: never
 
 deploy-prod:
   extends: .deploy-prod
   tags:
     - prod-deploy
   needs:
-    - build_production
-    - build_web_production
+    - docker-build-api
+    - docker-build-web
     #- job: indicate-k8s-dev
     #  optional: true
   variables:
     DEPLOY_PATH: "/opt/gamification-prod"
-    COMPOSE_TEMPLATE: ".cicd/prod/docker-compose.yml.j2"  
-    FILES_DIR: ".cicd/prod/files"                        
+    COMPOSE_TEMPLATE: ".cicd/prod/docker-compose.yml.j2"
+    FILES_DIR: ".cicd/prod/files"
     VAULT_SECRET_PATH: "pve-prod/marketing/gamification"
     EXTRA_TASKS_PATH: ".cicd/prod/extra-tasks.yml"
     ANSIBLE_EXTRA_ARGS: >-
-      -e docker_image=$CI_REGISTRY_IMAGE/main:latest
-      -e web_image=$CI_REGISTRY_IMAGE/web/main:latest
+      -e docker_image=$EXPECTED_BACKEND_IMAGE
+      -e web_image=$EXPECTED_UI_IMAGE
       -e migrations_src_dir=$CI_PROJECT_DIR/api/migrations
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -185,8 +117,10 @@ sync-flux-env-to-helm-charts:
 indicate-k8s-dev:
   extends: .indicate-k8s-dev
   needs:
-    - build_production
-    - build_web_production
+    - job: docker-build-api
+      optional: true
+    - job: docker-build-web
+      optional: true
     - job: sync-flux-env-to-helm-charts
       optional: true
   resource_group: "${CI_PROJECT_NAME}-dev-image-tags"
