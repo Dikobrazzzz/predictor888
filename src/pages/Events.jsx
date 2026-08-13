@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import EventCard from '../components/EventCard'
 import BottomNav from '../components/BottomNav'
+import TopPickCard, { PredictionIcon } from '../components/TopPickCard'
 import { useT } from '../i18n'
+import { mockTopPicks } from '../mockData'
 
 const PAGE_SIZE = 5
 const RECOMMEND_TOP_N = 5
@@ -60,6 +62,8 @@ function isTopLiveEvent(event) {
 // from the API; `recKey` matches the recommended-events bucket key.
 const SPORT_TABS = [
   { code: 'all',        labelKey: 'events.sportAll',        sport: null,         recKey: null },
+  // Sport emas — Top Picks sahifasiga o'tkazadi (Figma'dagi filtr qatoridagidek).
+  { code: 'topPicks',   labelKey: 'picks.title',            link: 'topPicks' },
   { code: 'football',   labelKey: 'events.sportFootball',   sport: 'Football',   recKey: 'football' },
   { code: 'basketball', labelKey: 'events.sportBasketball', sport: 'Basketball', recKey: 'basketball' },
   { code: 'tennis',     labelKey: 'events.sportTennis',     sport: 'Tennis',     recKey: 'tennis' },
@@ -155,10 +159,11 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
         {SPORT_TABS.map((tab) => {
           const isActive = activeSport === tab.code
           const count = tabCounts[tab.code] || 0
+          const dim = !tab.link && count === 0
           return (
             <button
               key={tab.code}
-              onClick={() => setActiveSport(tab.code)}
+              onClick={() => (tab.link ? navigate?.(tab.link) : setActiveSport(tab.code))}
               style={{
                 flexShrink: 0,
                 minWidth: tab.code === 'all' ? '100px' : undefined,
@@ -166,7 +171,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
                 borderRadius: '12px',
                 background: isActive ? '#FFFE45' : '#1A1A1A',
                 border: 'none',
-                color: isActive ? '#000000' : count > 0 ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.25)',
+                color: isActive ? '#000000' : dim ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.70)',
                 fontWeight: 700,
                 fontSize: '13px',
                 cursor: 'pointer',
@@ -179,6 +184,27 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             </button>
           )
         })}
+      </div>
+
+      {/* Pick of the day — sarlavhadagi hisoblagich Top Picks sahifasini ochadi. */}
+      <div style={{ padding: '0 16px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ height: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {PredictionIcon}
+          <span style={{ color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif', fontWeight: 700, fontSize: '16px' }}>
+            {t('picks.todaysPrediction')}
+          </span>
+          <span style={{
+            flex: 1,
+            textAlign: 'right',
+            color: 'rgba(255,255,255,0.2)',
+            fontFamily: 'Roboto Flex, sans-serif',
+            fontWeight: 400,
+            fontSize: '12px',
+          }}>
+            {t('picks.matches', { count: mockTopPicks.length })}
+          </span>
+        </div>
+        <TopPickCard pick={mockTopPicks[0]} featured onPredict={() => navigate?.('makePrediction')} />
       </div>
 
       {loading ? (

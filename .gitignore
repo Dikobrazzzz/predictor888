@@ -38,3 +38,6 @@ pg_data/
 
 # Go
 api/server
+
+# Figma exports
+*.fig

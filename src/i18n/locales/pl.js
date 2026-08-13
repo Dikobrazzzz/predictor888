@@ -79,6 +79,56 @@ export default {
   'promo.getNow': 'Odbierz teraz',
   'promo.copied': 'Skopiowano!', // auto
   'promo.desc150': '150 darmowych spinów\nbez depozytu', // auto
+  'promo.new': 'nowe: {count}', // auto
+  'promo.descGates': 'Odbierz 100 darmowych spinów\nw Gates of Olympus', // auto
+  'promo.descAviator': 'Odbierz 100 darmowych spinów\nw Aviator', // auto
+
+  // Quests
+  'quests.title': 'Zadania', // auto
+  'quests.seeAll': 'Zobacz wszystkie', // auto
+  'quests.rewardTitle': 'Nagroda tygodnia', // auto
+  'quests.rewardDesc': 'Wykonuj cotygodniowe wyzwania i zgarniaj nagrody. Darmowy zakład o wartości 100 tokenów oraz boost 2xp.', // auto
+  'quests.rewardDescDone': 'Darmowy zakład o wartości 100 tokenów oraz boost 2xp.', // auto
+  'quests.allDone': 'Wszystkie 5 zadań ukończone', // auto
+  'quests.completeAll': 'Ukończ wszystkie zadania: {total}', // auto
+  'quests.cta': 'Ukończ zadania', // auto
+  'quests.weekly': 'Wyzwania tygodnia', // auto
+  'quests.count': 'zadania: {count}', // auto
+  'quests.weekProgress': 'Postęp w tym tygodniu', // auto
+  'quests.resetIn': 'Reset za', // auto
+  'quests.tagProgress': 'W trakcie', // auto
+  'quests.tagDone': 'Ukończone', // auto
+  'quests.progressOf': '{done} z {total}', // auto
+  'quests.progressDays': 'Dzień {done} z {total}', // auto
+  'quests.progressXp': '{done} z {total} XP', // auto
+  'quests.earned': 'zdobyto {reward}', // auto
+  'quests.q1.title': 'Postaw 3 typy', // auto
+  'quests.q1.desc': 'Dodaj trzy typy na nadchodzące wydarzenia.', // auto
+  'quests.q2.title': 'Trafnie wytypuj 2 wyniki', // auto
+  'quests.q2.desc': 'Odgadnij poprawnie wynik dwóch rozliczonych wydarzeń.', // auto
+  'quests.q3.title': 'Wydaj 10 tokenów', // auto
+  'quests.q3.desc': 'Wykorzystaj dziesięć tokenów na typy lub w sklepie.', // auto
+  'quests.q4.title': 'Zaloguj się 5 dni z rzędu', // auto
+  'quests.q4.desc': 'Otwórz aplikację przez pięć kolejnych dni.', // auto
+  'quests.q5.title': 'Zdobądź 500 XP', // auto
+  'quests.q5.desc': 'Zbierz 500 XP z dowolnej aktywności w tym tygodniu.', // auto
+  'quests.popupTitle': 'Gratulacje! Ukończono', // auto
+  'quests.popupBody': 'Ukończono zadanie {title}. Nie zwalniaj tempa przy kolejnych.', // auto
+  'quests.close': 'Zamknij', // auto
+  'quests.claim': 'Odbierz nagrodę', // auto
+  'quests.unlocked': 'Odblokowane', // auto
+
+  // Top Picks
+  'picks.title': 'Top Picks', // auto
+  'picks.todaysPrediction': 'Typ dnia', // auto
+  'picks.matches': 'mecze: {count}', // auto
+  'picks.pickOfDay': 'Typ dnia', // auto
+  'picks.analyst': '(Analityczka sportowa)', // auto
+  'picks.ambassador': 'Ambasadorka', // auto
+  'picks.prediction': 'Typ: {name}', // auto
+  'picks.makePrediction': 'Postaw typ', // auto
+  'picks.accuracy': 'trafnych typów w tym sezonie', // auto
+  'picks.follow': 'Obserwuj {name} na Instagramie', // auto
 
   // Header
   'header.welcomeBack': 'Miło Cię znowu widzieć,',

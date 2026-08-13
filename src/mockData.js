@@ -70,3 +70,48 @@ export const mockLeaderboard = [
   { rank: 6, name: 'Jordan',   pts:  980, isMe: false },
   { rank: 7, name: 'Chris',    pts:  870, isMe: false },
 ]
+
+// Top Picks — ambassador tanlovlari. Figma'da uchala karta ham bitta
+// plakat-namuna, shuning uchun 2 va 3-yozuvlar API paydo bo'lguncha to'ldiruvchi.
+export const mockAnalyst = {
+  name: 'Kate',
+  avatar: '/icons/kate.webp',
+  accuracy: '78%',
+  instagram: 'https://instagram.com',
+}
+
+export const mockTopPicks = [
+  {
+    id: 1,
+    startsIn: '1h 20m',
+    analyst: mockAnalyst,
+    league: 'England. Premiere League. Round 12',
+    home: 'Newcastle',
+    away: 'Man City',
+    comment: 'Newcastle have won four home games in a row and City are missing two defenders. Value is on the hosts.',
+    selection: '1- Newcastle win',
+    odds: '3.6',
+  },
+  {
+    id: 2,
+    startsIn: '3h 45m',
+    analyst: mockAnalyst,
+    league: 'Spain. La Liga. Round 14',
+    home: 'Sevilla',
+    away: 'Villarreal',
+    comment: 'Sevilla keep drawing at home and Villarreal travel without their top scorer. The draw looks underpriced.',
+    selection: 'X - Draw',
+    odds: '3.2',
+  },
+  {
+    id: 3,
+    startsIn: '5h 10m',
+    analyst: mockAnalyst,
+    league: 'Italy. Serie A. Round 13',
+    home: 'Lazio',
+    away: 'Bologna',
+    comment: 'Bologna are unbeaten in five away matches while Lazio have lost three of their last four at home.',
+    selection: '2 - Bologna win',
+    odds: '2.8',
+  },
+]

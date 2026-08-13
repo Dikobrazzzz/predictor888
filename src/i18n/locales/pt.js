@@ -79,6 +79,56 @@ export default {
   'promo.getNow': 'Resgatar agora',
   'promo.copied': 'Copiado!', // auto
   'promo.desc150': '150 rodadas grátis\nsem depósito', // auto
+  'promo.new': '{count} novos', // auto
+  'promo.descGates': 'Ganhe 100 rodadas grátis\nno Gates of Olympus', // auto
+  'promo.descAviator': 'Ganhe 100 rodadas grátis\nno Aviator', // auto
+
+  // Quests
+  'quests.title': 'Missões', // auto
+  'quests.seeAll': 'Ver todas', // auto
+  'quests.rewardTitle': 'Prêmio semanal', // auto
+  'quests.rewardDesc': 'Complete os desafios da semana e ganhe prêmios. Aposta grátis de 100 tokens e boost de 2xp.', // auto
+  'quests.rewardDescDone': 'Aposta grátis de 100 tokens e boost de 2xp.', // auto
+  'quests.allDone': 'Todas as 5 missões concluídas', // auto
+  'quests.completeAll': 'Complete todas as {total} missões', // auto
+  'quests.cta': 'Completar missões', // auto
+  'quests.weekly': 'Desafios da semana', // auto
+  'quests.count': '{count} missões', // auto
+  'quests.weekProgress': 'Progresso desta semana', // auto
+  'quests.resetIn': 'Renova em', // auto
+  'quests.tagProgress': 'Em andamento', // auto
+  'quests.tagDone': 'Concluída', // auto
+  'quests.progressOf': '{done} de {total}', // auto
+  'quests.progressDays': 'Dia {done} de {total}', // auto
+  'quests.progressXp': '{done} de {total} XP', // auto
+  'quests.earned': '{reward} recebido', // auto
+  'quests.q1.title': 'Faça 3 palpites', // auto
+  'quests.q1.desc': 'Registre três palpites em eventos que ainda vão acontecer.', // auto
+  'quests.q2.title': 'Acerte 2 resultados', // auto
+  'quests.q2.desc': 'Acerte o resultado de dois eventos já encerrados.', // auto
+  'quests.q3.title': 'Gaste 10 tokens', // auto
+  'quests.q3.desc': 'Use dez tokens em palpites ou na loja.', // auto
+  'quests.q4.title': 'Entre 5 dias seguidos', // auto
+  'quests.q4.desc': 'Abra o app em cinco dias consecutivos.', // auto
+  'quests.q5.title': 'Alcance 500 XP', // auto
+  'quests.q5.desc': 'Junte 500 XP com qualquer atividade nesta semana.', // auto
+  'quests.popupTitle': 'Parabéns! Você concluiu', // auto
+  'quests.popupBody': 'Você concluiu a missão {title}. Corra para as próximas.', // auto
+  'quests.close': 'Fechar', // auto
+  'quests.claim': 'Resgatar prêmio', // auto
+  'quests.unlocked': 'Desbloqueado', // auto
+
+  // Top Picks
+  'picks.title': 'Top Picks', // auto
+  'picks.todaysPrediction': 'Palpite do dia', // auto
+  'picks.matches': '{count} jogos', // auto
+  'picks.pickOfDay': 'Escolha do dia', // auto
+  'picks.analyst': '(Analista esportiva)', // auto
+  'picks.ambassador': 'Embaixadora', // auto
+  'picks.prediction': 'Palpite de {name}', // auto
+  'picks.makePrediction': 'Fazer palpite', // auto
+  'picks.accuracy': 'de palpites certos nesta temporada', // auto
+  'picks.follow': 'Siga {name} no Instagram', // auto
 
   // Header
   'header.welcomeBack': 'Que bom ter você de volta,',

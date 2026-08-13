@@ -5,6 +5,8 @@ import MakePrediction from './pages/MakePrediction'
 import Rank from './pages/Rank'
 import Profile from './pages/Profile'
 import Promo from './pages/Promo'
+import Quests from './pages/Quests'
+import TopPicks from './pages/TopPicks'
 import parseEvent from './utils/parseEvent'
 import { apiFetch, setSession } from './utils/api'
 
@@ -142,5 +144,7 @@ export default function App() {
   if (page === 'rank') return <Rank navigate={navigate} user={user} />
   if (page === 'profile') return <Profile navigate={navigate} user={user} />
   if (page === 'promo') return <Promo navigate={navigate} user={user} />
+  if (page === 'quests') return <Quests navigate={navigate} />
+  if (page === 'topPicks') return <TopPicks navigate={navigate} />
   return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} user={user} />
 }
