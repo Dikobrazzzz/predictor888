@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import BottomNav from '../components/BottomNav'
 import { useT } from '../i18n'
+import { apiFetch } from '../utils/api'
 import imgReward from '/icons/ab33ad55.webp'
-import icBall from '/icons/q-ball.webp'
-import icTrophy from '/icons/q-trophy.webp'
-import icChips from '/icons/q-chips.webp'
-import icCalendar from '/icons/q-calendar.webp'
-import icDiamond from '/icons/q-diamond.webp'
+import icQuest from '/icons/q-ball.webp'
 
 const YELLOW = '#FFFE45'
 const GREEN = '#8FFF37'
@@ -23,17 +20,23 @@ const CARD_BG_DONE =
 // Segmentli progress faqat qadamlar kam bo'lganda o'qiladi; aks holda uzluksiz chiziq.
 const MAX_SEGMENTS = 5
 
-// Backendda kvestlar uchun endpoint yo'q — vaqtincha statik ma'lumot.
-const QUESTS = [
-  { id: 'q1', done: 3, total: 3, reward: '+50 XP', fmt: 'plain', icon: icBall },
-  { id: 'q2', done: 2, total: 2, reward: '+120 XP', fmt: 'plain', icon: icTrophy },
-  { id: 'q3', done: 10, total: 10, reward: '+80 XP', fmt: 'plain', icon: icChips },
-  { id: 'q4', done: 5, total: 5, reward: '+5 tokens', fmt: 'days', icon: icCalendar },
-  { id: 'q5', done: 500, total: 500, reward: '+10 tokens', fmt: 'xp', icon: icDiamond },
-]
+// Тексты берём из локалей по коду квеста, числа — из API.
+// Иконка одна на все карточки: в макете везде один и тот же кроп.
 
-// `urgent` — sutkadan kam qolganda hisoblagich qizil bo'ladi.
-const RESET = { label: '0D 09H', urgent: true }
+// Остаток недели в формате «2D 14H» — из period_end, который отдаёт API.
+function resetIn(periodEnd) {
+  if (!periodEnd) return null
+  const ms = new Date(periodEnd) - Date.now()
+  if (ms <= 0) return null
+  const hours = Math.floor(ms / 3600000)
+  return { label: `${Math.floor(hours / 24)}D ${String(hours % 24).padStart(2, '0')}H`, urgent: hours < 24 }
+}
+
+// Подпись прогресса зависит от метрики квеста.
+const LABEL_KEY = {
+  login_streak: 'quests.progressDays',
+  xp_earned: 'quests.progressXp',
+}
 
 const QuestIcon = (
   <svg width="20" height="20" viewBox="0 0 14.01 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +83,6 @@ function StatusTag({ done }) {
       textTransform: 'uppercase',
       whiteSpace: 'nowrap',
     }}>
-      {!done && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: YELLOW }} />}
       {done ? t('quests.tagDone') : t('quests.tagProgress')}
     </span>
   )
@@ -116,10 +118,10 @@ function QuestProgress({ done, total }) {
 // Bajarilgan kvest bosilganda tabrik oynasi ochiladi (Quest_Popup_375).
 function QuestCard({ quest, onOpen }) {
   const t = useT()
-  const { id, done, total, reward, fmt, icon } = quest
-  const completed = done >= total
-
-  const labelKey = fmt === 'days' ? 'quests.progressDays' : fmt === 'xp' ? 'quests.progressXp' : 'quests.progressOf'
+  const { code, progress, target, reward_kind: kind, reward_value: value, metric } = quest
+  const completed = progress >= target
+  const labelKey = LABEL_KEY[metric] || 'quests.progressOf'
+  const reward = `+${value} ${kind === 'tokens' ? t('quests.tokens') : t('common.xp')}`
 
   return (
     <div
@@ -150,7 +152,7 @@ function QuestCard({ quest, onOpen }) {
           justifyContent: 'center',
           boxSizing: 'border-box',
         }}>
-          <img src={icon} alt="" width="43" height="43" decoding="async" style={{ display: 'block', objectFit: 'contain' }} />
+          <img src={icQuest} alt="" width="43" height="43" decoding="async" style={{ display: 'block', objectFit: 'contain' }} />
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
@@ -163,7 +165,7 @@ function QuestCard({ quest, onOpen }) {
               fontSize: '16px',
               lineHeight: 1.15,
             }}>
-              {t(`quests.${id}.title`)}
+              {t(`quests.${code}.title`)}
             </span>
             <StatusTag done={completed} />
           </div>
@@ -176,13 +178,13 @@ function QuestCard({ quest, onOpen }) {
             fontSize: '12px',
             lineHeight: 1.35,
           }}>
-            {t(`quests.${id}.desc`)}
+            {t(`quests.${code}.desc`)}
           </p>
         </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <QuestProgress done={done} total={total} />
+        <QuestProgress done={progress} total={target} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{
             flex: 1,
@@ -191,7 +193,7 @@ function QuestCard({ quest, onOpen }) {
             fontWeight: 400,
             fontSize: '12px',
           }}>
-            {t(labelKey, { done, total })}
+            {t(labelKey, { done: progress, total: target })}
           </span>
           <span style={{
             color: completed ? GREEN : YELLOW,
@@ -311,14 +313,14 @@ function QuestPopup({ quest, onClose }) {
           lineHeight: 1.2,
           textAlign: 'center',
         }}>
-          {t('quests.popupBody', { title: t(`quests.${quest.id}.title`) })}
+          {t('quests.popupBody', { title: t(`quests.${quest.code}.title`) })}
         </p>
       </div>
     </div>
   )
 }
 
-function WeekProgress({ done, total, onClaim }) {
+function WeekProgress({ done, total, reset, canClaim, onClaim }) {
   const t = useT()
   const complete = done >= total
   const pct = total > 0 ? Math.min(100, Math.max(0, (done / total) * 100)) : 0
@@ -365,18 +367,18 @@ function WeekProgress({ done, total, onClaim }) {
             {t('quests.resetIn')}
           </span>
           <span style={{
-            color: RESET.urgent ? '#FF0000' : YELLOW,
+            color: reset?.urgent ? '#FF0000' : YELLOW,
             fontFamily: 'Roboto Flex, sans-serif',
             fontWeight: 400,
-            fontSize: RESET.urgent ? '16px' : '12px',
+            fontSize: reset?.urgent ? '16px' : '12px',
             whiteSpace: 'nowrap',
           }}>
-            {RESET.label}
+            {reset?.label || '—'}
           </span>
         </div>
       </div>
 
-      {complete && (
+      {canClaim && (
         <button
           onClick={onClaim}
           style={{
@@ -404,7 +406,34 @@ function WeekProgress({ done, total, onClaim }) {
 export default function Quests({ navigate }) {
   const t = useT()
   const [popupQuest, setPopupQuest] = useState(null)
-  const doneCount = QUESTS.filter((q) => q.done >= q.total).length
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    try {
+      const res = await apiFetch('/api/quests')
+      if (res.ok) setData(await res.json())
+    } catch {
+      // список останется пустым — покажем заглушку
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const claim = async () => {
+    try {
+      const res = await apiFetch('/api/quests/claim', { method: 'POST' })
+      if (res.ok) load()
+    } catch {}
+  }
+
+  const quests = data?.quests || []
+  const done = data?.done ?? 0
+  const total = data?.total ?? quests.length
+  const reset = resetIn(data?.period_end)
+  const canClaim = total > 0 && done >= total && !data?.reward_claimed
 
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
@@ -432,7 +461,7 @@ export default function Quests({ navigate }) {
       <div style={{ height: '1px', background: 'rgba(114,119,124,0.2)' }} />
 
       <div style={{ padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <WeekProgress done={doneCount} total={QUESTS.length} />
+        <WeekProgress done={done} total={total} reset={reset} canClaim={canClaim} onClaim={claim} />
 
         <div style={{ height: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
           {QuestIcon}
@@ -452,11 +481,15 @@ export default function Quests({ navigate }) {
             fontWeight: 400,
             fontSize: '12px',
           }}>
-            {t('quests.count', { count: QUESTS.length })}
+            {t('quests.count', { count: total })}
           </span>
         </div>
 
-        {QUESTS.map((quest) => (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>
+            {t('common.loading')}
+          </div>
+        ) : quests.map((quest) => (
           <QuestCard key={quest.id} quest={quest} onOpen={() => setPopupQuest(quest)} />
         ))}
       </div>

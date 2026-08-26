@@ -8,21 +8,23 @@ type User struct {
 	Login     string    `json:"login"`
 	Region    string    `json:"region"`
 	Points    int       `json:"points"`
+	Tokens    int       `json:"tokens"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Prediction struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	EventID   string    `json:"event_id"`
-	Sport     string    `json:"sport"`
-	League    string    `json:"league"`
-	HomeTeam  string    `json:"home_team"`
-	AwayTeam  string    `json:"away_team"`
-	Outcome   string    `json:"outcome"`
-	Points    int       `json:"points"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        string     `json:"id"`
+	UserID    string     `json:"user_id"`
+	EventID   string     `json:"event_id"`
+	Sport     string     `json:"sport"`
+	League    string     `json:"league"`
+	HomeTeam  string     `json:"home_team"`
+	AwayTeam  string     `json:"away_team"`
+	Outcome   string     `json:"outcome"`
+	Points    int        `json:"points"`
+	Status    string     `json:"status"`
+	StartsAt  *time.Time `json:"starts_at"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 type LeaderboardEntry struct {
@@ -67,10 +69,71 @@ type LoginResponse struct {
 }
 
 type PredictionRequest struct {
-	EventID  string `json:"event_id"`
-	Sport    string `json:"sport"`
-	League   string `json:"league"`
-	HomeTeam string `json:"home_team"`
-	AwayTeam string `json:"away_team"`
-	Outcome  string `json:"outcome"`
+	EventID  string     `json:"event_id"`
+	Sport    string     `json:"sport"`
+	League   string     `json:"league"`
+	HomeTeam string     `json:"home_team"`
+	AwayTeam string     `json:"away_team"`
+	Outcome  string     `json:"outcome"`
+	StartsAt *time.Time `json:"starts_at"`
+}
+
+// ── Квесты ────────────────────────────────────────────────────────────────
+
+type Quest struct {
+	ID          string `json:"id"`
+	Code        string `json:"code"`
+	Metric      string `json:"metric"`
+	Target      int    `json:"target"`
+	Progress    int    `json:"progress"`
+	Completed   bool   `json:"completed"`
+	RewardKind  string `json:"reward_kind"`
+	RewardValue int    `json:"reward_value"`
+}
+
+type QuestsResponse struct {
+	Quests        []Quest   `json:"quests"`
+	Done          int       `json:"done"`
+	Total         int       `json:"total"`
+	PeriodStart   time.Time `json:"period_start"`
+	PeriodEnd     time.Time `json:"period_end"`
+	RewardClaimed bool      `json:"reward_claimed"`
+}
+
+// ── Промокоды ─────────────────────────────────────────────────────────────
+
+type Promo struct {
+	ID         string `json:"id"`
+	Code       string `json:"code,omitempty"`
+	Game       string `json:"game"`
+	RewardText string `json:"reward_text"`
+	Claimed    bool   `json:"claimed"`
+}
+
+type PromosResponse struct {
+	Promos []Promo `json:"promos"`
+	New    int     `json:"new"`
+}
+
+// ── Top Picks ─────────────────────────────────────────────────────────────
+
+type Analyst struct {
+	Name      string `json:"name"`
+	Role      string `json:"role"`
+	Avatar    string `json:"avatar"`
+	Accuracy  int    `json:"accuracy"`
+	Instagram string `json:"instagram"`
+}
+
+type TopPick struct {
+	ID       string     `json:"id"`
+	League   string     `json:"league"`
+	HomeTeam string     `json:"home_team"`
+	AwayTeam string     `json:"away_team"`
+	Comment  string     `json:"comment"`
+	Outcome  string     `json:"outcome"`
+	Odds     float64    `json:"odds"`
+	StartsAt *time.Time `json:"starts_at"`
+	Featured bool       `json:"featured"`
+	Analyst  Analyst    `json:"analyst"`
 }

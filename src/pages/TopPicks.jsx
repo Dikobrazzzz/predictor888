@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react'
 import BottomNav from '../components/BottomNav'
 import TopPickCard, { PredictionIcon } from '../components/TopPickCard'
 import { useT } from '../i18n'
-import { mockAnalyst, mockTopPicks } from '../mockData'
+import { apiFetch } from '../utils/api'
 
 const ArrowIcon = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +59,7 @@ function AnalystStrip({ analyst }) {
             fontSize: '14px',
             color: 'rgba(255,255,255,0.2)',
           }}>
-            <span style={{ color: '#FFFE45' }}>{analyst.accuracy}</span>{' '}
+            <span style={{ color: '#FFFE45' }}>{analyst.accuracy}%</span>{' '}
             {t('picks.accuracy')}
           </span>
 
@@ -86,7 +87,17 @@ function AnalystStrip({ analyst }) {
 
 export default function TopPicks({ navigate }) {
   const t = useT()
-  const [featured, ...rest] = mockTopPicks
+  const [picks, setPicks] = useState([])
+
+  useEffect(() => {
+    apiFetch('/api/picks')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setPicks(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }, [])
+
+  const [featured, ...rest] = picks
+  const analyst = featured?.analyst
 
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
@@ -113,7 +124,7 @@ export default function TopPicks({ navigate }) {
       </div>
       <div style={{ height: '1px', background: 'rgba(114,119,124,0.2)' }} />
 
-      <AnalystStrip analyst={mockAnalyst} />
+      {analyst && <AnalystStrip analyst={analyst} />}
 
       <div style={{ padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ height: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -134,11 +145,11 @@ export default function TopPicks({ navigate }) {
             fontWeight: 400,
             fontSize: '12px',
           }}>
-            {t('picks.matches', { count: mockTopPicks.length })}
+            {t('picks.matches', { count: picks.length })}
           </span>
         </div>
 
-        <TopPickCard pick={featured} featured onPredict={() => navigate?.('makePrediction')} />
+        {featured && <TopPickCard pick={featured} featured onPredict={() => navigate?.('makePrediction')} />}
         {rest.map((pick) => (
           <TopPickCard key={pick.id} pick={pick} onPredict={() => navigate?.('makePrediction')} />
         ))}

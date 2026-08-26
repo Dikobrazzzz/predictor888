@@ -53,15 +53,19 @@ export default {
   'profile.subscription': 'Abonnement',
   'profile.inactive': 'Inactif',
   'profile.subscribe': "S'abonner",
-  'profile.deleteBot': 'Désactiver le bot',
-  'profile.delete': 'Désactiver',
+  'profile.deleteBot': 'Supprimer le bot',
+  'profile.delete': 'Supprimer',
+  'profile.deleteConfirm': 'Supprimer votre compte et toutes vos données ? Cette action est irréversible.',
 
   // Rank
   'rank.stats': 'Statistiques du profil',
   'rank.tabAll': 'Tous',
   'rank.tabFinished': 'Terminés',
-  'rank.newPrediction': 'Faire une nouvelle prédiction',
+  'rank.newPrediction': 'Faire un nouveau pronostic',
   'rank.pick': 'Choix :',
+  'rank.yourPick': 'Votre pronostic', // auto
+  'rank.potentialWin': 'Gain potentiel', // auto
+  'rank.earned': 'Gagné', // auto
 
   // Leaderboard
   'leaderboard.tournament': 'Tournoi',
@@ -72,6 +76,8 @@ export default {
   'leaderboard.matchCol': 'Match', // auto
   'leaderboard.pickCol': 'Choix', // auto
   'leaderboard.statusCol': 'Statut', // auto
+  'leaderboard.dateCol': 'Date', // auto
+  'leaderboard.viewAll': 'Tout voir', // auto
 
   // Promo
   'promo.title': 'Promo',
@@ -82,6 +88,9 @@ export default {
   'promo.new': '{count} nouveaux', // auto
   'promo.descGates': 'Obtenez 100 tours gratuits\nsur Gates of Olympus', // auto
   'promo.descAviator': 'Obtenez 100 tours gratuits\nsur Aviator', // auto
+  'promo.claimedTitle': 'Félicitations !', // auto
+  'promo.claimedBody': 'Le code promo {code} a été copié. Saisissez-le dans l\u2019application pour obtenir votre bonus.', // auto
+  'promo.claimedAction': 'Compris', // auto
 
   // Quests
   'quests.title': 'Quêtes', // auto
@@ -102,20 +111,21 @@ export default {
   'quests.progressDays': 'Jour {done} sur {total}', // auto
   'quests.progressXp': '{done} sur {total} XP', // auto
   'quests.earned': '{reward} obtenu', // auto
-  'quests.q1.title': 'Faites 3 pronostics', // auto
-  'quests.q1.desc': 'Placez trois pronostics sur des événements à venir.', // auto
-  'quests.q2.title': 'Trouvez 2 bons résultats', // auto
-  'quests.q2.desc': 'Devinez correctement le résultat de deux événements terminés.', // auto
-  'quests.q3.title': 'Dépensez 10 jetons', // auto
-  'quests.q3.desc': 'Utilisez dix jetons sur des pronostics ou en boutique.', // auto
-  'quests.q4.title': 'Connectez-vous 5 jours d\'affilée', // auto
-  'quests.q4.desc': "Ouvrez l'application cinq jours consécutifs.", // auto
-  'quests.q5.title': 'Atteignez 500 XP', // auto
-  'quests.q5.desc': "Cumulez 500 XP grâce à n'importe quelle activité cette semaine.", // auto
+  'quests.make_3_predictions.title': 'Faites 3 pronostics', // auto
+  'quests.make_3_predictions.desc': 'Placez trois pronostics sur des événements à venir.', // auto
+  'quests.predict_2_correct.title': 'Trouvez 2 bons résultats', // auto
+  'quests.predict_2_correct.desc': 'Devinez correctement le résultat de deux événements terminés.', // auto
+  'quests.spend_10_tokens.title': 'Dépensez 10 jetons', // auto
+  'quests.spend_10_tokens.desc': 'Utilisez dix jetons sur des pronostics ou en boutique.', // auto
+  'quests.login_5_days.title': 'Connectez-vous 5 jours d\'affilée', // auto
+  'quests.login_5_days.desc': "Ouvrez l'application cinq jours consécutifs.", // auto
+  'quests.reach_500_xp.title': 'Atteignez 500 XP', // auto
+  'quests.reach_500_xp.desc': "Cumulez 500 XP grâce à n'importe quelle activité cette semaine.", // auto
   'quests.popupTitle': 'Félicitations ! Vous avez terminé', // auto
   'quests.popupBody': "Vous avez terminé la quête {title}. Enchaînez vite avec les suivantes.", // auto
   'quests.close': 'Fermer', // auto
   'quests.claim': 'Récupérer la récompense', // auto
+  'quests.tokens': 'jetons', // auto
   'quests.unlocked': 'Débloqué', // auto
 
   // Top Picks
@@ -129,6 +139,29 @@ export default {
   'picks.makePrediction': 'Faire un pronostic', // auto
   'picks.accuracy': 'de pronostics corrects cette saison', // auto
   'picks.follow': 'Suivre {name} sur Instagram', // auto
+
+  // Language / Telegram ID
+  'lang.title': 'Choisissez votre langue', // auto
+  'lang.subtitle': 'Nous n\u2019avons pas pu d\u00e9tecter votre langue depuis Telegram. Choisissez-en une pour continuer \u2014 modifiable ensuite dans votre profil.', // auto
+  'lang.continue': 'Continuer', // auto
+  'tgid.title': 'Associer votre compte', // auto
+  'tgid.subtitle': 'Saisissez votre Player ID pour associer votre compte Telegram.', // auto
+  'tgid.subtitleLoading': 'Association de votre compte Telegram\u2026', // auto
+  'tgid.label': 'Identifiant*', // auto
+  'tgid.placeholder': 'Player ID', // auto
+  'tgid.continue': 'Continuer', // auto
+  'tgid.linking': 'Association ..', // auto
+  'tgid.error': 'Player ID introuvable. Vérifiez le numéro et réessayez.', // auto
+  'tgid.errorLinked': 'Ce Player ID est déjà associé à un autre compte Telegram.', // auto
+  'tgid.support': 'Assistance', // auto
+  'tgid.netTitle': 'Une erreur est survenue', // auto
+  'tgid.netBody': 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.', // auto
+  'tgid.tryAgain': 'Réessayer', // auto
+  'tgid.backToId': 'Retour au Player ID', // auto
+  'tgid.cantFind': 'Vous ne trouvez pas votre Player ID ?', // auto
+  'tgid.getHelp': 'Obtenir de l\u2019aide', // auto
+  'tgid.successTitle': 'Votre compte a bien \u00e9t\u00e9 associ\u00e9', // auto
+  'tgid.playerId': 'Player ID', // auto
 
   // Header
   'header.welcomeBack': 'Nous sommes ravis de vous revoir,',
@@ -146,7 +179,8 @@ export default {
   // Prediction status labels
   'status.win': 'Victoire',
   'status.loss': 'Défaite',
-  'status.waiting': 'Actif',
+  'status.waiting': 'En attente',
+  'status.void': 'Annulé',
 
   // Events — auto (не было в присланном тексте)
   'events.allEvents': 'Tous les événements', // auto

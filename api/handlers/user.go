@@ -22,8 +22,8 @@ func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	err := h.DB.QueryRow(r.Context(),
-		`SELECT id, email, login, region, points, created_at FROM users WHERE id = $1`, userID,
-	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
+		`SELECT id, email, login, region, points, tokens, created_at FROM users WHERE id = $1`, userID,
+	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.Tokens, &user.CreatedAt)
 	if err != nil {
 		slog.Warn("profile: user not found", "user_id", userID, "err", err)
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "user not found"})
@@ -65,9 +65,9 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		 SET    login  = COALESCE($1, login),
 		        region = COALESCE($2, region)
 		 WHERE  id = $3
-		 RETURNING id, email, login, region, points, created_at`,
+		 RETURNING id, email, login, region, points, tokens, created_at`,
 		req.Login, req.Region, userID,
-	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.Login, &user.Region, &user.Points, &user.Tokens, &user.CreatedAt)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {

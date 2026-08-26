@@ -27,7 +27,7 @@ export default {
   // Bottom navigation
   'nav.home': 'Início',
   'nav.events': 'Eventos',
-  'nav.rank': 'Ranking',
+  'nav.rank': 'Rank',
   'nav.promo': 'Promo',
   'nav.profile': 'Perfil',
 
@@ -53,15 +53,19 @@ export default {
   'profile.subscription': 'Inscrição',
   'profile.inactive': 'Inativo',
   'profile.subscribe': 'Inscrever-se',
-  'profile.deleteBot': 'Desativar bot',
-  'profile.delete': 'Desativar',
+  'profile.deleteBot': 'Excluir bot',
+  'profile.delete': 'Excluir',
+  'profile.deleteConfirm': 'Excluir sua conta e todos os seus dados? Isso não pode ser desfeito.',
 
   // Rank
   'rank.stats': 'Estatísticas do perfil',
   'rank.tabAll': 'Todos',
   'rank.tabFinished': 'Concluídos',
-  'rank.newPrediction': 'Fazer uma nova previsão',
+  'rank.newPrediction': 'Fazer novo palpite',
   'rank.pick': 'Escolha:',
+  'rank.yourPick': 'Seu palpite', // auto
+  'rank.potentialWin': 'Ganho potencial', // auto
+  'rank.earned': 'Ganho', // auto
 
   // Leaderboard
   'leaderboard.tournament': 'Torneio',
@@ -72,6 +76,8 @@ export default {
   'leaderboard.matchCol': 'Partida', // auto
   'leaderboard.pickCol': 'Escolha', // auto
   'leaderboard.statusCol': 'Status', // auto
+  'leaderboard.dateCol': 'Data', // auto
+  'leaderboard.viewAll': 'Ver tudo', // auto
 
   // Promo
   'promo.title': 'Promo',
@@ -82,6 +88,9 @@ export default {
   'promo.new': '{count} novos', // auto
   'promo.descGates': 'Ganhe 100 rodadas grátis\nno Gates of Olympus', // auto
   'promo.descAviator': 'Ganhe 100 rodadas grátis\nno Aviator', // auto
+  'promo.claimedTitle': 'Parabéns!', // auto
+  'promo.claimedBody': 'O código promocional {code} foi copiado. Use-o no app para receber seu bônus.', // auto
+  'promo.claimedAction': 'Entendi', // auto
 
   // Quests
   'quests.title': 'Missões', // auto
@@ -102,20 +111,21 @@ export default {
   'quests.progressDays': 'Dia {done} de {total}', // auto
   'quests.progressXp': '{done} de {total} XP', // auto
   'quests.earned': '{reward} recebido', // auto
-  'quests.q1.title': 'Faça 3 palpites', // auto
-  'quests.q1.desc': 'Registre três palpites em eventos que ainda vão acontecer.', // auto
-  'quests.q2.title': 'Acerte 2 resultados', // auto
-  'quests.q2.desc': 'Acerte o resultado de dois eventos já encerrados.', // auto
-  'quests.q3.title': 'Gaste 10 tokens', // auto
-  'quests.q3.desc': 'Use dez tokens em palpites ou na loja.', // auto
-  'quests.q4.title': 'Entre 5 dias seguidos', // auto
-  'quests.q4.desc': 'Abra o app em cinco dias consecutivos.', // auto
-  'quests.q5.title': 'Alcance 500 XP', // auto
-  'quests.q5.desc': 'Junte 500 XP com qualquer atividade nesta semana.', // auto
+  'quests.make_3_predictions.title': 'Faça 3 palpites', // auto
+  'quests.make_3_predictions.desc': 'Registre três palpites em eventos que ainda vão acontecer.', // auto
+  'quests.predict_2_correct.title': 'Acerte 2 resultados', // auto
+  'quests.predict_2_correct.desc': 'Acerte o resultado de dois eventos já encerrados.', // auto
+  'quests.spend_10_tokens.title': 'Gaste 10 tokens', // auto
+  'quests.spend_10_tokens.desc': 'Use dez tokens em palpites ou na loja.', // auto
+  'quests.login_5_days.title': 'Entre 5 dias seguidos', // auto
+  'quests.login_5_days.desc': 'Abra o app em cinco dias consecutivos.', // auto
+  'quests.reach_500_xp.title': 'Alcance 500 XP', // auto
+  'quests.reach_500_xp.desc': 'Junte 500 XP com qualquer atividade nesta semana.', // auto
   'quests.popupTitle': 'Parabéns! Você concluiu', // auto
   'quests.popupBody': 'Você concluiu a missão {title}. Corra para as próximas.', // auto
   'quests.close': 'Fechar', // auto
   'quests.claim': 'Resgatar prêmio', // auto
+  'quests.tokens': 'tokens', // auto
   'quests.unlocked': 'Desbloqueado', // auto
 
   // Top Picks
@@ -129,6 +139,29 @@ export default {
   'picks.makePrediction': 'Fazer palpite', // auto
   'picks.accuracy': 'de palpites certos nesta temporada', // auto
   'picks.follow': 'Siga {name} no Instagram', // auto
+
+  // Language / Telegram ID
+  'lang.title': 'Escolha seu idioma', // auto
+  'lang.subtitle': 'N\u00e3o conseguimos detectar seu idioma pelo Telegram. Escolha um para continuar \u2014 d\u00e1 para mudar depois no perfil.', // auto
+  'lang.continue': 'Continuar', // auto
+  'tgid.title': 'Vincule sua conta', // auto
+  'tgid.subtitle': 'Digite seu Player ID para conectar sua conta do Telegram.', // auto
+  'tgid.subtitleLoading': 'Conectando sua conta do Telegram\u2026', // auto
+  'tgid.label': 'Login*', // auto
+  'tgid.placeholder': 'Player ID', // auto
+  'tgid.continue': 'Continuar', // auto
+  'tgid.linking': 'Vinculando ..', // auto
+  'tgid.error': 'Player ID não encontrado. Verifique o número e tente novamente.', // auto
+  'tgid.errorLinked': 'Este Player ID já está vinculado a outra conta do Telegram.', // auto
+  'tgid.support': 'Suporte', // auto
+  'tgid.netTitle': 'Algo deu errado', // auto
+  'tgid.netBody': 'Não foi possível acessar o servidor. Verifique sua conexão e tente novamente.', // auto
+  'tgid.tryAgain': 'Tentar novamente', // auto
+  'tgid.backToId': 'Voltar ao Player ID', // auto
+  'tgid.cantFind': 'N\u00e3o encontra seu Player ID?', // auto
+  'tgid.getHelp': 'Obter ajuda', // auto
+  'tgid.successTitle': 'Sua conta foi vinculada com sucesso', // auto
+  'tgid.playerId': 'Player ID', // auto
 
   // Header
   'header.welcomeBack': 'Que bom ter você de volta,',
@@ -146,7 +179,8 @@ export default {
   // Prediction status labels
   'status.win': 'Vitória',
   'status.loss': 'Derrota',
-  'status.waiting': 'Ativo',
+  'status.waiting': 'Aguardando',
+  'status.void': 'Cancelado',
 
   // Events — auto (не было в присланном тексте)
   'events.allEvents': 'Todos os eventos', // auto

@@ -6,11 +6,25 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const xpPerWin = 100
+
+// Пороги догоняющего прохода.
+const (
+	// Через сколько после начала матча прогноз считается зависшим.
+	sweepStaleAfter = 4 * time.Hour
+	// Сколько ждём, прежде чем закрыть событие по последнему известному счёту:
+	// защита от того, чтобы не закрыть матч, который всё ещё идёт.
+	sweepScoreIdle = 20 * time.Minute
+	// Через сколько прогноз без единого известного счёта аннулируется.
+	sweepVoidAfter = 24 * time.Hour
+	// Как часто крутится догоняющий проход.
+	SweepInterval = 10 * time.Minute
+)
 
 // Resolver tracks live match scores and automatically resolves predictions
 // when a match disappears from the live feed (indicating it finished).
@@ -65,6 +79,8 @@ func (r *Resolver) EndCycle(ctx context.Context) {
 		}
 	}
 	r.mu.Unlock()
+
+	r.persistScores(ctx)
 
 	if len(toResolve) == 0 {
 		return
@@ -133,19 +149,13 @@ func (r *Resolver) resolvePredictions(ctx context.Context, eventID, actualOutcom
 
 		if win {
 			if _, err := tx.Exec(ctx,
-				`UPDATE leaderboard SET total_points = total_points + $1, wins = wins + 1, updated_at = now()
-				 WHERE user_id = $2 AND period = 'all'`,
-				points, p.userID,
+				`UPDATE leaderboard SET wins = wins + 1, updated_at = now() WHERE user_id = $1`,
+				p.userID,
 			); err != nil {
 				tx.Rollback(ctx)
 				continue
 			}
-			if _, err := tx.Exec(ctx,
-				`UPDATE users SET points = (
-				   SELECT total_points FROM leaderboard WHERE user_id = $1 AND period = 'all'
-				 ) WHERE id = $1`,
-				p.userID,
-			); err != nil {
+			if err := addXP(ctx, tx, p.userID, points); err != nil {
 				tx.Rollback(ctx)
 				continue
 			}
@@ -202,4 +212,125 @@ func outcomeFromScore(homeScore, awayScore int) string {
 		return "away"
 	}
 	return "draw"
+}
+
+// persistScores сохраняет счёт по всем событиям текущего цикла, чтобы
+// состояние пережило рестарт сервиса.
+func (r *Resolver) persistScores(ctx context.Context) {
+	r.mu.Lock()
+	batch := make([][2]string, 0, len(r.currSeen))
+	for id := range r.currSeen {
+		batch = append(batch, [2]string{id, r.lastScore[id]})
+	}
+	r.mu.Unlock()
+
+	for _, row := range batch {
+		if _, err := r.db.Exec(ctx,
+			`INSERT INTO event_scores (event_id, score, last_seen_at) VALUES ($1, $2, now())
+			 ON CONFLICT (event_id) DO UPDATE
+			    SET score = CASE WHEN EXCLUDED.score <> '' THEN EXCLUDED.score ELSE event_scores.score END,
+			        last_seen_at = now()`,
+			row[0], row[1],
+		); err != nil {
+			slog.Warn("resolver: persist score failed", "event_id", row[0], "err", err)
+			return
+		}
+	}
+}
+
+// Restore поднимает состояние из базы при старте. Без этого после рестарта
+// prevSeen пуст, и матчи, шедшие в момент перезапуска, не закрываются никогда.
+func (r *Resolver) Restore(ctx context.Context) {
+	rows, err := r.db.Query(ctx,
+		`SELECT event_id, score FROM event_scores WHERE last_seen_at > now() - interval '24 hours'`)
+	if err != nil {
+		slog.Warn("resolver: restore failed", "err", err)
+		return
+	}
+	defer rows.Close()
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	n := 0
+	for rows.Next() {
+		var id, score string
+		if err := rows.Scan(&id, &score); err != nil {
+			continue
+		}
+		if score != "" {
+			r.lastScore[id] = score
+		}
+		// Событие считалось живым до рестарта: если его нет в текущей выдаче,
+		// первый же EndCycle его закроет.
+		r.prevSeen[id] = true
+		n++
+	}
+	slog.Info("resolver: state restored", "events", n)
+}
+
+// Sweep — догоняющий проход по зависшим прогнозам. Закрывает то, что резолвер
+// пропустил: матч исчез из выдачи незамеченным, сервис перезапустился,
+// событие вообще не вернулось.
+func (r *Resolver) Sweep(ctx context.Context) {
+	rows, err := r.db.Query(ctx, `
+		SELECT p.event_id,
+		       COALESCE(s.score, ''),
+		       COALESCE(s.last_seen_at, 'epoch'::timestamptz),
+		       MIN(COALESCE(p.starts_at, p.created_at))
+		FROM predictions p
+		LEFT JOIN event_scores s ON s.event_id = p.event_id
+		WHERE p.status = 'waiting'
+		  AND COALESCE(p.starts_at, p.created_at) < now() - make_interval(secs => $1)
+		GROUP BY p.event_id, s.score, s.last_seen_at`,
+		sweepStaleAfter.Seconds())
+	if err != nil {
+		slog.Warn("resolver: sweep query failed", "err", err)
+		return
+	}
+
+	type stale struct {
+		eventID  string
+		score    string
+		lastSeen time.Time
+		oldest   time.Time
+	}
+	var list []stale
+	for rows.Next() {
+		var st stale
+		if err := rows.Scan(&st.eventID, &st.score, &st.lastSeen, &st.oldest); err != nil {
+			continue
+		}
+		list = append(list, st)
+	}
+	rows.Close()
+
+	now := time.Now()
+	for _, st := range list {
+		h, a, ok := parseMatchScore(st.score)
+		if ok && now.Sub(st.lastSeen) > sweepScoreIdle {
+			slog.Info("resolver: sweeping by last known score", "event_id", st.eventID, "score", st.score)
+			if err := r.resolvePredictions(ctx, st.eventID, outcomeFromScore(h, a)); err != nil {
+				slog.Warn("resolver: sweep resolve failed", "event_id", st.eventID, "err", err)
+			}
+			continue
+		}
+		if !ok && now.Sub(st.oldest) > sweepVoidAfter {
+			r.voidPredictions(ctx, st.eventID)
+		}
+	}
+}
+
+// voidPredictions закрывает прогнозы по событию, счёт которого так и не стал
+// известен. Ни XP, ни поражения — исход неизвестен, наказывать не за что.
+func (r *Resolver) voidPredictions(ctx context.Context, eventID string) {
+	tag, err := r.db.Exec(ctx,
+		`UPDATE predictions SET status = 'void', points = 0
+		 WHERE event_id = $1 AND status = 'waiting'`, eventID)
+	if err != nil {
+		slog.Warn("resolver: void failed", "event_id", eventID, "err", err)
+		return
+	}
+	if tag.RowsAffected() > 0 {
+		slog.Info("resolver: predictions voided", "event_id", eventID, "count", tag.RowsAffected())
+	}
 }

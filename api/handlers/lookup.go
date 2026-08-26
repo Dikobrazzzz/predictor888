@@ -29,7 +29,18 @@ func NewLookupClient(baseURL, apiKey string) *LookupClient {
 }
 
 func (c *LookupClient) LookupByEmail(ctx context.Context, email string) (found bool, err error) {
-	body, _ := json.Marshal(map[string]any{"email": email})
+	return c.lookup(ctx, map[string]any{"email": email}, "email", email)
+}
+
+// LookupByPlayerID спрашивает тот же POST /lookup, но по идентификатору игрока.
+// Имя поля в теле запроса согласовано как player_id — если сервис ждёт другое,
+// менять здесь.
+func (c *LookupClient) LookupByPlayerID(ctx context.Context, playerID string) (found bool, err error) {
+	return c.lookup(ctx, map[string]any{"player_id": playerID}, "player_id", playerID)
+}
+
+func (c *LookupClient) lookup(ctx context.Context, payload map[string]any, logKey, logVal string) (found bool, err error) {
+	body, _ := json.Marshal(payload)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/lookup", bytes.NewReader(body))
 	if err != nil {
@@ -45,7 +56,7 @@ func (c *LookupClient) LookupByEmail(ctx context.Context, email string) (found b
 	defer resp.Body.Close()
 	bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
 
-	slog.Info("lookup response", "email", email, "status", resp.StatusCode, "body", string(bodyBytes))
+	slog.Info("lookup response", logKey, logVal, "status", resp.StatusCode, "body", string(bodyBytes))
 
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil

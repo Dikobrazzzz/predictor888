@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useT } from '../i18n'
+import { apiFetch } from '../utils/api'
+import Popup from '../components/Popup'
 import imgGates from '/icons/0214656b.webp'
 import imgFlash from '/icons/bc4c4d84.webp'
 import imgAviator from '/icons/087e19e8.webp'
@@ -11,33 +13,27 @@ import imgReward from '/icons/ab33ad55.webp'
 // Ramka gradienti — dizayn tizimidagi barcha kartalar uchun bir xil
 const BORDER_GRADIENT = 'linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box'
 
-// Haftalik kvestlar. Backendda hali endpoint yo'q — vaqtincha statik.
-const QUESTS = { done: 5, total: 5 }
-
-// Art qatlamlari: o'lchov va matritsa to'g'ridan-to'g'ri Figma'dan olingan
-// (karta 343px keng — 375 - 2*16 padding). Tartib = chizish tartibi.
-const PROMOS = [
-  {
-    code: 'UZ150FS',
+// Арт подбирается по game из API; матрицы сняты из макета (карточка 343px).
+const ART = {
+  gates: {
     descKey: 'promo.descGates',
-    bg: 'linear-gradient(135deg, #622380 0%, #14071A 100%)',
-    glow: 'linear-gradient(90deg, rgba(32,8,79,0) 0%, #08204F 98%)',
-    art: [
+    bg: 'linear-gradient(306deg, rgba(98,35,128,0.32) 0%, rgba(20,7,26,0.32) 100%)',
+    glow: 'linear-gradient(236deg, rgba(32,8,79,0) 0%, #08204F 98%)',
+    layers: [
       { src: imgFlash, w: 107, h: 77, m: '-0.834, -0.552, -0.552, 0.834, 254.853, 36.016' },
       { src: imgGates, w: 166, h: 349, m: '1, 0, 0, 1, 186, -32' },
     ],
   },
-  {
-    code: 'UZAVIATOR',
+  aviator: {
     descKey: 'promo.descAviator',
-    bg: 'linear-gradient(135deg, #802325 0%, #1A0707 100%)',
-    glow: 'linear-gradient(90deg, rgba(79,8,9,0) 0%, #4F0809 98%)',
-    art: [
+    bg: 'linear-gradient(306deg, rgba(128,35,37,0.32) 0%, rgba(26,7,7,0.32) 100%)',
+    glow: 'linear-gradient(236deg, rgba(79,8,9,0) 0%, #4F0809 98%)',
+    layers: [
       { src: imgAviatorLogo, w: 141, h: 56, m: '0.903, -0.43, 0.43, 0.903, 176.78, 101.171' },
       { src: imgAviator, w: 272, h: 185, m: '-0.978, 0.208, 0.208, 0.978, 318.479, -56.765' },
     ],
   },
-]
+}
 
 const QuestIcon = (
   <svg width="20" height="20" viewBox="0 0 14.01 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -237,14 +233,24 @@ function WeeklyRewardCard({ done, total, onOpen }) {
   )
 }
 
-function PromoCard({ promo }) {
+function PromoCard({ promo, onClaimed }) {
   const t = useT()
-  const [copied, setCopied] = useState(false)
+  const [popup, setPopup] = useState(null)
+  const art = ART[promo.game] || ART.gates
 
-  const handleClaim = () => {
-    navigator.clipboard?.writeText(promo.code).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1800)
+  // Промокод копируется в буфер, подтверждение показываем компонентом Pop-up.
+  const handleClaim = async () => {
+    try {
+      const res = await apiFetch('/api/promos/claim', {
+        method: 'POST',
+        body: JSON.stringify({ promo_id: promo.id }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      navigator.clipboard?.writeText(data.code).catch(() => {})
+      setPopup(data.code)
+      onClaimed?.()
+    } catch {}
   }
 
   return (
@@ -253,7 +259,7 @@ function PromoCard({ promo }) {
       height: '142px',
       borderRadius: '20px',
       border: '0.5px solid transparent',
-      background: `${promo.bg} padding-box, ${BORDER_GRADIENT}`,
+      background: `${art.bg} padding-box, ${BORDER_GRADIENT}`,
       boxShadow: '0px 20px 60px 0px rgba(0,0,0,0.1)',
       boxSizing: 'border-box',
       padding: '20px 24px',
@@ -263,11 +269,11 @@ function PromoCard({ promo }) {
         position: 'absolute',
         left: 0, top: 0, bottom: 0,
         width: '53.9%',
-        background: promo.glow,
+        background: art.glow,
         pointerEvents: 'none',
       }} />
 
-      {promo.art.map((a) => (
+      {art.layers.map((a) => (
         <img
           key={a.src}
           src={a.src}
@@ -307,7 +313,7 @@ function PromoCard({ promo }) {
           lineHeight: 1.35,
           whiteSpace: 'pre-line',
         }}>
-          {t(promo.descKey)}
+          {t(art.descKey)}
         </p>
 
         <button
@@ -318,9 +324,7 @@ function PromoCard({ promo }) {
             padding: '8px 20px',
             borderRadius: '8px',
             border: '0.5px solid transparent',
-            background: copied
-              ? 'linear-gradient(#55B685, #55B685) padding-box, ' + BORDER_GRADIENT
-              : 'linear-gradient(#FFFE45, #FFFE45) padding-box, ' + BORDER_GRADIENT,
+            background: 'linear-gradient(#FFFE45, #FFFE45) padding-box, ' + BORDER_GRADIENT,
             color: '#0E0D0D',
             fontFamily: 'Roboto Flex, sans-serif',
             fontWeight: 700,
@@ -332,15 +336,45 @@ function PromoCard({ promo }) {
             transition: 'background 0.2s',
           }}
         >
-          {copied ? t('promo.copied') : t('promo.getNow')}
+          {t('promo.getNow')}
         </button>
       </div>
+
+      {popup && (
+        <Popup
+          title={t('promo.claimedTitle')}
+          body={t('promo.claimedBody', { code: popup })}
+          actionLabel={t('promo.claimedAction')}
+          onClose={() => setPopup(null)}
+        />
+      )}
     </div>
   )
 }
 
 export default function Promo({ navigate, user }) {
   const t = useT()
+  const [quests, setQuests] = useState(null)
+  const [promos, setPromos] = useState([])
+  const [fresh, setFresh] = useState(0)
+
+  const loadPromos = () => {
+    apiFetch('/api/promos')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) { setPromos(d.promos || []); setFresh(d.new || 0) } })
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    loadPromos()
+    apiFetch('/api/quests')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setQuests(d) })
+      .catch(() => {})
+  }, [])
+
+  const done = quests?.done ?? 0
+  const total = quests?.total ?? 5
 
   return (
     <div style={{ minHeight: '100vh', background: '#131313', paddingBottom: '110px' }}>
@@ -353,18 +387,18 @@ export default function Promo({ navigate, user }) {
           pill={t('quests.seeAll')}
           onPill={() => navigate?.('quests')}
         />
-        <WeeklyRewardCard done={QUESTS.done} total={QUESTS.total} onOpen={() => navigate?.('quests')} />
+        <WeeklyRewardCard done={done} total={total} onOpen={() => navigate?.('quests')} />
       </section>
 
       <section style={{ padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <SectionTitle
           icon={<img src="/icons/Icon-2.svg" alt="" width="20" height="20" />}
           title={t('promo.title')}
-          pill={t('promo.new', { count: PROMOS.length })}
+          pill={t('promo.new', { count: fresh })}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {PROMOS.map((promo) => (
-            <PromoCard key={promo.code} promo={promo} />
+          {promos.map((promo) => (
+            <PromoCard key={promo.id} promo={promo} onClaimed={loadPromos} />
           ))}
         </div>
       </section>

@@ -53,15 +53,19 @@ export default {
   'profile.subscription': 'الاشتراك',
   'profile.inactive': 'غير نشط',
   'profile.subscribe': 'اشترك',
-  'profile.deleteBot': 'تعطيل البوت',
-  'profile.delete': 'تعطيل',
+  'profile.deleteBot': 'حذف البوت',
+  'profile.delete': 'حذف',
+  'profile.deleteConfirm': 'حذف حسابك وجميع بياناتك؟ لا يمكن التراجع عن هذا الإجراء.',
 
   // Rank
   'rank.stats': 'إحصائيات الملف الشخصي',
   'rank.tabAll': 'الكل',
   'rank.tabFinished': 'مكتمل',
-  'rank.newPrediction': 'إجراء توقع جديد',
+  'rank.newPrediction': 'قدّم توقعًا جديدًا',
   'rank.pick': 'الاختيار:',
+  'rank.yourPick': 'اختيارك', // auto
+  'rank.potentialWin': 'الربح المحتمل', // auto
+  'rank.earned': 'المكتسب', // auto
 
   // Leaderboard
   'leaderboard.tournament': 'البطولة',
@@ -72,6 +76,8 @@ export default {
   'leaderboard.matchCol': 'المباراة', // auto
   'leaderboard.pickCol': 'الاختيار', // auto
   'leaderboard.statusCol': 'الحالة', // auto
+  'leaderboard.dateCol': 'التاريخ', // auto
+  'leaderboard.viewAll': 'عرض الكل', // auto
 
   // Promo
   'promo.title': 'العروض الترويجية',
@@ -82,6 +88,9 @@ export default {
   'promo.new': '{count} جديدة', // auto
   'promo.descGates': 'احصل على 100 لفة مجانية\nفي Gates of Olympus', // auto
   'promo.descAviator': 'احصل على 100 لفة مجانية\nفي Aviator', // auto
+  'promo.claimedTitle': 'تهانينا!', // auto
+  'promo.claimedBody': 'تم نسخ الرمز الترويجي {code}. أدخله في التطبيق للحصول على مكافأتك.', // auto
+  'promo.claimedAction': 'حسنًا', // auto
 
   // Quests
   'quests.title': 'المهام', // auto
@@ -102,20 +111,21 @@ export default {
   'quests.progressDays': 'اليوم {done} من {total}', // auto
   'quests.progressXp': '{done} من {total} XP', // auto
   'quests.earned': 'تم الحصول على {reward}', // auto
-  'quests.q1.title': 'قدّم 3 توقعات', // auto
-  'quests.q1.desc': 'ضع ثلاثة توقعات على أحداث قادمة.', // auto
-  'quests.q2.title': 'توقّع نتيجتين بشكل صحيح', // auto
-  'quests.q2.desc': 'خمّن نتيجة حدثين منتهيين بشكل صحيح.', // auto
-  'quests.q3.title': 'أنفق 10 توكنات', // auto
-  'quests.q3.desc': 'استخدم عشرة توكنات في التوقعات أو المتجر.', // auto
-  'quests.q4.title': 'سجّل الدخول 5 أيام متتالية', // auto
-  'quests.q4.desc': 'افتح التطبيق خمسة أيام متتالية.', // auto
-  'quests.q5.title': 'اجمع 500 XP', // auto
-  'quests.q5.desc': 'اجمع 500 XP من أي نشاط خلال هذا الأسبوع.', // auto
+  'quests.make_3_predictions.title': 'قدّم 3 توقعات', // auto
+  'quests.make_3_predictions.desc': 'ضع ثلاثة توقعات على أحداث قادمة.', // auto
+  'quests.predict_2_correct.title': 'توقّع نتيجتين بشكل صحيح', // auto
+  'quests.predict_2_correct.desc': 'خمّن نتيجة حدثين منتهيين بشكل صحيح.', // auto
+  'quests.spend_10_tokens.title': 'أنفق 10 توكنات', // auto
+  'quests.spend_10_tokens.desc': 'استخدم عشرة توكنات في التوقعات أو المتجر.', // auto
+  'quests.login_5_days.title': 'سجّل الدخول 5 أيام متتالية', // auto
+  'quests.login_5_days.desc': 'افتح التطبيق خمسة أيام متتالية.', // auto
+  'quests.reach_500_xp.title': 'اجمع 500 XP', // auto
+  'quests.reach_500_xp.desc': 'اجمع 500 XP من أي نشاط خلال هذا الأسبوع.', // auto
   'quests.popupTitle': 'تهانينا! لقد أكملت', // auto
   'quests.popupBody': 'لقد أكملت مهمة {title}. سارع إلى المهام التالية.', // auto
   'quests.close': 'إغلاق', // auto
   'quests.claim': 'استلام المكافأة', // auto
+  'quests.tokens': 'توكن', // auto
   'quests.unlocked': 'مفتوحة', // auto
 
   // Top Picks
@@ -129,6 +139,29 @@ export default {
   'picks.makePrediction': 'قدّم توقعك', // auto
   'picks.accuracy': 'توقعات صحيحة هذا الموسم', // auto
   'picks.follow': 'تابع {name} على إنستغرام', // auto
+
+  // Language / Telegram ID
+  'lang.title': 'اختر لغتك', // auto
+  'lang.subtitle': 'لم نتمكن من تحديد لغتك من Telegram. اختر واحدة للمتابعة — يمكنك تغييرها لاحقًا في ملفك الشخصي.', // auto
+  'lang.continue': 'متابعة', // auto
+  'tgid.title': 'اربط حسابك', // auto
+  'tgid.subtitle': 'أدخل Player ID لربط حساب Telegram الخاص بك.', // auto
+  'tgid.subtitleLoading': 'جارٍ ربط حساب Telegram…', // auto
+  'tgid.label': 'اسم المستخدم*', // auto
+  'tgid.placeholder': 'Player ID', // auto
+  'tgid.continue': 'متابعة', // auto
+  'tgid.linking': 'جارٍ الربط ..', // auto
+  'tgid.error': 'لم يتم العثور على Player ID. تحقق من الرقم وحاول مرة أخرى.', // auto
+  'tgid.errorLinked': 'هذا الـ Player ID مرتبط بالفعل بحساب Telegram آخر.', // auto
+  'tgid.support': 'الدعم', // auto
+  'tgid.netTitle': 'حدث خطأ ما', // auto
+  'tgid.netBody': 'تعذّر الوصول إلى الخادم. تحقق من الاتصال وحاول مرة أخرى.', // auto
+  'tgid.tryAgain': 'حاول مرة أخرى', // auto
+  'tgid.backToId': 'العودة إلى Player ID', // auto
+  'tgid.cantFind': 'لا تجد Player ID؟', // auto
+  'tgid.getHelp': 'احصل على المساعدة', // auto
+  'tgid.successTitle': 'تم ربط حسابك بنجاح', // auto
+  'tgid.playerId': 'Player ID', // auto
 
   // Header
   'header.welcomeBack': 'سعداء بعودتك،',
@@ -146,7 +179,8 @@ export default {
   // Prediction status labels
   'status.win': 'فوز',
   'status.loss': 'خسارة',
-  'status.waiting': 'نشط',
+  'status.waiting': 'قيد الانتظار',
+  'status.void': 'ملغى',
 
   // Events — auto (не было в присланном тексте)
   'events.allEvents': 'جميع الأحداث', // auto

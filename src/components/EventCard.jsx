@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useT, localizeTimeLeft } from '../i18n'
 
+// Team 54x69 в макете: круг 54, gap 4, подпись 10px #AEAEAE по центру.
 function TeamCircle({ name, icon }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px',  }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '54px' }}>
       <div
         style={{
-          width: '54.7px',
-          height: '54.7px',
-          borderRadius: '27.35px',
+          width: '54px',
+          height: '54px',
+          borderRadius: '60px',
           background: '#FFFFFF',
           display: 'flex',
           alignItems: 'center',
@@ -18,18 +19,18 @@ function TeamCircle({ name, icon }) {
         }}
       >
         {icon
-          ? <img src={icon} alt={name} style={{ width: '38.29px', height: '38.29px', objectFit: 'contain' }} />
+          ? <img src={icon} alt={name} style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
           : <span style={{ fontSize: '24px' }}>🏆</span>
         }
       </div>
       <span style={{
-        color: '#FFFFFF',
-        fontSize: '11px',
-        fontWeight: 500,
+        color: '#AEAEAE',
+        fontFamily: 'Roboto Flex, sans-serif',
+        fontSize: '10px',
+        fontWeight: 400,
+        lineHeight: 1.1,
         textAlign: 'center',
-        lineHeight: '1.3',
-        wordBreak: 'break-word',
-        width: '100%',
+        whiteSpace: 'nowrap',
       }}>{name}</span>
     </div>
   )
@@ -62,11 +63,13 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
     <div
       style={{
         width: '100%',
-        backdropFilter: 'blur(61px)',
-        borderRadius: '27.35px',
+        backdropFilter: 'blur(60px)',
+        WebkitBackdropFilter: 'blur(60px)',
+        borderRadius: '28px',
         border: '0.7px solid transparent',
-        background: 'linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)) padding-box, linear-gradient(to top right, #323232B2, #6F6F6FA1) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
-        padding: '16px',
+        background: 'linear-gradient(180deg, rgba(27,27,29,0.7) 0%, rgba(79,79,79,0.3) 100%) padding-box, linear-gradient(180deg, rgba(160,160,160,0.15) 0%, rgba(211,211,211,0) 100%) border-box',
+        boxShadow: '0px 20px 60px 0px rgba(0,0,0,0.1)',
+        padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
@@ -75,14 +78,16 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
     >
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* component="Label_Event": Live bet — #E20000 на 30%, Top Event — #B40E0E */}
         {!forceTopBadge && status === 'live' ? (
-          <span style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', color: '#E20000', background: '#E200004D' }}>{t('card.liveBet')}
+          <span style={{ display: 'flex', alignItems: 'center', fontFamily: 'Roboto Flex, sans-serif', fontSize: '10px', fontWeight: 500, lineHeight: 1.1, padding: '4px 12px', borderRadius: '60px', color: '#E20000', background: 'rgba(226,0,0,0.3)' }}>
+            {t('card.liveBet')}
           </span>
         ) : (
-          <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '999px', background: '#B40E0E', color: '#FFFFFF' }}>{t('card.topEvent')}</span>
+          <span style={{ fontFamily: 'Roboto Flex, sans-serif', fontSize: '10px', fontWeight: 400, lineHeight: 1.1, padding: '4px 12px', borderRadius: '60px', background: '#B40E0E', color: '#FFFFFF' }}>{t('card.topEvent')}</span>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: '#FFFE45' }}>
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', fontFamily: 'Roboto Flex, sans-serif', fontSize: '10px', fontWeight: 700, lineHeight: 1, textTransform: 'uppercase', color: '#FFFE45' }}>
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" strokeWidth="2"/>
             <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round"/>
           </svg>
@@ -90,11 +95,9 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         </div>
       </div>
 
-      
-      <p style={{ color: '#FFFFFF', fontSize: '12px', textAlign: 'center', margin: 0 }}>{league}</p>
+      <p style={{ color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif', fontSize: '10px', fontWeight: 400, lineHeight: 1.1, textAlign: 'center', margin: 0 }}>{league}</p>
 
-      
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: '48px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: '64px' }}>
         <TeamCircle name={home.name} icon={home.icon} />
         <TeamCircle name={away.name} icon={away.icon} />
       </div>
@@ -104,8 +107,7 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          marginTop: '4px',
+          gap: '5px',
           ...(isTwoWay && { width: '66.67%', alignSelf: 'center' }),
         }}>
           {outcomes.map((o) => (
@@ -115,21 +117,22 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
               style={{
                 flex: 1,
                 height: '32px',
-                borderRadius: '40px',
-                background: selected === o.key ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.28)',
-                border: selected === o.key ? '1px solid rgba(255,255,255,0.20)' : '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '60px',
+                background: selected === o.key ? 'rgba(255,255,255,0.1)' : '#131313',
+                border: selected === o.key ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '8px',
-                padding: '0 14px',
+                padding: '8px 12px',
+                boxSizing: 'border-box',
                 cursor: 'pointer',
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'background 0.15s',
               }}
             >
-              <span style={{ color: '#9CA3AF', fontSize: '12px' }}>{o.label}</span>
-              <span style={{ color: '#FFFE45', fontWeight: 700, fontSize: '14px' }}>{o.value}</span>
+              <span style={{ color: '#FFFFFF', fontFamily: 'Roboto Flex, sans-serif', fontSize: '10px', fontWeight: 400, lineHeight: 1.1 }}>{o.label}</span>
+              <span style={{ color: '#FFFE45', fontFamily: 'Roboto Flex, sans-serif', fontWeight: 700, fontSize: '14px', lineHeight: 1.1 }}>{o.value}</span>
             </button>
           ))}
         </div>
@@ -140,13 +143,15 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
         onClick={handleMakePredict}
         style={{
           width: '100%',
-          height: '42px',
+          height: '48px',
           borderRadius: '12px',
-          border: 'none',
-          background: '#E20000',
+          border: '1px solid transparent',
+          background: 'linear-gradient(#E20000, #E20000) padding-box, ' +
+            'linear-gradient(180deg, rgba(255,191,192,0.15) 0%, rgba(255,210,210,0) 100%) border-box',
           color: '#FFFFFF',
+          fontFamily: 'Roboto Flex, sans-serif',
           fontWeight: 600,
-          fontSize: '15px',
+          fontSize: '14.3px',
           cursor: 'pointer',
           transition: 'background 0.2s',
           WebkitTapHighlightColor: 'transparent',
@@ -155,7 +160,6 @@ export default function EventCard({ event, onPredict, navigate, forceTopBadge = 
           alignItems: 'center',
           justifyContent: 'center',
           boxSizing: 'border-box',
-          marginTop: '4px',
         }}
       >
         {t('prediction.predict')}

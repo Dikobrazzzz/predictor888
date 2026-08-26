@@ -2,9 +2,9 @@ import { useT } from '../i18n'
 
 // Card_Top Picks. `featured` — "Pick of the day" ko'rinishi: sariq ramka,
 // sariq tus va yuqorida yorliq bilan qolgan vaqt (Figma'da 343x321 va 343x285).
-const BASE_BG = 'linear-gradient(180deg, rgba(27,27,29,0.7) 0%, rgba(79,79,79,0.3) 100%)'
-const TINT_BG = 'linear-gradient(180deg, rgba(255,254,69,0.1) 0%, rgba(0,0,0,0) 100%)'
-const FEATURED_BORDER = 'linear-gradient(180deg, #FFFE45 0%, #2B2B10 100%) border-box'
+const BASE_BG = 'linear-gradient(119deg, rgba(27,27,29,0.7) 0%, rgba(79,79,79,0.3) 100%)'
+const TINT_BG = 'linear-gradient(44deg, rgba(255,254,69,0.1) 0%, rgba(0,0,0,0) 100%)'
+const FEATURED_BORDER = 'linear-gradient(46deg, #FFFE45 0%, #2B2B10 100%) border-box'
 
 // "Today's prediction" bo'limi sarlavhasidagi belgi.
 export const PredictionIcon = (
@@ -19,12 +19,23 @@ const StarIcon = (
   </svg>
 )
 
+const PICK_LABEL = { home: 'Home Win', draw: 'Draw', away: 'Away Win' }
+
 const ClockIcon = (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="6" cy="6" r="5" stroke="#FFFE45" strokeWidth="1.2"/>
     <path d="M6 3.2V6L7.9 7.2" stroke="#FFFE45" strokeWidth="1.2" strokeLinecap="round"/>
   </svg>
 )
+
+// «1h 20m» до начала матча — из starts_at, который отдаёт API.
+function startsIn(iso) {
+  if (!iso) return ''
+  const ms = new Date(iso) - Date.now()
+  if (ms <= 0) return ''
+  const mins = Math.floor(ms / 60000)
+  return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`
+}
 
 // Figma'da sarlavhadagi "vs" so'ni so'nikroq rangda.
 function MatchTitle({ home, away }) {
@@ -89,7 +100,7 @@ export default function TopPickCard({ pick, featured = false, onPredict }) {
               textTransform: 'uppercase',
               whiteSpace: 'nowrap',
             }}>
-              {pick.startsIn}
+              {startsIn(pick.starts_at)}
             </span>
           </span>
         </div>
@@ -135,7 +146,7 @@ export default function TopPickCard({ pick, featured = false, onPredict }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <MatchTitle home={pick.home} away={pick.away} />
+        <MatchTitle home={pick.home_team} away={pick.away_team} />
         <p style={{
           margin: 0,
           color: '#AEAEAE',
@@ -172,7 +183,7 @@ export default function TopPickCard({ pick, featured = false, onPredict }) {
             fontWeight: 400,
             fontSize: '14px',
           }}>
-            {pick.selection}
+            {PICK_LABEL[pick.outcome] || pick.outcome}
           </span>
         </div>
         <span style={{

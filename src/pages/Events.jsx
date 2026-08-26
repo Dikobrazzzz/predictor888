@@ -3,7 +3,8 @@ import EventCard from '../components/EventCard'
 import BottomNav from '../components/BottomNav'
 import TopPickCard, { PredictionIcon } from '../components/TopPickCard'
 import { useT } from '../i18n'
-import { mockTopPicks } from '../mockData'
+import { apiFetch } from '../utils/api'
+
 
 const PAGE_SIZE = 5
 const RECOMMEND_TOP_N = 5
@@ -76,6 +77,15 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
   const observerRef = useRef(null)
+
+  const [picks, setPicks] = useState([])
+  useEffect(() => {
+    apiFetch('/api/picks')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setPicks(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }, [])
+  const featuredPick = picks.find((p) => p.featured) || picks[0]
 
   const loading = !dataReady
 
@@ -201,10 +211,10 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             fontWeight: 400,
             fontSize: '12px',
           }}>
-            {t('picks.matches', { count: mockTopPicks.length })}
+            {t('picks.matches', { count: picks.length })}
           </span>
         </div>
-        <TopPickCard pick={mockTopPicks[0]} featured onPredict={() => navigate?.('makePrediction')} />
+        {featuredPick && <TopPickCard pick={featuredPick} featured onPredict={() => navigate?.('makePrediction')} />}
       </div>
 
       {loading ? (
@@ -220,7 +230,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
                   <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.liveNow')}</span>
                 </div>
-                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Roboto Flex, sans-serif', fontSize: '12px', fontWeight: 400, textAlign: 'right' }}>
                   {t('events.matchesCount', { count: filtered.filter(e => e.status === 'live' && isTopLiveEvent(e)).length })}
                 </span>
               </div>
@@ -240,7 +250,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E20000', display: 'inline-block', flexShrink: 0 }} />
                   <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.upcoming')}</span>
                 </div>
-                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Roboto Flex, sans-serif', fontSize: '12px', fontWeight: 400, textAlign: 'right' }}>
                   {t('events.nextDays', { days: RECOMMEND_DAYS })}
                 </span>
               </div>
@@ -256,7 +266,7 @@ export default function Events({ navigate, allEvents = [], counts: propCounts = 
             <div style={{ padding: '0 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>{t('events.scheduled')}</span>
-                <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Roboto Flex, sans-serif', fontSize: '12px', fontWeight: 400, textAlign: 'right' }}>
                   {t('events.matchesCount', { count: filtered.filter(e => e.status === 'upcoming').length })}
                 </span>
               </div>

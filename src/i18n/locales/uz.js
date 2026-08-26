@@ -54,13 +54,17 @@ export default {
   'profile.subscribe': "Obuna bo'lish",
   'profile.deleteBot': "Botni o'chirish",
   'profile.delete': "O'chirish",
+  'profile.deleteConfirm': "Hisobingiz va barcha ma'lumotlaringiz o'chirilsinmi? Buni qaytarib bo'lmaydi.",
 
   // Rank
   'rank.stats': 'Profil statistikasi',
   'rank.tabAll': 'Hammasi',
   'rank.tabFinished': 'Yakunlangan',
-  'rank.newPrediction': 'Yangi taxmin qilish',
+  'rank.newPrediction': 'Yangi prognoz qilish',
   'rank.pick': 'Tanlov:',
+  'rank.yourPick': 'Sizning tanlovingiz',
+  'rank.potentialWin': 'Mumkin yutuq',
+  'rank.earned': 'Olindi',
 
   // Leaderboard
   'leaderboard.tournament': 'Turnir',
@@ -71,6 +75,8 @@ export default {
   'leaderboard.matchCol': 'Match',
   'leaderboard.pickCol': 'Pick',
   'leaderboard.statusCol': 'Status',
+  'leaderboard.dateCol': 'Sana',
+  'leaderboard.viewAll': 'Barchasi',
 
   // Promo
   'promo.title': 'Promo',
@@ -81,6 +87,9 @@ export default {
   'promo.new': '{count} ta yangi',
   'promo.descGates': 'Gates of Olympus\'da\n100 ta free spin oling',
   'promo.descAviator': 'Aviator\'da\n100 ta free spin oling',
+  'promo.claimedTitle': 'Tabriklaymiz!',
+  'promo.claimedBody': '{code} promokodi nusxalandi. Bonusni olish uchun uni ilovada kiriting.',
+  'promo.claimedAction': 'Tushunarli',
 
   // Quests
   'quests.title': 'Kvestlar',
@@ -101,20 +110,21 @@ export default {
   'quests.progressDays': '{total} kundan {done}-kun',
   'quests.progressXp': '{total} XP dan {done} XP',
   'quests.earned': '{reward} olindi',
-  'quests.q1.title': '3 ta prognoz qiling',
-  'quests.q1.desc': "Bo'lajak voqealarga uchta prognoz joylashtiring.",
-  'quests.q2.title': "2 ta to'g'ri natija",
-  'quests.q2.desc': "Yakunlangan ikkita voqea natijasini to'g'ri toping.",
-  'quests.q3.title': '10 ta token sarflang',
-  'quests.q3.desc': "Prognozlar yoki do'konda o'nta token ishlating.",
-  'quests.q4.title': 'Ketma-ket 5 kun kiring',
-  'quests.q4.desc': 'Ilovani besh kun ketma-ket oching.',
-  'quests.q5.title': "500 XP to'plang",
-  'quests.q5.desc': "Shu hafta istalgan faoliyatdan 500 XP yig'ing.",
+  'quests.make_3_predictions.title': '3 ta prognoz qiling',
+  'quests.make_3_predictions.desc': "Bo'lajak voqealarga uchta prognoz joylashtiring.",
+  'quests.predict_2_correct.title': "2 ta to'g'ri natija",
+  'quests.predict_2_correct.desc': "Yakunlangan ikkita voqea natijasini to'g'ri toping.",
+  'quests.spend_10_tokens.title': '10 ta token sarflang',
+  'quests.spend_10_tokens.desc': "Prognozlar yoki do'konda o'nta token ishlating.",
+  'quests.login_5_days.title': 'Ketma-ket 5 kun kiring',
+  'quests.login_5_days.desc': 'Ilovani besh kun ketma-ket oching.',
+  'quests.reach_500_xp.title': "500 XP to'plang",
+  'quests.reach_500_xp.desc': "Shu hafta istalgan faoliyatdan 500 XP yig'ing.",
   'quests.popupTitle': 'Tabriklaymiz! Siz bajardingiz',
   'quests.popupBody': "{title} kvestini bajardingiz. Keyingilarini ham qo'ldan boy bermang.",
   'quests.close': 'Yopish',
   'quests.claim': 'Mukofotni olish',
+  'quests.tokens': 'token',
   'quests.unlocked': 'Ochildi',
 
   // Top Picks
@@ -128,6 +138,29 @@ export default {
   'picks.makePrediction': 'Prognoz qilish',
   'picks.accuracy': 'shu mavsumda to\'g\'ri prognozlar',
   'picks.follow': '{name}ni Instagram\'da kuzating',
+
+  // Language / Telegram ID
+  'lang.title': 'Tilni tanlang',
+  'lang.subtitle': 'Telegram\u2019dan tilingizni aniqlay olmadik. Davom etish uchun bittasini tanlang \u2014 keyin profilda o\u2019zgartirishingiz mumkin.',
+  'lang.continue': 'Davom etish',
+  'tgid.title': 'Hisobingizni ulang',
+  'tgid.subtitle': 'Telegram hisobingizni ulash uchun Player ID\u2019ingizni kiriting.',
+  'tgid.subtitleLoading': 'Telegram hisobingiz ulanmoqda\u2026',
+  'tgid.label': 'Login*',
+  'tgid.placeholder': 'Player ID',
+  'tgid.continue': 'Davom etish',
+  'tgid.linking': 'Ulanmoqda ..',
+  'tgid.error': 'Player ID topilmadi. Raqamni tekshirib, qayta urining.',
+  'tgid.errorLinked': 'Bu Player ID boshqa Telegram akkauntga ulangan.',
+  'tgid.support': 'Yordam',
+  'tgid.netTitle': 'Nimadir xato ketdi',
+  'tgid.netBody': 'Serverga ulanib bo\u2018lmadi. Aloqani tekshirib, qayta urining.',
+  'tgid.tryAgain': 'Qayta urinish',
+  'tgid.backToId': 'Player ID ga qaytish',
+  'tgid.cantFind': 'Player ID topilmayaptimi?',
+  'tgid.getHelp': 'Yordam olish',
+  'tgid.successTitle': 'Hisobingiz muvaffaqiyatli ulandi',
+  'tgid.playerId': 'Player ID',
 
   // Header
   'header.welcomeBack': 'Qaytganingizdan xursandmiz,',
@@ -145,7 +178,8 @@ export default {
   // Prediction status labels
   'status.win': "G'alaba",
   'status.loss': "Mag'lubiyat",
-  'status.waiting': 'Faol',
+  'status.waiting': 'Kutilmoqda',
+  'status.void': 'Bekor qilindi',
 
   // Events
   'events.allEvents': 'Barcha voqealar',

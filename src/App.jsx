@@ -7,6 +7,8 @@ import Profile from './pages/Profile'
 import Promo from './pages/Promo'
 import Quests from './pages/Quests'
 import TopPicks from './pages/TopPicks'
+import Language from './pages/Language'
+import TelegramId from './pages/TelegramId'
 import parseEvent from './utils/parseEvent'
 import { apiFetch, setSession } from './utils/api'
 
@@ -30,6 +32,15 @@ function saveToStorage(events, counts, topEvents, recommended) {
 
 const LOGIN_KEY = 'p888_logged_in'
 const USER_KEY = 'p888_user'
+// Birinchi ishga tushirish: Player ID ulanmagan bo'lsa, til tanlash va
+// hisobni ulash ekranlari ilovadan oldin ko'rsatiladi.
+const PLAYER_KEY = 'p888_player_id'
+const LANG_PICKED_KEY = 'p888_lang_picked'
+
+// Временный переключатель на время вёрстки: показывать только экраны секции
+// ID_Language (Language → Telegram ID), не пуская дальше в приложение.
+// Вернуть обычное поведение — поставить false.
+const ONLY_ID_LANGUAGE = false
 
 function loadUser() {
   try {
@@ -45,6 +56,19 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem(LOGIN_KEY) === '1' && loadUser() !== null)
   const [page, setPage] = useState('home')
   const [currentEvent, setCurrentEvent] = useState(null)
+  const [playerId, setPlayerId] = useState(() => localStorage.getItem(PLAYER_KEY) || '')
+  // При включённом флаге всегда стартуем с выбора языка, игнорируя localStorage.
+  const [langPicked, setLangPicked] = useState(() => !ONLY_ID_LANGUAGE && localStorage.getItem(LANG_PICKED_KEY) === '1')
+
+  const handleLangPicked = () => {
+    localStorage.setItem(LANG_PICKED_KEY, '1')
+    setLangPicked(true)
+  }
+
+  const handleLinked = (id) => {
+    localStorage.setItem(PLAYER_KEY, id)
+    setPlayerId(id)
+  }
 
   const handleLogin = (userData) => {
     localStorage.setItem(LOGIN_KEY, '1')
@@ -85,6 +109,11 @@ export default function App() {
       saveToStorage(parsed, cnts, top, rec)
     }).catch(() => setDataReady(true))
   }
+
+  // Отметка визита: источник данных для квеста про серию входов.
+  useEffect(() => {
+    apiFetch('/api/visit', { method: 'POST' }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetchLiveData()
@@ -139,6 +168,11 @@ export default function App() {
     setPage(to)
   }
 
+  if (ONLY_ID_LANGUAGE || !playerId) {
+    if (!langPicked) return <Language onContinue={handleLangPicked} />
+    return <TelegramId onLinked={ONLY_ID_LANGUAGE ? () => setLangPicked(false) : handleLinked} />
+  }
+
   if (page === 'events') return <Events navigate={navigate} allEvents={allEvents} counts={counts} recommended={recommended} dataReady={dataReady} />
   if (page === 'makePrediction') return <MakePrediction event={currentEvent} navigate={navigate} />
   if (page === 'rank') return <Rank navigate={navigate} user={user} />
@@ -146,5 +180,7 @@ export default function App() {
   if (page === 'promo') return <Promo navigate={navigate} user={user} />
   if (page === 'quests') return <Quests navigate={navigate} />
   if (page === 'topPicks') return <TopPicks navigate={navigate} />
+  if (page === 'language') return <Language navigate={navigate} />
+  if (page === 'telegramId') return <TelegramId navigate={navigate} />
   return <Home navigate={navigate} topEvents={topEvents} dataReady={dataReady} user={user} />
 }

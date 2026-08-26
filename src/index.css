@@ -59,3 +59,8 @@ body {
 .live-dot {
   animation: pulse-dot 1.4s ease-in-out infinite;
 }
+
+/* Плейсхолдер поля Player ID — как значение в макете */
+.pid-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}

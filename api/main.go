@@ -85,16 +85,43 @@ func main() {
 	handlers.SetSessionSigner(signer)
 
 	auth := &handlers.AuthHandler{DB: pool, Lookup: lookup, Signer: signer}
+	telegram := &handlers.TelegramHandler{DB: pool, Lookup: lookup}
+	quests := &handlers.QuestHandler{DB: pool}
+	promos := &handlers.PromoHandler{DB: pool}
+	tokens := &handlers.TokenHandler{DB: pool}
+	picks := &handlers.PickHandler{DB: pool}
+	subs := handlers.NewSubscriptionHandler(pool)
 	user := &handlers.UserHandler{DB: pool}
 	pred := &handlers.PredictionHandler{DB: pool}
 	lb := &handlers.LeaderboardHandler{DB: pool}
 	resolver := handlers.NewResolver(pool)
+	resolver.Restore(appCtx)
 	live := handlers.NewLiveHandler(appCtx, cfURLs, resolver)
+
+	// Догоняющий проход: закрывает прогнозы, которые live-цикл пропустил
+	// (матч исчез из выдачи, сервис перезапустился).
+	go func() {
+		ticker := time.NewTicker(handlers.SweepInterval)
+		defer ticker.Stop()
+		resolver.Sweep(appCtx)
+		for {
+			select {
+			case <-appCtx.Done():
+				return
+			case <-ticker.C:
+				resolver.Sweep(appCtx)
+			}
+		}
+	}()
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/auth/login", auth.Login)
 	mux.HandleFunc("POST /api/auth/register", auth.Register)
+
+	// Привязка Player ID к Telegram — вызывается до логина, поэтому без RequireUser.
+	mux.HandleFunc("POST /api/telegram/link", telegram.Link)
+	mux.HandleFunc("GET /api/telegram/link", telegram.Status)
 
 	protected := handlers.RequireUser
 
@@ -103,6 +130,20 @@ func main() {
 
 	mux.Handle("POST /api/predictions", protected(http.HandlerFunc(pred.Create)))
 	mux.Handle("GET /api/predictions", protected(http.HandlerFunc(pred.ListByUser)))
+
+	mux.Handle("GET /api/quests", protected(http.HandlerFunc(quests.List)))
+	mux.Handle("POST /api/quests/claim", protected(http.HandlerFunc(quests.Claim)))
+
+	mux.Handle("GET /api/promos", protected(http.HandlerFunc(promos.List)))
+	mux.Handle("POST /api/promos/claim", protected(http.HandlerFunc(promos.Claim)))
+
+	mux.Handle("POST /api/visit", protected(http.HandlerFunc(tokens.Visit)))
+	mux.Handle("POST /api/tokens/spend", protected(http.HandlerFunc(tokens.Spend)))
+
+	mux.Handle("GET /api/subscription", protected(http.HandlerFunc(subs.Status)))
+	mux.Handle("DELETE /api/user/profile", protected(http.HandlerFunc(subs.Delete)))
+
+	mux.HandleFunc("GET /api/picks", picks.List)
 
 	mux.HandleFunc("GET /api/leaderboard", lb.Top)
 	mux.Handle("GET /api/leaderboard/me", protected(http.HandlerFunc(lb.UserStats)))

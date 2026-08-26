@@ -12,7 +12,7 @@ import pl from './locales/pl'
 //   3) RTL til bo'lsa, dir: 'rtl' qo'shing
 // Header'dagi flag-tanlagich shu ro'yxatdan avtomatik to'ldiriladi.
 export const LANGUAGES = [
-  { code: 'uz', label: "O'zbekcha", flag: '🇺🇿', dict: uz },
+  { code: 'uz', label: "O'zbek", flag: '🇺🇿', dict: uz },
   { code: 'en', label: 'English',   flag: '🇬🇧', dict: en },
   { code: 'fr', label: 'Français',  flag: '🇫🇷', dict: fr },
   { code: 'ar', label: 'العربية',   flag: '🇸🇦', dict: ar, dir: 'rtl' },

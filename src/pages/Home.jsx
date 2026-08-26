@@ -28,7 +28,7 @@ export default function Home({ navigate, topEvents = [], dataReady = false, user
       </div>
 
       <DailyRewards />
-      <TopPlayers user={user} />
+      <TopPlayers user={user} navigate={navigate} />
 
       <BottomNav active="home" onNavigate={navigate} />
     </div>
